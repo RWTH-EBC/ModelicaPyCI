@@ -2,11 +2,11 @@ from setuptools import setup, find_packages
 import os
 from pathlib import Path
 
-with open("ModelicaPyCI/README.md", 'r') as f:
+with open("README.md", 'r') as f:
     long_description = f.read()
-with open("ModelicaPyCI/requirements.txt", 'r') as f:
+with open("requirements.txt", 'r') as f:
     required = f.read().splitlines()
-with open("ModelicaPyCI/dependency_requirements.txt", 'r') as f:
+with open("dependency_requirements.txt", 'r') as f:
     dep_required = f.read().splitlines()
 version = "0.1.0"
 
