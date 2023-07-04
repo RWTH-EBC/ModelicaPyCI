@@ -1,0 +1,94 @@
+# Variables:
+# ${ci_stage_OM_model_check},
+# ${commit_string},
+# ${library},
+# (${PR_main_branch_rule})
+# ${ci_OM_check_commit}
+# ${OM_Image}
+# ${dymola_python_test_url}
+# ${OM_python_check_model_file}
+# ${result_dir}
+# ${expire_in_time}
+# ${arg_PR}
+# ${arg_push}
+# ${packages}
+# ${dymola_python_dir}
+# dymola_python_test_dir : ${dymola_python_test_dir}
+
+stages:
+    - ${ci_stage_OM_model_check}
+
+.OM_check_rules:PR:
+    rules:
+        - if: $CI_PIPELINE_SOURCE == "external_pull_request_event"  &&  ${commit_string}
+          when: on_success
+        - if: $CI_PIPELINE_SOURCE == "push"  && (${PR_main_branch_rule})
+          when: on_success
+        - if: $CI_COMMIT_MESSAGE  =~ /${ci_OM_check_commit}/ && $CI_PIPELINE_SOURCE == "push"
+          when: always
+
+.OM_check_rules:push:
+    rules:
+        - if: $CI_PIPELINE_SOURCE == "push"  &&  ${commit_string}
+          when: on_success
+        - if:  (${PR_main_branch_rule})
+          when: never
+
+.OM_check_model_job:PR:
+    image: ${OM_Image}
+    stage: ${ci_stage_OM_model_check}
+    before_script:
+        - git clone ${dymola_python_test_url}
+        - pip install -e  ${dymola_python_test_dir}
+    script:
+        - runuser -u openmodelicausers -- python3 ${OM_python_check_model_file}  ${arg_PR}
+    artifacts:
+        when: on_failure
+        paths:
+            - ${result_dir}/
+        expire_in: ${expire_in_time}
+    allow_failure: true
+    rules:
+        - !reference [.OM_check_rules:PR , rules]
+
+
+
+.OM_check_model_job:push:
+    image: ${OM_Image}
+    stage: ${ci_stage_OM_model_check}
+    before_script:
+        - git clone ${dymola_python_test_url}
+        - pip install -e  ${dymola_python_test_dir}
+    script:
+        - python3 ${dymola_python_config_structure_file} --changed-model
+        - git diff --raw --diff-filter=AMT HEAD^1 >  ${config_ci_changed_file}
+        - runuser -u openmodelicausers -- python3 ${OM_python_check_model_file}  ${arg_push}
+    artifacts:
+        when: on_failure
+        paths:
+            - ${result_dir}/
+        expire_in: ${expire_in_time}
+    allow_failure: true
+    rules:
+        - !reference [.OM_check_rules:push, rules]
+
+
+
+%for package in packages:
+OM_Check_${library}_${package}:PR:
+    variables:
+        lib_package: ${package}
+    extends: .OM_check_model_job:PR
+
+%endfor
+
+
+%for package in packages:
+OM_Check_${library}_${package}:push:
+    variables:
+        lib_package: ${package}
+    extends: .OM_check_model_job:push
+
+%endfor
+
+

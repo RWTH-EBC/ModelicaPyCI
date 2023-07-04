@@ -1,0 +1,28 @@
+# ci_stage_deploy : ${ci_stage_deploy}
+# image_name : ${image_name}
+# result_dir : ${result_dir}
+# expire_in_time : ${expire_in_time}
+# PR_main_branch_rule : ${PR_main_branch_rule}
+
+
+stages:
+    - ${ci_stage_deploy}
+pages:
+    image: ${image_name}
+    stage: ${ci_stage_deploy}
+    before_script:
+        - apt-get update -y
+        - apt-get install zip unzip -y
+    script:
+        - mkdir -p public/$CI_COMMIT_REF_NAME
+        - cp -r ${result_dir}/* public/$CI_COMMIT_REF_NAME
+    artifacts:
+        paths:
+         - public
+        expire_in: ${expire_in_time}
+    when: always
+    allow_failure: true
+
+
+
+    allow_failure: true 
