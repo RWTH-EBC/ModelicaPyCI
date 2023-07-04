@@ -30,7 +30,7 @@ def copy_non_code_file(non_code_dir:list, not_include:list):
 
 
 setup(
-    name='Modelica-CI',
+    name='ModelicaPyCI',
     version=version,
     description='Check dymola files with python-dymola-interface',
     license="LICENSE",
