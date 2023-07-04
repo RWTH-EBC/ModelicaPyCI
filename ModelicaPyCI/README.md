@@ -1,28 +1,25 @@
-## Create your own templates
+# What CI Tests are implemented
 
-Execute the `python Dymola_python_tests/python CI_templates_python/ci_templates.py` command in the root directory of your repository. 
-The script will then ask you which tests and packages to check, adapting to your library. 
+### Check, Simulate and Regressiontest: [UnitTests](UnitTests)
+With these tests, models are validated or simulated or models will compare and evaluated with stored values by means of a unit test.
 
-Also the variables in the `Dymola_python_tests\CI_templates_python\ci_templates_configuration.py` should be checked before. 
-Important are the variables `image_name` and `variable_main_list`. These must be adapted to the current repo. The settings are then stored under `Dymola_python_tests\CI_templates_python\Setting\CI_setting.toml`. 
-If changes should be made in the settings, these can be made in the toml file. 
+### Correct HTML and Style Check: [SyntaxTest](SyntaxTest)
 
-Then the command `python Dymola_python_tests/python CI_templates_python/ci_templates.py --setting` must be executed. 
+The html code (documentation) is tested and corrected if necessary. 
+Thus the deposited HTML code is checked for correctness and corrected.
+<p>With the ModelManagement library in dymola the style of the models is checked.</p>
+
+### [IBPSA Merge](deploy/IBPSA_Merge)
+This template performs an automatic IBPSA merge into AixLib. The models of the IBPSA are copied into the AixLib, a new conversion script is created based on the IBPSA and integrated into the AixLib as well as the whitelists are created.
+### [Converter](Converter)
+lock_model: Lock Models of a specific library has been created to read-only mode.
+google_charts: script visualizes the deviation of failing models that failed the regression test
+
+### [Api Scripts](api_script)
+Create or update a pull request.
 
 
-## Setup your own CI
-After the templates are created, they should be pushed to the template repository with the following path. 
-In the repository to be tested, the following content is written to the .gitlab-ci.yml. 
-"ref" is the name of the branch where the templates are located. 
-Be sure you have access to the repository [Dymola_Python_tests](https://git.rwth-aachen.de/EBC/EBC_all/gitlab_ci/Dymola_python_tests) and the [template repository](https://git.rwth-aachen.de/EBC/EBC_all/gitlab_ci/templates).
-
-```	
-	include:
-            project: 'EBC/EBC_all/gitlab_ci/templates'
-            ref: AixLib
-            file: 'dymola-ci-tests/ci_templates/.gitlab-ci.yml' 
-```
-### Variables
+### Setting CI Variables
 #### GitLab
 | GitLab Variables | Description                                                                                                                                                                      | 
 |------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
@@ -36,6 +33,3 @@ Be sure you have access to the repository [Dymola_Python_tests](https://git.rwth
 |------------------|-----------------------------------------| 
 | GIT_TOKEN     | Token for access to the API             |
 | SLACK_BOT_TOKEN    | RSA Private key to push to a repository |
-
-For more information look [here](https://git.rwth-aachen.de/EBC/EBC_all/gitlab_ci/templates/-/wikis/Python-Dymola-CI-Templates).
-
