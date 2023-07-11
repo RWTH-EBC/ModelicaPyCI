@@ -28,7 +28,7 @@ Example
 You can use this script on the command line and point it
 to your Modelica file::
 
-$ python html_tidy_errors.py <file> [file [...]]
+$ python html_tidy.py <file> [file [...]]
 
 Note:
 -----

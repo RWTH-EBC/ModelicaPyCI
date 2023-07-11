@@ -32,7 +32,8 @@ class StructureCheck(ci_config):
                 print(f'File: {file} does not exist and will be new created.')
                 file_check.touch(exist_ok=True)
 
-    def _create_folder(self, path):
+    @staticmethod
+    def _create_folder(path):
         try:
             if not os.path.exists(path):
                 print(f'Create path: {path}')

@@ -36,8 +36,6 @@ class GitRepository(object):
         # git diff --raw --diff-filter=AMT HEAD^1 >  dymola-ci-tests/Configfiles/ci_changed_model_list.txt
         repo = git.Repo("")
         t = repo.git()
-
-        #print(t.diff("--raw --diff-filter=AMT HEAD^1"))
         diff_list = repo.head.commit.diff("HEAD~1")
         _list = []
         library = "ci_tests"

@@ -63,7 +63,7 @@ class StoreDictKey(argparse.Action):
         else:
             return None
 
-class argpaserToml(ci_template_config):
+class ArgpaserToml(ci_template_config):
 
     def __init__(self,
                  f_path: str = os.path.join("Modelica-GitLab-CI", "ci_tests"),
@@ -74,6 +74,11 @@ class argpaserToml(ci_template_config):
         pass
 
     def load_python_modules(self):
+        """
+
+        Returns:
+
+        """
         py_f = glob.glob(f'{self.f_path}/**/*.py', recursive=True)
         mo_py_files = []
         for file in py_f:
@@ -83,6 +88,11 @@ class argpaserToml(ci_template_config):
 
     def write_toml_arg_parser(self,
                               parser_dict: dict = None):
+        """
+
+        Args:
+            parser_dict ():
+        """
         if parser_dict is not None:
             with open(self.toml_file, "wb") as f:
                 tomlwriter.dump(parser_dict, f)
@@ -95,13 +105,25 @@ class argpaserToml(ci_template_config):
         """data = toml.load(self.toml_file)
         for parser in parser_dict:
             #data[file]["Parser"][parser_arg] = overwrite_arg
-            data[file]["Parser"][parser] = parser_dict[parser]"""
+            data[file]["Parser"][parser] = parser_dict[parser]
+
+        Args:
+            parser_data (): """
         f = open(self.toml_file, 'w')
         toml.dump(parser_data, f)
         f.close()
         print(f"Overwrite of toml file {self.toml_file} successful")
 
-    def read_python_modules(self, module_files):
+    @staticmethod
+    def read_python_modules(module_files):
+        """
+
+        Args:
+            module_files ():
+
+        Returns:
+
+        """
         modul_dict = {}
         for files in module_files:
             file = Path(files)
@@ -132,10 +154,13 @@ class argpaserToml(ci_template_config):
 
 
     def load_argparser_toml(self):
+        """
+
+        Returns:
+
+        """
         data = toml.load(self.toml_file)
         return data
-
-
 
 
 
@@ -174,7 +199,7 @@ class Pars:
 
 if __name__ == '__main__':
     arg = Pars(sys.argv[1:]).main()
-    to = argpaserToml(f_path=arg.file_path,
+    to = ArgpaserToml(f_path=arg.file_path,
                       toml_file=arg.parse_toml_file)
     if arg.write_parse_toml is True:
         python_files = to.load_python_modules()

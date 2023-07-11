@@ -73,21 +73,25 @@ class SlackNotification(object):
         except requests.ConnectionError as e:
             print(e)
 
-    def _local_time(self):
+    @staticmethod
+    def _local_time():
         l_time = date.today()
         return l_time
 
-    def _get_time(self, commit):
+    @staticmethod
+    def _get_time( commit):
         date = commit["date"]
         date = date[:date.find("T")]
         time = datetime.strptime(date, '%Y-%m-%d').date()
         return time
 
-    def _get_name(self, commit):
+    @staticmethod
+    def _get_name( commit):
         name = commit["name"]
         return name
 
-    def _get_name_mail(self, commit):
+    @staticmethod
+    def _get_name_mail(commit):
         email = commit["email"]
         return email
 
@@ -101,7 +105,8 @@ class SlackNotification(object):
         slack_user_list = response.json()
         return slack_user_list
 
-    def _get_slack_mail(self, slack_user_list):
+    @staticmethod
+    def _get_slack_mail(slack_user_list):
         slack_mail_id = {}
         member_array = slack_user_list["members"]
         for member in member_array:
@@ -113,7 +118,8 @@ class SlackNotification(object):
             slack_mail_id[slack_email] = id
         return slack_mail_id
 
-    def _get_slack_id(self, github_mail, slack_mail_id, name):
+    @staticmethod
+    def _get_slack_id(github_mail, slack_mail_id, name):
         for slack_email in slack_mail_id:
             if github_mail.find("@rwth-aachen.de") > -1:
                 if github_mail.replace("@", "@eonerc.").lower() == slack_email.lower():

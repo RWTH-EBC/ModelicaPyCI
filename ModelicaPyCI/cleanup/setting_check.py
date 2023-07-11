@@ -5,7 +5,8 @@ class CheckSettings(ci_config):
     def __init__(self):
         super().__init__()
 
-    def _check_variables(self, variable_main_list, github_token, github_private_key):
+    @staticmethod
+    def _check_variables(variable_main_list, github_token, github_private_key):
         for var in variable_main_list:
             if var is None:
                 print(f'Please set variable {var}.')
