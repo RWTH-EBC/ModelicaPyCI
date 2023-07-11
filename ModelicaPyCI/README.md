@@ -1,6 +1,6 @@
 # What CI Tests are implemented
 
-### Check, Simulate and Regressiontest: [UnitTests](UnitTests)
+### Check, Simulate and Regressiontest: [UnitTests](unittest)
 With these tests, models are validated or simulated or models will compare and evaluated with stored values by means of a unit test.
 
 ### Correct HTML and Style Check: [SyntaxTest](SyntaxTest)
@@ -9,9 +9,9 @@ The html code (documentation) is tested and corrected if necessary.
 Thus the deposited HTML code is checked for correctness and corrected.
 <p>With the ModelManagement library in dymola the style of the models is checked.</p>
 
-### [IBPSA Merge](deploy/IBPSA_Merge)
+### [IBPSA Merge](deploy/ibpsamerge)
 This template performs an automatic IBPSA merge into AixLib. The models of the IBPSA are copied into the AixLib, a new conversion script is created based on the IBPSA and integrated into the AixLib as well as the whitelists are created.
-### [Converter](Converter)
+### [Converter](converter)
 lock_model: Lock Models of a specific library has been created to read-only mode.
 google_charts: script visualizes the deviation of failing models that failed the regression test
 
