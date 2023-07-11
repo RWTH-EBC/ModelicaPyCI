@@ -1,6 +1,6 @@
 from ci_test_config import ci_config
 
-class Check_Settings(ci_config):
+class CheckSettings(ci_config):
 
     def __init__(self):
         super().__init__()
@@ -27,6 +27,6 @@ class Check_Settings(ci_config):
 if __name__ == '__main__':
 
 
-    sett_check = Check_Settings()
+    sett_check = CheckSettings()
     #sett_check._check_variables(variable_main_list, github_token=args.github_token, github_private_key=args.github_private_key)
 

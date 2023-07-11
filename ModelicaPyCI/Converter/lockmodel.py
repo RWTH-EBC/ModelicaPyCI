@@ -5,7 +5,7 @@ from ci_test_config import ci_config
 import sys
 
 
-class Lock_model(ci_config):
+class LockModel(ci_config):
 
     def __init__(self, library, lock_library):
         """
@@ -152,7 +152,7 @@ class Parser:
 
     def main(self):
         parser = argparse.ArgumentParser(description='Lock models.')
-        unit_test_group = parser.add_argument_group("arguments to run class Lock_model")
+        unit_test_group = parser.add_argument_group("arguments to run class LockModel")
         unit_test_group.add_argument("--library", default="AixLib", help="Library to test")
         unit_test_group.add_argument("--lock-library", default="IBPSA", help="Library to lock")
         args = parser.parse_args()
@@ -161,5 +161,5 @@ class Parser:
 
 if __name__ == '__main__':
     args = Parser(sys.argv[1:]).main()
-    lock = Lock_model(library=args.library, lock_library=args.lock_library)
+    lock = LockModel(library=args.library, lock_library=args.lock_library)
     lock.call_lock_model()

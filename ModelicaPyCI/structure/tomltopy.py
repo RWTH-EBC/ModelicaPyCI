@@ -6,7 +6,7 @@ import argparse
 import sys
 
 
-class toml_to_py():
+class TomlToPy():
 
     def __init__(self):
         pass
@@ -37,7 +37,7 @@ class toml_to_py():
         print(f"Created file {py_file}.")
 
 
-class Convert_types(object):
+class ConvertTypes(object):
 
     def __init__(self):
         pass
@@ -80,7 +80,7 @@ class Pars:
 if __name__ == '__main__':
     arg = Pars(sys.argv[1:]).main()
     if arg.create_ci_test_config is True:
-        to = toml_to_py()
+        to = TomlToPy()
         # todo: Anpassen der Pfade
         config = to.load_toml(toml_file=Path(Path.cwd(), "Modelica-CI" , "config", "toml_files", "ci_test_config.toml"))
         to.write_python_ci_test_config(config_list=config,
@@ -88,7 +88,7 @@ if __name__ == '__main__':
                                                               "ci_test_config.txt"),
                                        py_file=Path(Path.cwd(), "Modelica-CI", "ci_test_config.py"))
     if arg.create_ci_temp_config is True:
-        to = toml_to_py()
+        to = TomlToPy()
         config = to.load_toml(toml_file=Path(Path.cwd(), "Modelica-CI", "gitlab_ci_templates", "ci_config", "toml_files",
                                              "ci_template_config.toml"))
 

@@ -10,7 +10,7 @@ from ci_tests.structure.sort_mo_model import modelica_model
 from ci_tests.py_dym_interface.PythonDymolaInterface import PythonDymolaInterface
 
 
-class Buildingspy_Regression_Check(ci_config):
+class BuildingspyRegressionCheck(ci_config):
 
     def __init__(self, buildingspy_regression, pack, n_pro, tool, batch, show_gui, path, library):
         """
@@ -107,7 +107,7 @@ class Buildingspy_Regression_Check(ci_config):
                 return 1
 
 
-class Ref_model(ci_config):
+class ReferenceModel(ci_config):
 
     def __init__(self, library):
         """
@@ -325,7 +325,7 @@ class Ref_model(ci_config):
             return mos_list
 
 
-class Buildingspy_Validate_test(ci_config):
+class BuildingspyValidateTest(ci_config):
 
     def __init__(self, validate, path):
         """
@@ -450,16 +450,16 @@ if __name__ == '__main__':
     dymola, dymola_exception = PythonDymolaInterface.load_dymola_python_interface(dymola_version=args.dymola_version)
     for package in args.packages:
         if args.validate_html_only:
-            var = Buildingspy_Validate_test(validate=validate,
-                                            path=args.path).validate_html()
+            var = BuildingspyValidateTest(validate=validate,
+                                          path=args.path).validate_html()
             exit(var)
         elif args.validate_experiment_setup:  # Match the mos file parameters with the mo files only, and then exit
-            var = Buildingspy_Validate_test(validate=validate,
-                                            path=args.path).validate_experiment_setup()
+            var = BuildingspyValidateTest(validate=validate,
+                                          path=args.path).validate_experiment_setup()
             exit(var)
         elif args.coverage_only:
-            var = Buildingspy_Validate_test(validate=validate,
-                                            path=args.path).run_coverage_only(buildingspy_regression=regression,
+            var = BuildingspyValidateTest(validate=validate,
+                                          path=args.path).run_coverage_only(buildingspy_regression=regression,
                                                                               batch=args.batch,
                                                                               tool=args.tool,
                                                                               package=package)
@@ -471,20 +471,20 @@ if __name__ == '__main__':
                                        add_libraries_loc=None)
             conf = ci_config()
             check = data_structure()
-            ref_model = Ref_model(library=args.library)
+            ref_model = ReferenceModel(library=args.library)
             package_list = []
             if args.ref_list:
                 ref_model.write_regression_list()
                 exit(0)
             #dym_interface.dym_check_lic()
-            ref_check = Buildingspy_Regression_Check(buildingspy_regression=regression,
-                                                     pack=args.packages,
-                                                     n_pro=args.number_of_processors,
-                                                     tool=args.tool,
-                                                     batch=args.batch,
-                                                     show_gui=args.show_gui,
-                                                     path=args.path,
-                                                     library=args.library)
+            ref_check = BuildingspyRegressionCheck(buildingspy_regression=regression,
+                                                   pack=args.packages,
+                                                   n_pro=args.number_of_processors,
+                                                   tool=args.tool,
+                                                   batch=args.batch,
+                                                   show_gui=args.show_gui,
+                                                   path=args.path,
+                                                   library=args.library)
             #todo: Liste?
 
             created_ref_list = list()

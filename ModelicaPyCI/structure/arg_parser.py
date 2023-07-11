@@ -12,7 +12,7 @@ import inspect
 import toml
 
 
-class CI_templates_structure(ci_config):
+class CITemplatesStructure(ci_config):
 
     def __init__(self):
         super().__init__()
@@ -35,10 +35,10 @@ class StoreDictKeyPair(argparse.Action):
         setattr(namespace, self.dest, my_dict)
 
 
-class StoreDictKeyPair_list(argparse.Action):
+class StoreDictKeyPairList(argparse.Action):
     def __init__(self, option_strings, dest, nargs=None, **kwargs):
         self._nargs = nargs
-        super(StoreDictKeyPair_list, self).__init__(option_strings, dest, nargs=nargs, **kwargs)
+        super(StoreDictKeyPairList, self).__init__(option_strings, dest, nargs=nargs, **kwargs)
 
     def __call__(self, pars, namespace, values, option_string=None):
         my_dict = {}
@@ -63,7 +63,7 @@ class StoreDictKey(argparse.Action):
         else:
             return None
 
-class argpaser_toml(ci_template_config):
+class argpaserToml(ci_template_config):
 
     def __init__(self,
                  f_path: str = os.path.join("Modelica-GitLab-CI", "ci_tests"),
@@ -174,8 +174,8 @@ class Pars:
 
 if __name__ == '__main__':
     arg = Pars(sys.argv[1:]).main()
-    to = argpaser_toml(f_path=arg.file_path,
-                       toml_file=arg.parse_toml_file)
+    to = argpaserToml(f_path=arg.file_path,
+                      toml_file=arg.parse_toml_file)
     if arg.write_parse_toml is True:
         python_files = to.load_python_modules()
         parser_dict = to.read_python_modules(module_files=python_files)

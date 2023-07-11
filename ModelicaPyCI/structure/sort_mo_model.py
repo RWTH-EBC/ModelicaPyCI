@@ -5,7 +5,7 @@ from pathlib import Path
 from ci_tests.structure.config_structure import data_structure
 
 
-class modelica_model(ci_config):
+class ModelicaModel(ci_config):
 
     def __init__(self, library: str = "AixLib", package: str = "Airflow"):
         self.library = library

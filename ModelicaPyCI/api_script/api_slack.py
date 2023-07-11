@@ -7,7 +7,7 @@ from datetime import date
 from datetime import datetime
 import sys
 
-class Slack_Notification(object):
+class SlackNotification(object):
 
     def __init__(self, github_token, slack_token, github_repo, base_branch):
         """
@@ -346,7 +346,7 @@ class Parser:
 
 if __name__ == '__main__':
     args = Parser(sys.argv[1:]).main()
-    slack = Slack_Notification(github_token=args.github_token, slack_token=args.slack_token, github_repo=args.github_repository, base_branch=args.base_branch)
+    slack = SlackNotification(github_token=args.github_token, slack_token=args.slack_token, github_repo=args.github_repository, base_branch=args.base_branch)
     slack_user_list = slack._get_user_list()  # Get a list with all slack users
     slack_mail_id = slack._get_slack_mail(slack_user_list)  # Write dictionary with slack_mail: Slack_id
     local_time = slack._local_time()  # get the local time

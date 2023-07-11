@@ -6,7 +6,7 @@ from natsort import natsorted
 import sys
 
 
-class Library_Merge(object):
+class LibraryMerge(object):
 
     def __init__(self, library_dir, merge_library_dir, mos_path, library, merge_library):
         """
@@ -232,10 +232,10 @@ class Parser:
 
 if __name__ == '__main__':
     args = Parser(sys.argv[1:]).main()
-    merge = Library_Merge(library_dir=args.library_dir,
-                          merge_library_dir=args.merge_library_dir,
-                          mos_path=args.mos_path,
-                          library=args.library,
-                          merge_library=args.merge_library)
+    merge = LibraryMerge(library_dir=args.library_dir,
+                         merge_library_dir=args.merge_library_dir,
+                         mos_path=args.mos_path,
+                         library=args.library,
+                         merge_library=args.merge_library)
     merge.merge_workflow()
     merge.correct_user_guide()

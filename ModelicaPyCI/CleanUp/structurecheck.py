@@ -4,7 +4,11 @@ import argparse
 from ci_test_config import ci_config
 import sys
 
-class Structure_check(ci_config):
+class StructureCheck(ci_config):
+
+
+
+
     def __init__(self):
         super().__init__()
 
@@ -53,7 +57,7 @@ class Parser:
 
 if __name__ == '__main__':
     args = Parser(sys.argv[1:]).main()
-    check = Structure_check()
+    check = StructureCheck()
     if args.create_path is True:
         if args.config_dir is True:
             conf._create_folder(path=conf.config_dir)

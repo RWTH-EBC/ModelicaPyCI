@@ -8,7 +8,7 @@ from ci_tests.structure.config_structure import data_structure
 import sys
 from pathlib import Path
 
-class Plot_Charts(ci_config):
+class PlotCharts(ci_config):
 
     def __init__(self,  package, library):
         """
@@ -571,8 +571,8 @@ if __name__ == '__main__':
     check.create_path(conf.chart_dir)
     check.check_path_setting(conf.chart_dir, conf.temp_chart_dir)
     check.check_file_setting(conf.temp_chart_file, conf.temp_index_file,  conf.temp_layout_file)
-    charts = Plot_Charts(package=args.packages,
-                         library=args.library)
+    charts = PlotCharts(package=args.packages,
+                        library=args.library)
     if args.line_html_flag is True:
         charts.check_setting()
         charts.delete_folder()

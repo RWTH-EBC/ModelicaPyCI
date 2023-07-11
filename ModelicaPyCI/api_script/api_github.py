@@ -48,7 +48,7 @@ class GitRepository(object):
                 _list.append(file)
 
 
-class PULL_REQUEST_GITHUB(object):
+class PullRequestGithub(object):
 
     def __init__(self, github_repo, working_branch, github_token):
         """
@@ -222,7 +222,7 @@ class Parser:
 if __name__ == '__main__':
     args = Parser(sys.argv[1:]).main()
     GitRepository.git_diff()
-    """pull_request = PULL_REQUEST_GITHUB(github_repo=args.github_repository,
+    """pull_request = PullRequestGithub(github_repo=args.github_repository,
                                        working_branch=args.working_branch,
                                        github_token=args.github_token)
     message = """""

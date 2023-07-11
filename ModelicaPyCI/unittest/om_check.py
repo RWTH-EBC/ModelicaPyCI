@@ -15,7 +15,7 @@ import toml
 import os
 import platform
 
-class Check_OpenModelica(ci_config):
+class CheckOpenModelica(ci_config):
 
     def __init__(self,
                  library: str,
@@ -484,7 +484,7 @@ class Parser:
         # [Library - settings]
         """check_test_group.add_argument("--library", dest="libraries", action=StoreDictKeyPair, nargs="*",
                                       metavar="Library1=Path_Lib1 Library2=Path_Lib2")
-        check_test_group.add_argument("--package", dest="packages", action=StoreDictKeyPair_list, nargs="*",
+        check_test_group.add_argument("--package", dest="packages", action=StoreDictKeyPairList, nargs="*",
                                       metavar="Library1=Package1,Package2 Library2=Package3,Package4")"""
         check_test_group.add_argument("--library", default="AixLib", help="Library to test (e.g. AixLib")
         check_test_group.add_argument("--packages", default=["Airflow"], nargs="+", help="Library to test (e.g. Airflow.Multizone)")
@@ -540,10 +540,10 @@ if __name__ == '__main__':
             add_lib_path = Path(additional_libraries_local[lib], lib, "package.mo")
             check.check_file_setting(add_lib_path)
 
-    OM = Check_OpenModelica(library=args.library,
-                            root_library=args.root_library,
-                            add_libraries_loc=additional_libraries_local,
-                            inst_libraries=install_libraries)
+    OM = CheckOpenModelica(library=args.library,
+                           root_library=args.root_library,
+                           add_libraries_loc=additional_libraries_local,
+                           inst_libraries=install_libraries)
     OM()
     model = modelica_model()
 

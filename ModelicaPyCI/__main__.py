@@ -29,7 +29,7 @@ def commandline_interface():
     """user interface"""
 
     args = docopt.docopt(__doc__, version=VERSION)
-
+    print(args)
     # arguments
     project = args.get('project')
     load = args.get('load')

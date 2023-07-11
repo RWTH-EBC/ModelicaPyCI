@@ -46,7 +46,7 @@ In case of trouble just put the dll in your working dir.
 """
 
 
-class HTML_Tidy(ci_config):
+class HtmlTidy(ci_config):
     """Class to Check Packages and run CheckModel Tests"""
 
     def __init__(self, package: str,
@@ -642,7 +642,7 @@ class HTML_Tidy(ci_config):
         return library_list
 
 
-class htmlWhitelist(ci_config):
+class HtmlWhitelist(ci_config):
 
     def __init__(self):
         """
@@ -711,18 +711,18 @@ if __name__ == '__main__':
                                    path=args.root_wh_library,
                                    simulate_flag=False,
                                    extended_ex_flag=False)
-        htmlWhitelist().write_whitelist(model_list=model_list)
+        HtmlWhitelist().write_whitelist(model_list=model_list)
         data_structure.prepare_data(source_target_dict={conf.wh_html_file: conf.result_whitelist_dir})
         exit(0)
     else:
-        html_tidy_check = HTML_Tidy(package=args.packages,
-                                    correct_overwrite=args.correct_overwrite_flag,
-                                    correct_backup=args.correct_backup_flag,
-                                    log=args.log_flag,
-                                    correct_view=args.correct_view_flag,
-                                    library=args.library,
-                                    wh_library=args.wh_library,
-                                    filter_whitelist=args.filter_whitelist_flag)
+        html_tidy_check = HtmlTidy(package=args.packages,
+                                   correct_overwrite=args.correct_overwrite_flag,
+                                   correct_backup=args.correct_backup_flag,
+                                   log=args.log_flag,
+                                   correct_view=args.correct_view_flag,
+                                   library=args.library,
+                                   wh_library=args.wh_library,
+                                   filter_whitelist=args.filter_whitelist_flag)
 
         html_model = mo.get_option_model(library=args.library,
                                          package=args.library,

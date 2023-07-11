@@ -8,7 +8,7 @@ from pathlib import Path
 import argparse
 import distutils.dir_util
 
-class data_structure(ci_config):
+class DataStructure(ci_config):
 
     def __init__(self):
         """
@@ -262,19 +262,19 @@ if __name__ == '__main__':
     folder_list = []
     file_list = []
     if args.changed_model is True:
-        data_structure().create_path(Path(conf.config_ci_dir))
-        data_structure().create_files(Path(conf.config_ci_changed_file), Path(conf.config_ci_exit_file))
+        DataStructure().create_path(Path(conf.config_ci_dir))
+        DataStructure().create_files(Path(conf.config_ci_changed_file), Path(conf.config_ci_exit_file))
         pass
     if args.ci_interactive is True:
-        data_structure().create_path(Path(conf.config_ci_dir))
-        data_structure().create_files(Path(conf.config_ci_eof_file), Path(conf.config_ci_changed_file))
+        DataStructure().create_path(Path(conf.config_ci_dir))
+        DataStructure().create_files(Path(conf.config_ci_eof_file), Path(conf.config_ci_changed_file))
         pass
     if args.create_ref is True:
-        data_structure().create_path(Path(conf.config_ci_dir))
-        data_structure().create_files(Path(conf.config_ci_eof_file), Path(conf.config_ci_exit_file), Path(conf.config_ci_new_create_ref_file))
+        DataStructure().create_path(Path(conf.config_ci_dir))
+        DataStructure().create_files(Path(conf.config_ci_eof_file), Path(conf.config_ci_exit_file), Path(conf.config_ci_new_create_ref_file))
         pass
     if args.create_whitelist is True:
-        data_structure().create_path(Path(conf.dymola_ci_test_dir), Path(conf.wh_ci_dir))
-        data_structure().create_files(Path(conf.wh_model_file), Path(conf.wh_simulate_file), Path(conf.wh_html_file), Path(conf.wh_ref_file))
+        DataStructure().create_path(Path(conf.dymola_ci_test_dir), Path(conf.wh_ci_dir))
+        DataStructure().create_files(Path(conf.wh_model_file), Path(conf.wh_simulate_file), Path(conf.wh_html_file), Path(conf.wh_ref_file))
         pass
 
