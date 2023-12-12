@@ -4,45 +4,60 @@ import argparse
 from ci_test_config import ci_config
 import sys
 
-class StructureCheck(ci_config):
+from ModelicaPyCI.config import CI_CONFIG
 
 
+def return_file_list():
+    files_list = []
+    file_dic = (vars(ci_config()))
+    for file in file_dic:
+        if file.find("_file") > -1:
+            files_list.append(file_dic[file])
+    return files_list
 
 
-    def __init__(self):
-        super().__init__()
+def return_file_dir():
+    dir_list = []
+    dir_dic = (vars(ci_config()))
+    for dirs in dir_dic:
+        if dirs.find("_dir") > -1:
+            dir_list.append(dir_dic[dirs])
+    return dir_list
 
-    def check_ci_folder(self):
-        dir_list = self.return_file_dir()
-        for directionary in dir_list:
-            dir_check = Path(directionary)
-            if dir_check.is_dir():
-                print(f'Folder: {dir_check} exist.')
-            else:
-                print(f'Folder: {dir_check} does not exist and will be new created.')
-                os.makedirs(directionary)
 
-    def check_ci_files(self):
-        file_list = self.return_file_list()
-        for file in file_list:
-            file_check = Path(file)
-            if file_check.is_file():
-                print(f'File: {file} exist.')
-            else:
-                print(f'File: {file} does not exist and will be new created.')
-                file_check.touch(exist_ok=True)
+def check_ci_folder():
+    dir_list = return_file_dir()
+    for directionary in dir_list:
+        dir_check = Path(directionary)
+        if dir_check.is_dir():
+            print(f'Folder: {dir_check} exist.')
+        else:
+            print(f'Folder: {dir_check} does not exist and will be new created.')
+            os.makedirs(directionary)
 
-    @staticmethod
-    def _create_folder(path):
-        try:
-            if not os.path.exists(path):
-                print(f'Create path: {path}')
-                os.makedirs(path)
-            else:
-                print(f'Path "{path}" exist.')
-        except FileExistsError:
-            print(f'Find no folder')
-            pass
+
+def check_ci_files():
+    file_list = return_file_list()
+    for file in file_list:
+        file_check = Path(file)
+        if file_check.is_file():
+            print(f'File: {file} exist.')
+        else:
+            print(f'File: {file} does not exist and will be new created.')
+            file_check.touch(exist_ok=True)
+
+
+def _create_folder(path):
+    try:
+        if not os.path.exists(path):
+            print(f'Create path: {path}')
+            os.makedirs(path)
+        else:
+            print(f'Path "{path}" exist.')
+    except FileExistsError:
+        print(f'Find no folder')
+        pass
+
 
 class Parser:
     def __init__(self, args):
@@ -58,9 +73,8 @@ class Parser:
 
 if __name__ == '__main__':
     args = Parser(sys.argv[1:]).main()
-    check = StructureCheck()
     if args.create_path is True:
         if args.config_dir is True:
-            conf._create_folder(path=conf.config_dir)
-    check.check_ci_folder()
-    check.check_ci_files()
+            _create_folder(path=CI_CONFIG.results.config_dir)
+    check_ci_folder()
+    check_ci_files()
