@@ -75,24 +75,33 @@ temp_index_file = 'Modelica-CI/templates/google_templates/index.txt'
 temp_layout_file = 'Modelica-CI/templates/google_templates/layout_index.txt'
 
 [interact_ci_list]
-ci_interact_dir = 'dymola-ci-tests/interact_CI'
-ci_interact_show_ref_file = 'dymola-ci-tests/interact_CI/show_ref.txt'
-ci_interact_update_ref_file = 'dymola-ci-tests/interact_CI/update_ref.txt'
-
-[artifcats]
-artifacts_dir = 'dymola-ci-tests/templates/artifacts'
-library_ref_results_dir = 'Resources/ReferenceResults/Dymola'
-library_resource_dir = 'Resources/Scripts/Dymola'
 
 [Dymola_Python_Tests]
 dymola_python_test_url = '--single-branch --branch 03_openModelica https://github.com/RWTH-EBC/Modelica-CI.git'
 """
+
+
+class ArtifactsConfig(BaseModel):
+    dir: Path = 'dymola-ci-tests/templates/artifacts'
+    library_ref_results_dir: Path = 'Resources/ReferenceResults/Dymola'
+    library_resource_dir: Path = 'Resources/Scripts/Dymola'
+
+
+class InteractConfig(BaseModel):
+    dir: Path = 'dymola-ci-tests/interact_CI'
+    show_ref_file: Path = 'dymola-ci-tests/interact_CI/show_ref.txt'
+    update_ref_file: Path = 'dymola-ci-tests/interact_CI/update_ref.txt'
+
 
 class CIConfig(BaseModel):
     result: ResultConfig = ResultConfig()
     color: ColorConfig = ColorConfig()
     config_ci: FilesConfig = FilesConfig()
     whitelist: WhitelistConfig = WhitelistConfig()
+    artifacts: ArtifactsConfig = ArtifactsConfig()
+    interact: InteractConfig = InteractConfig()
+
+
 
 
 def load_toml_config(path: Union[Path, str]):
