@@ -1,7 +1,7 @@
 # What is it?
 Automatic merge of the IBPSA library into AixLib. Compare the latest conversion script of AixLib with the 
 latest conversion script of IBPSA.
-## library_merge.py
+## ibpsa_merge.py
 #### Parser Arguments
 | Parser Arguments  | Description      | 
 |-------------------| ------------------------- | 
@@ -12,4 +12,4 @@ latest conversion script of IBPSA.
 |--merge-library|Library to be merged | 
 
 #### Example: Execution on gitlab runner (linux)
-    python Dymola_python_tests/CITests/deploy/IBPSA_Merge/library_merge.py 
+    python Dymola_python_tests/CITests/deploy/IBPSA_Merge/ibpsa_merge.py 

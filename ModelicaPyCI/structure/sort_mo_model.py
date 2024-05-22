@@ -19,8 +19,8 @@ class ModelicaModel(ci_config):
                          dymola_exception=None,
                          changed_flag: bool = False,
                          simulate_flag: bool = False,
-                         filter_wh_flag: bool = False,
-                         wh_library: str = "IBPSA",
+                         filter_whitelist_flag: bool = False,
+                         whitelist_library: str = "IBPSA",
                          extended_ex_flag: bool = False,
                          dymola_version: int = 2022,
                          path_dir: Path = Path.cwd(),
@@ -35,8 +35,8 @@ class ModelicaModel(ci_config):
             dymola_exception ():
             changed_flag ():
             simulate_flag ():
-            filter_wh_flag ():
-            wh_library ():
+            filter_whitelist_flag ():
+            whitelist_library ():
             extended_ex_flag ():
             dymola_version ():
             path_dir ():
@@ -45,7 +45,7 @@ class ModelicaModel(ci_config):
         Returns:
         """
         check = data_structure()
-        check.check_arguments_settings(package, library, changed_flag, simulate_flag, filter_wh_flag, extended_ex_flag)
+        check.check_arguments_settings(package, library, changed_flag, simulate_flag, filter_whitelist_flag, extended_ex_flag)
         if root_library is None:
             root_library = Path(path_dir, library, "package.mo")
         check.check_file_setting(root_library)
@@ -74,17 +74,17 @@ class ModelicaModel(ci_config):
                                                         dymola_version=dymola_version)
                 model_list.extend(simulate_list)
                 model_list = list(set(model_list))
-        elif filter_wh_flag is True:
+        elif filter_whitelist_flag is True:
             if simulate_flag is True:
-                ci_wh_file = self.wh_simulate_file
-                file_list = self.wh_simulate_file
+                ci_whitelist_file = self.whitelist_simulate_file
+                file_list = self.whitelist_simulate_file
             else:
-                ci_wh_file = self.wh_model_file
-                file_list = self.wh_model_file
-            check.check_path_setting(self.wh_ci_dir, create_flag=True)
+                ci_whitelist_file = self.whitelist_model_file
+                file_list = self.whitelist_model_file
+            check.check_path_setting(self.whitelist_ci_dir, create_flag=True)
             check.check_file_setting(file_list, create_flag=True)
-            wh_list_models = self.get_wh_models(wh_file=ci_wh_file,
-                                                wh_library=wh_library,
+            whitelist_list_models = self.get_whitelist_models(whitelist_file=ci_whitelist_file,
+                                                whitelist_library=whitelist_library,
                                                 library=library,
                                                 single_package=package)
             result = self.get_models(path=root_package,
@@ -100,8 +100,8 @@ class ModelicaModel(ci_config):
                                                         dymola_version=dymola_version)
                 model_list.extend(simulate_list)
                 model_list = list(set(model_list))
-            model_list = self.filter_wh_models(models=model_list,
-                                               wh_list=wh_list_models)
+            model_list = self.filter_whitelist_models(models=model_list,
+                                               whitelist_list=whitelist_list_models)
         else:
             result = self.get_models(path=root_package,
                                      library=library,
@@ -220,51 +220,51 @@ class ModelicaModel(ci_config):
         return _list
 
     @staticmethod
-    def get_wh_models(wh_file: str,
-                      wh_library: str,
+    def get_whitelist_models(whitelist_file: str,
+                      whitelist_library: str,
                       library: str,
                       single_package: str):
         """
         Returns: return models that are on the whitelist
         """
-        wh_list_models = list()
+        whitelist_list_models = list()
         try:
-            wh_file = open(wh_file, "r")
-            lines = wh_file.readlines()
+            whitelist_file = open(whitelist_file, "r")
+            lines = whitelist_file.readlines()
             for line in lines:
                 model = line.lstrip()
                 model = model.strip().replace("\n", "")
-                if model.find(f'{wh_library}.{single_package}') > -1:
-                    print(f'Dont test {wh_library} model: {model}. Model is on the whitelist.')
-                    wh_list_models.append(model.replace(wh_library, library))
+                if model.find(f'{whitelist_library}.{single_package}') > -1:
+                    print(f'Dont test {whitelist_library} model: {model}. Model is on the whitelist.')
+                    whitelist_list_models.append(model.replace(whitelist_library, library))
                 elif model.find(f'{library}.{single_package}') > -1:
                     print(f'Dont test {library} model: {model}. Model is on the whitelist.')
-                    wh_list_models.append(model)
-            wh_file.close()
-            return wh_list_models
+                    whitelist_list_models.append(model)
+            whitelist_file.close()
+            return whitelist_list_models
         except IOError:
-            print(f'Error: File {wh_file} does not exist.')
-            return wh_list_models
+            print(f'Error: File {whitelist_file} does not exist.')
+            return whitelist_list_models
 
     @staticmethod
-    def filter_wh_models(models, wh_list):
+    def filter_whitelist_models(models, whitelist_list):
         """
         Args:
             models (): models from library.
-            wh_list (): model from whitelist.
+            whitelist_list (): model from whitelist.
         Returns:
             return models from library who are not on the whitelist.
         """
-        wh_list_mo = list()
+        whitelist_list_mo = list()
         if len(models) == 0:
             exit(0)
         else:
             for element in models:
-                for subelement in wh_list:
+                for subelement in whitelist_list:
                     if element == subelement:
-                        wh_list_mo.append(element)
-            wh_list_mo = list(set(wh_list_mo))
-            for example in wh_list_mo:
+                        whitelist_list_mo.append(element)
+            whitelist_list_mo = list(set(whitelist_list_mo))
+            for example in whitelist_list_mo:
                 models.remove(example)
             return models
 

@@ -43,14 +43,14 @@ class ConvertTypes(object):
         pass
 
     @staticmethod
-    def convert_list_to_dict_toml(convert_list: list = None, wh_library: str = None):
+    def convert_list_to_dict_toml(convert_list: list = None, whitelist_library: str = None):
         _dict = {}
         if convert_list is not None:
             for conv in convert_list:
                 for lib in conv:
                     lib_dict = lib.split(":")
-                    if lib_dict[0].find("wh_library") > -1 and wh_library is not None:
-                        lib_dict[0] = lib_dict[0].replace("wh_library", wh_library)
+                    if lib_dict[0].find("whitelist_library") > -1 and whitelist_library is not None:
+                        lib_dict[0] = lib_dict[0].replace("whitelist_library", whitelist_library)
                     lib_dict[1] = lib_dict[1].replace("os.getcwd()", os.getcwd())
                     full_path = lib_dict[1].split(",")
                     full_path = Path(full_path[0].strip(), full_path[1].strip())

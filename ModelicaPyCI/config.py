@@ -57,28 +57,18 @@ class FilesConfig(BaseModel):
 
 class WhitelistConfig(BaseModel):
     ci_dir: Path = "dymola-ci-tests/ci_whitelist"
-    model_file: Path = 'dymola-ci-tests/ci_whitelist/ci_check_whitelist.txt'
+    check_file: Path = 'dymola-ci-tests/ci_whitelist/ci_check_whitelist.txt'
     simulate_file: Path = 'dymola-ci-tests/ci_whitelist/ci_simulate_whitelist.txt'
-    html_file: Path = 'dymola-ci-tests/ci_whitelist/ci_html_whitelist.txt'
+    html_file: Path = 'dymola-ci-tests/ci_whitelist/rci_html_whitelist.txt'
     ref_file: Path = 'dymola-ci-tests/ci_whitelist/ci_reference_check_whitelist.txt'
 
-"""
-[CI_dir]
-dymola_ci_test_dir = 'dymola-ci-tests'
-dymola_python_test_dir = 'Modelica-CI'
 
-[plot]
-chart_dir = 'dymola-ci-tests/charts'
-temp_chart_dir = 'Modelica-CI/templates/google_templates'
-temp_chart_file = 'Modelica-CI/templates/google_templates/google_chart.txt'
-temp_index_file = 'Modelica-CI/templates/google_templates/index.txt'
-temp_layout_file = 'Modelica-CI/templates/google_templates/layout_index.txt'
-
-[interact_ci_list]
-
-[Dymola_Python_Tests]
-dymola_python_test_url = '--single-branch --branch 03_openModelica https://github.com/RWTH-EBC/Modelica-CI.git'
-"""
+class PlotConfig(BaseModel):
+    chart_dir: str = 'dymola-ci-tests/charts'
+    templates_chart_dir: str = 'Modelica-CI/templates/google_templates'
+    templates_chart_file: str = 'Modelica-CI/templates/google_templates/google_chart.txt'
+    templates_index_file: str = 'Modelica-CI/templates/google_templates/index.txt'
+    templates_layout_file: str = 'Modelica-CI/templates/google_templates/layout_index.txt'
 
 
 class ArtifactsConfig(BaseModel):
@@ -94,14 +84,16 @@ class InteractConfig(BaseModel):
 
 
 class CIConfig(BaseModel):
+    dymola_ci_test_dir: str = 'dymola-ci-tests'
+    dymola_python_test_dir: str = 'Modelica-CI'
+    dymola_python_test_url: str = '--single-branch --branch 03_openModelica https://github.com/RWTH-EBC/Modelica-CI.git'
+
     result: ResultConfig = ResultConfig()
     color: ColorConfig = ColorConfig()
     config_ci: FilesConfig = FilesConfig()
     whitelist: WhitelistConfig = WhitelistConfig()
     artifacts: ArtifactsConfig = ArtifactsConfig()
     interact: InteractConfig = InteractConfig()
-
-
 
 
 def load_toml_config(path: Union[Path, str]):

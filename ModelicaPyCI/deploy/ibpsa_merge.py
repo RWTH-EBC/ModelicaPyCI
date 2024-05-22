@@ -21,8 +21,8 @@ def merge_workflow(
     )
     result = _compare_conversion(library=library,
                                  merge_library=merge_library,
-                                 l_mlibrary_conversion=last_mlibrary_conversion,
-                                 l_library_conversion=last_library_conversion)
+                                 last_mlibrary_conversion=last_mlibrary_conversion,
+                                 last_library_conversion=last_library_conversion)
     if result is True:
         print(
             f'The latest {library} conversion script '
@@ -30,18 +30,18 @@ def merge_workflow(
             f'{merge_library} conversion script {last_mlibrary_conversion}'
         )
     else:
-        file_new_conv, old_to_numb, new_to_numb = _create_convert(
+        file_new_conversion_script, old_to_numb, new_to_numb = _create_convert(
             library=library,
             merge_library=merge_library,
             mos_path=mos_path,
-            l_mlibrary_conversion=last_mlibrary_conversion,
-            l_library_conversion=last_library_conversion
+            last_mlibrary_conversion=last_mlibrary_conversion,
+            last_library_conversion=last_library_conversion
         )
-        new_conversion_script = shutil.copy(file_new_conv, library_dir)
+        new_conversion_script = shutil.copy(file_new_conversion_script, library_dir)
         shutil.rmtree(mos_path)
         _add_conversion_script_to_package_mo(
             library=library,
-            l_library_conv=last_library_conversion,
+            last_library_conversion=last_library_conversion,
             new_conversion_script=new_conversion_script,
             old_to_numb=old_to_numb,
             new_to_numb=new_to_numb
@@ -61,11 +61,11 @@ def _read_last_library_conversion(library_dir: Path, ):
     if len(filelist) == 0:
         print("Cant find a Conversion Script in IBPSA Repo")
         exit(0)
-    l_library_conversion = natsorted(filelist)[(-1)]
-    l_library_conversion = l_library_conversion.replace("/", os.sep)
-    l_library_conversion = l_library_conversion.replace("\\", os.sep)
-    print(f'Latest Conversion script: {l_library_conversion}')
-    return l_library_conversion
+    last_library_conversion = natsorted(filelist)[(-1)]
+    last_library_conversion = last_library_conversion.replace("/", os.sep)
+    last_library_conversion = last_library_conversion.replace("\\", os.sep)
+    print(f'Latest Conversion script: {last_library_conversion}')
+    return last_library_conversion
 
 
 def _copy_merge_mos_script(
@@ -84,28 +84,28 @@ def _copy_merge_mos_script(
     if len(mos_file_list) == 0:
         print(f'Cant find a Conversion Script in IBPSA Repo')
         exit(0)
-    l_ibpsa_conv = natsorted(mos_file_list)[(-1)]
-    l_ibpsa_conv = l_ibpsa_conv.replace("/", os.sep)
-    l_ibpsa_conv = l_ibpsa_conv.replace("\\", os.sep)
-    print(f'Latest IBPSA Conversion script: {l_ibpsa_conv}')
-    shutil.copy(l_ibpsa_conv, mos_path)
-    return l_ibpsa_conv
+    last_ibpsa_conv = natsorted(mos_file_list)[(-1)]
+    last_ibpsa_conv = last_ibpsa_conv.replace("/", os.sep)
+    last_ibpsa_conv = last_ibpsa_conv.replace("\\", os.sep)
+    print(f'Latest IBPSA Conversion script: {last_ibpsa_conv}')
+    shutil.copy(last_ibpsa_conv, mos_path)
+    return last_ibpsa_conv
 
 
 def _create_convert(
         library: str,
         merge_library: str,
         mos_path: Path,
-        l_mlibrary_conversion: str,
-        l_library_conversion: str
+        last_mlibrary_conversion: str,
+        last_library_conversion: str
 ):
     """
     Change the paths in the script from e.g.
     IBPSA.Package.model -> AixLib.Package.model
 
     Args:
-        l_mlibrary_conversion (str): latest merge library conversion script
-        l_library_conversion (str): Name of latest library conversion script
+        last_mlibrary_conversion (str): latest merge library conversion script
+        last_library_conversion (str): Name of latest library conversion script
 
     Returns:
         file_new_conv (str): file with new conversion script
@@ -114,7 +114,7 @@ def _create_convert(
     """
     # Name is usually: ConvertLIBRARYNAME_from_X.X.X_to_Y.Y.Y.mos
     start_name = f"Convert{library}_from_"
-    conversion_number = l_library_conversion.replace(start_name, "").replace(".mos", "")
+    conversion_number = last_library_conversion.replace(start_name, "").replace(".mos", "")
     # Now: X.X.X_to_Y.Y.Y
     print(f'Latest conversion number: {conversion_number}')
     old_to_numb = conversion_number.split("_to_")[-1]
@@ -125,9 +125,9 @@ def _create_convert(
     # Write new conversion number
     new_conv_number = old_to_numb + "_to_" + new_to_numb
     file_new_conv = mos_path.joinpath(f"Convert{library}_from_{new_conv_number}.mos")
-    with open(l_mlibrary_conversion, "r") as file:
+    with open(last_mlibrary_conversion, "r") as file:
         lines = file.readlines()
-    with open(l_library_conversion, "w+") as library_file:
+    with open(last_library_conversion, "w+") as library_file:
         for line in lines:
             if line.find(f'Conversion script for {merge_library} library') > -1:
                 library_file.write(line)
@@ -139,19 +139,19 @@ def _create_convert(
     return file_new_conv, old_to_numb, new_to_numb
 
 
-def _compare_conversion(library: str, merge_library: str, l_mlibrary_conversion, l_library_conversion):
+def _compare_conversion(library: str, merge_library: str, last_mlibrary_conversion, last_library_conversion):
     """
     Compare the latest library conversion script with the latest merge library conversion script
     Args:
-        l_mlibrary_conversion (): latest merge library conversion script
-        l_library_conversion (): latest library conversion script
+        last_mlibrary_conversion (): latest merge library conversion script
+        last_library_conversion (): latest library conversion script
     Returns:
         False (): Boolean argument: True - Conversion script is up-to-date , False Conversion script is not up-to-date
     """
     result = True
-    with open(l_mlibrary_conversion) as file_1:
+    with open(last_mlibrary_conversion) as file_1:
         file_1_text = file_1.readlines()
-    with open(l_library_conversion) as file_2:
+    with open(last_library_conversion) as file_2:
         file_2_text = file_2.readlines()
     for line1, line2 in zip(file_1_text, file_2_text):
         if line1 == line2.replace(library, merge_library):
@@ -163,7 +163,7 @@ def _compare_conversion(library: str, merge_library: str, l_mlibrary_conversion,
 
 def _add_conversion_script_to_package_mo(
         library: str,
-        l_library_conv: str,
+        last_library_conversion: str,
         new_conversion_script: str,
         old_to_numb: str,
         new_to_numb: str
@@ -172,12 +172,12 @@ def _add_conversion_script_to_package_mo(
     Write the new conversion script in the package.mo of the library
 
     Args:
-        l_library_conv (): latest library conversion script
+        last_library_conversion (): latest library conversion script
         new_conversion_script (): new library conversion script
         old_to_numb (): old to number
         new_to_numb (): new to number
     """
-    l_library_conv = l_library_conv.replace('\\', '/')
+    last_library_conversion = last_library_conversion.replace('\\', '/')
     new_conversion_script = new_conversion_script.replace('\\', '/')
     file = open(f'{library}{os.sep}package.mo', "r")
     version_list = []
@@ -188,7 +188,7 @@ def _add_conversion_script_to_package_mo(
         if line.find(f'  version = "{old_to_numb}",') > -1:
             version_list.append(line.replace(old_to_numb, new_to_numb))
             continue
-        if line.find(f'{l_library_conv}') > -1:
+        if line.find(f'{last_library_conversion}') > -1:
             version_list.append(line.replace(")),", ","))
             version_list.append(f'    version="{old_to_numb}",\n')
             version_list.append(f'                      script="modelica://{new_conversion_script}")),\n')
@@ -222,7 +222,7 @@ def correct_user_guide(library_dir: Path):
                 new_order_file.close()
 
 
-def parse_arguments():
+def parse_args():
     parser = argparse.ArgumentParser(description="Variables to start a library merge")
     check_test_group = parser.add_argument_group("Arguments to set environment variables")
     check_test_group.add_argument("--library-dir",
@@ -244,7 +244,7 @@ def parse_arguments():
 
 
 if __name__ == '__main__':
-    ARGS = parse_arguments()
+    ARGS = parse_args()
     merge_workflow(
         library_dir=ARGS.library_dir,
         merge_library_dir=ARGS.merge_library_dir,

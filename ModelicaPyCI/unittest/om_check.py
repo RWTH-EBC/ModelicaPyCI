@@ -5,7 +5,6 @@ from OMPython import OMCSessionZMQ
 from ci_test_config import ci_config
 from ci_tests.structure.sort_mo_model import modelica_model
 from ci_tests.structure.toml_to_py import Convert_types
-from ci_tests.structure.arg_parser import StoreDictKeyPair, StoreDictKeyPair_list, StoreDictKey
 from pathlib import Path
 from ci_tests.structure.config_structure import data_structure
 import numpy as np
@@ -14,6 +13,54 @@ import argparse
 import toml
 import os
 import platform
+
+
+
+class StoreDictKeyPair(argparse.Action):
+    def __init__(self, option_strings, dest, nargs=None, **kwargs):
+        self._nargs = nargs
+        super(StoreDictKeyPair, self).__init__(option_strings, dest, nargs=nargs, **kwargs)
+
+    def __call__(self, pars, namespace, values, option_string=None):
+        my_dict = {}
+        for kv in values:
+            k, v = kv.split(":")
+            if v == "":
+                v = os.getcwd()
+            else:
+                v = Path(os.getcwd(), v)
+            my_dict[k] = v
+        setattr(namespace, self.dest, my_dict)
+
+
+class StoreDictKeyPair_list(argparse.Action):
+    def __init__(self, option_strings, dest, nargs=None, **kwargs):
+        self._nargs = nargs
+        super(StoreDictKeyPair_list, self).__init__(option_strings, dest, nargs=nargs, **kwargs)
+
+    def __call__(self, pars, namespace, values, option_string=None):
+        my_dict = {}
+        for kv in values:
+            k, v = kv.split(":")
+            my_dict[k] = v.split(",")
+        setattr(namespace, self.dest, my_dict)
+
+
+class StoreDictKey(argparse.Action):
+    def __init__(self, option_strings, dest, nargs=None, **kwargs):
+        self._nargs = nargs
+        super(StoreDictKey, self).__init__(option_strings, dest, nargs=nargs, **kwargs)
+
+    def __call__(self, pars, namespace, values, option_string=None):
+        my_dict = {}
+        if values is not None:
+            for kv in values:
+                k, v = kv.split(":")
+                my_dict[k] = v.split(",")
+            setattr(namespace, self.dest, my_dict)
+        else:
+            return None
+
 
 class CheckOpenModelica(ci_config):
 
@@ -526,7 +573,7 @@ if __name__ == '__main__':
         except_list = data["OM_Check"]["except_list"]
         additional_libraries_local = data["OM_Check"]["additional_libraries_local"]
         additional_libraries_local = Convert_types().convert_list_to_dict_toml(convert_list=additional_libraries_local,
-                                                                               wh_library=args.wh_library)
+                                                                               whitelist_library=args.whitelist_library)
     else:
         install_libraries = None
         except_list = None
@@ -552,10 +599,10 @@ if __name__ == '__main__':
             if options == "OM_CHECK":
                 model_list = model.get_option_model(library=args.library,
                                                     package=package,
-                                                    wh_library=args.wh_library,
+                                                    whitelist_library=args.whitelist_library,
                                                     changed_flag=args.changed_flag,
                                                     simulate_flag=False,
-                                                    filter_wh_flag=args.filter_wh_flag,
+                                                    filter_whitelist_flag=args.filter_whitelist_flag,
                                                     root_library=args.root_library)
                 error_model_dict = OM.OM_check_model(check_model_list=model_list,
                                                      exception_list=except_list)
@@ -566,10 +613,10 @@ if __name__ == '__main__':
             if options == "OM_SIM":
                 model_list = model.get_option_model(library=args.library,
                                                     package=package,
-                                                    wh_library=args.wh_library,
+                                                    whitelist_library=args.whitelist_library,
                                                     changed_flag=args.changed_flag,
                                                     simulate_flag=True,
-                                                    filter_wh_flag=args.filter_wh_flag,
+                                                    filter_whitelist_flag=args.filter_whitelist_flag,
                                                     root_library=args.root_library)
                 error_model_dict = OM.simulate_examples(example_list=model_list,
                                                         exception_list=except_list)
@@ -581,10 +628,10 @@ if __name__ == '__main__':
             if options == "DYMOLA_SIM":
                 model_list = model.get_option_model(library=args.library,
                                                     package=package,
-                                                    wh_library=args.wh_library,
+                                                    whitelist_library=args.whitelist_library,
                                                     changed_flag=args.changed_flag,
                                                     simulate_flag=True,
-                                                    filter_wh_flag=args.filter_wh_flag,
+                                                    filter_whitelist_flag=args.filter_whitelist_flag,
                                                     root_library=args.root_library)
                 OM.sim_with_dymola(example_list=model_list, pack=package)
             if args.om_options == "COMPARE":
@@ -592,10 +639,10 @@ if __name__ == '__main__':
                 STATS = None
                 model_list = model.get_option_model(library=args.library,
                                                     package=package,
-                                                    wh_library=args.wh_library,
+                                                    whitelist_library=args.whitelist_library,
                                                     changed_flag=args.changed_flag,
                                                     simulate_flag=True,
-                                                    filter_wh_flag=args.filter_wh_flag,
+                                                    filter_whitelist_flag=args.filter_whitelist_flag,
                                                     root_library=args.root_library)
                 STATS = OM.compare_dym_to_om(pack=package,
                                              example_list=model_list,

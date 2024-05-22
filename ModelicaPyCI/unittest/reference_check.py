@@ -142,9 +142,9 @@ class ReferenceModel:
         reference_list = self._get_check_ref()  # Reference files
         mos_list = _compare_ref_mos(mos_script_list=mos_script_list,
                                     reference_list=reference_list)
-        wh_list = _get_whitelist_package()
-        model_list = _compare_wh_mos(package_list=mos_list,
-                                     wh_list=wh_list)
+        whitelist_list = _get_whitelist_package()
+        model_list = _compare_whitelist_mos(package_list=mos_list,
+                                     whitelist_list=whitelist_list)
         model_list = list(set(model_list))
         package_list = []
         for model in model_list:
@@ -181,9 +181,9 @@ class ReferenceModel:
         """
         mos_list = self._get_mos_scripts()
         try:
-            with open(CI_CONFIG.config_ci.ref_file, "w") as wh_file:
+            with open(CI_CONFIG.config_ci.ref_file, "w") as whitelist_file:
                 for mos in mos_list:
-                    wh_file.write(f'\n{mos}\n')
+                    whitelist_file.write(f'\n{mos}\n')
         except IOError:
             print(f'Error: File {CI_CONFIG.config_ci.ref_file} does not exist.')
 
@@ -219,18 +219,18 @@ class ReferenceModel:
             return mos_list
 
 
-def _compare_wh_mos(package_list, wh_list):
+def _compare_whitelist_mos(package_list, whitelist_list):
     """
     Filter model from whitelist.
     Args:
         package_list ():
-        wh_list ():
+        whitelist_list ():
     Returns:
     """
     err_list = []
     for package in package_list:
-        for wh_package in wh_list:
-            if package[:package.rfind(".")].find(wh_package) > -1:
+        for whitelist_package in whitelist_list:
+            if package[:package.rfind(".")].find(whitelist_package) > -1:
                 print(
                     f'{COLOR.green}Don´t Create reference results for model{COLOR.CEND} {package} This package is '
                     f'on the whitelist')
@@ -247,7 +247,7 @@ def _get_whitelist_package():
     Get and filter package from reference whitelist
     Returns: return files that are not on the reference whitelist
     """
-    wh_list = []
+    whitelist_list = []
     try:
         with open(CI_CONFIG.whitelist.ref_file, "r") as ref_wh:
             lines = ref_wh.readlines()
@@ -255,16 +255,16 @@ def _get_whitelist_package():
                 if len(line.strip()) == 0:
                     continue
                 else:
-                    wh_list.append(line.strip())
-        for wh_package in wh_list:
+                    whitelist_list.append(line.strip())
+        for whitelist_package in whitelist_list:
             print(
-                f'{COLOR.CRED} Don´t create reference results for package{COLOR.CEND} {wh_package}: '
+                f'{COLOR.CRED} Don´t create reference results for package{COLOR.CEND} {whitelist_package}: '
                 f'This Package is '
                 f'on the whitelist')
-        return wh_list
+        return whitelist_list
     except IOError:
         print(f'Error: File {CI_CONFIG.whitelist.ref_file} does not exist.')
-        return wh_list
+        return whitelist_list
 
 
 def get_update_package(ref_list):

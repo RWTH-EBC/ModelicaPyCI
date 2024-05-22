@@ -45,7 +45,7 @@ def check_path_setting(*args: Path, create_flag: bool = False):
                 f'{COLOR.CRED}Error:{COLOR.CEND} {COLOR.blue}Path variable "{var}"{COLOR.CEND} in {COLOR.blue}"{path}"'
                 f'{COLOR.CEND} does not exist.')
             """if var == "CI_CONFIG.whitelist.ci_dir":
-                print(f"If filter_wh_flag is True, a file must be stored under {path}.")
+                print(f"If filter_whitelist_flag is True, a file must be stored under {path}.")
                 exit(1)"""
             if create_flag is True:
                 create_path(path)
@@ -229,10 +229,10 @@ if __name__ == '__main__':
     if ARGS.create_whitelist is True:
         create_path(
             CI_CONFIG.dymola_ci_test_dir,
-            CI_CONFIG.wh_ci_dir
+            CI_CONFIG.whitelist_ci_dir
         )
         create_files(
-            CI_CONFIG.whitelist.model_file,
+            CI_CONFIG.whitelist.check_file,
             CI_CONFIG.whitelist.simulate_file,
             CI_CONFIG.whitelist.html_file,
             CI_CONFIG.whitelist.ref_file
