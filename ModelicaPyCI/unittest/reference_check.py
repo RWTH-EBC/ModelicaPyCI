@@ -4,7 +4,7 @@ import os
 import sys
 import buildingspy.development.validator as validate
 import buildingspy.development.regressiontest as regression
-from ci_test_config import ci_config
+from ModelicaPyCI.config import CI_CONFIG
 from ModelicaPyCI.structure.sort_mo_model import ModelicaModel
 from ModelicaPyCI.structure import config_structure
 from ModelicaPyCI.pydyminterface.python_dymola_interface import PythonDymolaInterface
@@ -249,7 +249,7 @@ def _get_whitelist_package():
     """
     whitelist_list = []
     try:
-        with open(CI_CONFIG.whitelist.ref_file, "r") as ref_wh:
+        with open(CI_CONFIG.whitelist_scripts.ref_file, "r") as ref_wh:
             lines = ref_wh.readlines()
             for line in lines:
                 if len(line.strip()) == 0:
@@ -263,7 +263,7 @@ def _get_whitelist_package():
                 f'on the whitelist')
         return whitelist_list
     except IOError:
-        print(f'Error: File {CI_CONFIG.whitelist.ref_file} does not exist.')
+        print(f'Error: File {CI_CONFIG.whitelist_scripts.ref_file} does not exist.')
         return whitelist_list
 
 

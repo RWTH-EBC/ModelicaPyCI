@@ -2,11 +2,12 @@ import argparse
 import os
 import shutil
 from tidylib import tidy_document
-from ci_test_config import ci_config
 import sys
-from ci_tests.structure.config_structure import data_structure
-from ci_tests.api_script.api_github import GitRepository
-from ci_tests.structure.sort_mo_model import modelica_model
+from ModelicaPyCI.structure import config_structure
+from ModelicaPyCI.api_script.api_github import GitRepository
+from ModelicaPyCI.structure.sort_mo_model import ModelicaModel
+from ModelicaPyCI.config import CI_CONFIG
+
 from pathlib import Path
 
 # ! /usr/bin/env python3.6
@@ -46,7 +47,7 @@ In case of trouble just put the dll in your working dir.
 """
 
 
-class HtmlTidy(ci_config):
+class HtmlTidy:
     """Class to Check Packages and run CheckModel Tests"""
 
     def __init__(self, package: str,
@@ -77,12 +78,11 @@ class HtmlTidy(ci_config):
         self.whitelist_library = whitelist_library
         self.filter_whitelist = filter_whitelist
         self.root_dir = self.package.replace(".", os.sep)
-        data_structure().check_arguments_settings(self.root_dir)
+        config_structure.check_arguments_settings(self.root_dir)
         self.html_error_log = Path(self.root_dir, "HTML_error_log.txt")
         self.html_correct_log = Path(self.root_dir, "HTML_correct_log.txt")
-        data_structure().check_file_setting(self.html_error_log, self.html_correct_log, create_flag=True)
+        config_structure.check_file_setting(self.html_error_log, self.html_correct_log, create_flag=True)
 
-        super().__init__()
 
     def _get_html_model(self):
         """
@@ -135,7 +135,6 @@ class HtmlTidy(ci_config):
                                              html_correct_code=html_correct_code,
                                              html_code=html_code)
 
-
     def check_html_files(self, model_list: list = None):
         file_counter = 0
         if model_list is not None and len(model_list) > 0:
@@ -181,8 +180,8 @@ class HtmlTidy(ci_config):
         """
         err_list = self.read_log_file()
         var = self._write_exit(err_list=err_list)
-        data_structure().create_path(self.result_dir, self.result_syntax_dir)
-        data_structure().prepare_data(del_flag=True,
+        config_structure.create_path(self.result_dir, self.result_syntax_dir)
+        config_structure.prepare_data(del_flag=True,
                                       source_target_dict={self.html_error_log: self.result_syntax_dir,
                                                           self.html_correct_log: self.result_syntax_dir})
         return var
@@ -556,11 +555,11 @@ class HtmlTidy(ci_config):
         try:
             exit_file = open(self.config_ci_exit_file, "w")
             if len(err_list) > 0:
-                print(f'{self.CRED}Syntax Error:{self.CEND} Check HTML-logfile')
+                print(f'{CI_CONFIG.color.CRED}Syntax Error:{CI_CONFIG.color.CEND} Check HTML-logfile')
                 exit_file.write("exit 1")
                 var = 1
             else:
-                print(f'{self.green}HTML Check was successful!{self.CEND}')
+                print(f'{CI_CONFIG.color.green}HTML Check was successful!{CI_CONFIG.color.CEND}')
                 exit_file.write("exit 0")
                 var = 0
             exit_file.close()
@@ -642,13 +641,7 @@ class HtmlTidy(ci_config):
         return library_list
 
 
-class HtmlWhitelist(ci_config):
-
-    def __init__(self):
-        """
-        Args:
-        """
-        super().__init__()
+class HtmlWhitelist:
 
     def write_whitelist(self, model_list):
         """
@@ -662,47 +655,42 @@ class HtmlWhitelist(ci_config):
         file.close()
 
 
-class Parser:
-    def __init__(self, args):
-        self.args = args
-
-    def main(self):
-        parser = argparse.ArgumentParser(
-            description='Run HTML correction on files')
-        # [Library - settings]
-        parser.add_argument("--packages", metavar="AixLib.Package",
-                            help="Package to test for a html test")
-        parser.add_argument("--library", default="AixLib", help="Library to test")
-        parser.add_argument("--wh-library", default="IBPSA", help="Library that is written to a whitelist")
-        parser.add_argument("--git-url", default="https://github.com/ibpsa/modelica-ibpsa.git",
-                            help="url repository of library for whitelist")
-        parser.add_argument("--repo-dir", default="modelica-ibpsa",
-                            help="url repository of library for whitelist")
-        parser.add_argument("--root-wh-library",
-                            help="library on a whitelist")
-        # [ bool - flag]
-        parser.add_argument("--correct-overwrite-flag", action="store_true", default=False,
-                            help="correct html code in modelica files and overwrite old files")
-        parser.add_argument("--correct-backup-flag", action="store_true", default=False,
-                            help="backup old files")
-        parser.add_argument("--log-flag", action="store_true",
-                            default=True, help="create logfile of model with errors")
-        parser.add_argument("--whitelist-flag", action="store_true", default=False,
-                            help="Create a new whitelist for a Library")
-        parser.add_argument("--correct-view-flag", action="store_true", default=False,
-                            help="Check and print the Correct HTML Code")
-        parser.add_argument("--filter-whitelist-flag", default=False, action="store_true", help="Argument for ")
-        args = parser.parse_args()
-        return args
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description='Run HTML correction on files')
+    # [Library - settings]
+    parser.add_argument("--packages", metavar="AixLib.Package",
+                        help="Package to test for a html test")
+    parser.add_argument("--library", default="AixLib", help="Library to test")
+    parser.add_argument("--wh-library", default="IBPSA", help="Library that is written to a whitelist")
+    parser.add_argument("--git-url", default="https://github.com/ibpsa/modelica-ibpsa.git",
+                        help="url repository of library for whitelist")
+    parser.add_argument("--repo-dir", default="modelica-ibpsa",
+                        help="url repository of library for whitelist")
+    parser.add_argument("--root-wh-library",
+                        help="library on a whitelist")
+    # [ bool - flag]
+    parser.add_argument("--correct-overwrite-flag", action="store_true", default=False,
+                        help="correct html code in modelica files and overwrite old files")
+    parser.add_argument("--correct-backup-flag", action="store_true", default=False,
+                        help="backup old files")
+    parser.add_argument("--log-flag", action="store_true",
+                        default=True, help="create logfile of model with errors")
+    parser.add_argument("--whitelist-flag", action="store_true", default=False,
+                        help="Create a new whitelist for a Library")
+    parser.add_argument("--correct-view-flag", action="store_true", default=False,
+                        help="Check and print the Correct HTML Code")
+    parser.add_argument("--filter-whitelist-flag", default=False, action="store_true", help="Argument for ")
+    return parser.parse_args()
 
 
 if __name__ == '__main__':
     args = Parser(sys.argv[1:]).main()
     conf = ci_config()
-    check = data_structure()
+    check = config_structure
     check.create_path(conf.config_ci_dir)
     check.create_files(conf.config_ci_exit_file)
-    mo = modelica_model()
+    mo = ModelicaModel()
     if args.whitelist_flag is True:
         check.create_path(conf.whitelist_ci_dir)
         check.create_files(conf.whitelist_html_file)

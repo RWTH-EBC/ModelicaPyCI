@@ -5,15 +5,15 @@ import sys
 import toml
 from natsort import natsorted
 from pathlib import Path
-from ci_test_config import ci_config
-from ci_tests.structure.sort_mo_model import modelica_model
-from ci_tests.structure.toml_to_py import Convert_types
-from ci_tests.structure.config_structure import data_structure
-from ci_tests.py_dym_interface.PythonDymolaInterface import PythonDymolaInterface
-from ci_tests.api_script.api_github import GitRepository
+from ModelicaPyCI.config import CI_CONFIG
+from ModelicaPyCI.structure.sort_mo_model import ModelicaModel
+from ModelicaPyCI.structure.toml_to_py import ConvertTypes
+from ModelicaPyCI.structure import config_structure
+from ModelicaPyCI.pydyminterface.python_dymola_interface import PythonDymolaInterface
+from ModelicaPyCI.api_script.api_github import GitRepository
 
 
-class CheckPythonDymola(ci_config):
+class CheckPythonDymola:
 
     def __init__(self,
                  dym,
@@ -35,7 +35,6 @@ class CheckPythonDymola(ci_config):
             dym_exp (): python_dymola_exception class.
             library (): library to test.
         """
-        super().__init__()
         # [Libraries]
         self.root_library = root_library
         self.add_libraries_loc = add_libraries_loc
@@ -77,29 +76,29 @@ class CheckPythonDymola(ci_config):
         """
         error_model_message_dic = {}
         if len(check_model_list) == 0 or check_model_list is None:
-            print(f'{self.CRED}Error:{self.CEND} Found no models.')
+            print(f'{CI_CONFIG.color.CRED}Error:{CI_CONFIG.color.CEND} Found no models.')
             exit(0)
         else:
             for dym_model in check_model_list:
                 try:
                     res = self.dymola.checkModel(dym_model, simulate=sim_ex_flag)
                     if res is True:
-                        print(f'{self.green}Successful: {self.CEND} {dym_model}')
+                        print(f'{CI_CONFIG.color.green}Successful: {CI_CONFIG.color.CEND} {dym_model}')
                     if res is False:
                         """print(
-                            f'Check for Model {dym_model}{self.CRED} failed!{self.CEND}\n\n{self.CRED}Error:{self.CEND} '
+                            f'Check for Model {dym_model}{CI_CONFIG.color.CRED} failed!{CI_CONFIG.color.CEND}\n\n{CI_CONFIG.color.CRED}Error:{CI_CONFIG.color.CEND} '
                             f'{dym_model}\nSecond Check Test for model {dym_model}')"""
                         # Second test for model
                         sec_result = self.dymola.checkModel(dym_model, simulate=sim_ex_flag)
                         if sec_result is True:
-                            print(f'{self.green}Successful: {self.CEND} {dym_model}')
+                            print(f'{CI_CONFIG.color.green}Successful: {CI_CONFIG.color.CEND} {dym_model}')
                         if sec_result is False:
                             log = self.dymola.getLastError()
                             err_list, warning_list = self.sort_warnings_from_log(log=log, exception_list=exception_list)
                             if len(err_list) > 0:
-                                print(f'{self.CRED}Error: {self.CEND} {dym_model} \n{err_list}')
+                                print(f'{CI_CONFIG.color.CRED}Error: {CI_CONFIG.color.CEND} {dym_model} \n{err_list}')
                             if len(warning_list) > 0:
-                                print(f'{self.yellow} Warning: {self.CEND} {dym_model} \n{warning_list}')
+                                print(f'{CI_CONFIG.color.yellow} Warning: {CI_CONFIG.color.CEND} {dym_model} \n{warning_list}')
                             error_model_message_dic[dym_model] = log
                 except self.dymola_exception as ex:
                     print("Simulation failed: " + str(ex))
@@ -174,7 +173,7 @@ class CheckPythonDymola(ci_config):
                                     check_log.write(str(warning) + "\n")
                 return error_log, ch_log
         else:
-            print(f"{self.green}Check was successful.{self.CEND}")
+            print(f"{CI_CONFIG.color.green}Check was successful.{CI_CONFIG.color.CEND}")
             exit(0)
 
     def read_error_log(self, pack: str, err_log: Path, check_log):
@@ -192,32 +191,32 @@ class CheckPythonDymola(ci_config):
                 if "Error in model" in line:
                     error_log_list.append(line)
                     line = line.strip("\n")
-                    print(f'{self.CRED}{line}{self.CEND}')
+                    print(f'{CI_CONFIG.color.CRED}{line}{CI_CONFIG.color.CEND}')
 
-        data_structure().prepare_data(source_target_dict={
+        config_structure.prepare_data(source_target_dict={
             check_log: Path(self.result_check_result_dir, f'{self.library}.{pack}'),
             err_log: Path(self.result_check_result_dir, f'{self.library}.{pack}')},
             del_flag=True)
         if len(error_log_list) > 0:
-            print(f'{self.CRED}Dymola check failed{self.CEND}')
+            print(f'{CI_CONFIG.color.CRED}Dymola check failed{CI_CONFIG.color.CEND}')
             return 1
         else:
-            print(f'{self.green}Dymola check was successful{self.CEND}')
+            print(f'{CI_CONFIG.color.green}Dymola check was successful{CI_CONFIG.color.CEND}')
             return 0
 
     def return_exit_var(self, opt_check_dict, pack):
         var = 0
         for opt in opt_check_dict:
             if opt_check_dict[options] != 0:
-                print(f'{self.CRED}Check {opt} for package {pack} failed.{self.CEND}')
+                print(f'{CI_CONFIG.color.CRED}Check {opt} for package {pack} failed.{CI_CONFIG.color.CEND}')
                 var = 1
             else:
-                print(f'{self.green}Check {opt} or package {pack} was successful.{self.CEND}')
+                print(f'{CI_CONFIG.color.green}Check {opt} or package {pack} was successful.{CI_CONFIG.color.CEND}')
         if var == 1:
             exit(var)
 
 
-class CreateWhitelist(ci_config):
+class CreateWhitelist:
 
     def __init__(self,
                  dym,
@@ -245,7 +244,6 @@ class CreateWhitelist(ci_config):
             repo_dir ():  Folder of the cloned project.
             git_url (): Git url of the cloned project.
         """
-        super().__init__()
         self.whitelist_library = whitelist_library
         self.repo_dir = repo_dir
         self.git_url = git_url
@@ -370,7 +368,7 @@ class CreateWhitelist(ci_config):
         err_log = Path(Path(self.root_library).parent, f'{self.whitelist_library}-error_log.txt')
         dymola_log = Path(Path(self.root_library).parent, f'{self.whitelist_library}-log.txt')
         if model_list is None or len(model_list) == 0:
-            print(f'{self.CRED}Error:{self.CEND} Found no models')
+            print(f'{CI_CONFIG.color.CRED}Error:{CI_CONFIG.color.CEND} Found no models')
             exit(0)
         try:
             with open(whitelist_files, "w") as whitelist_file, open(err_log, "w") as error_log:
@@ -380,17 +378,17 @@ class CreateWhitelist(ci_config):
                 for model in model_list:
                     result = self.dymola.checkModel(model, simulate=simulate_examples)
                     if result is True:
-                        print(f'{self.green}Successful:{self.CEND} {model}')
+                        print(f'{CI_CONFIG.color.green}Successful:{CI_CONFIG.color.CEND} {model}')
                     if result is False:
                         log = self.dymola.getLastError()
-                        print(f'\n{self.CRED}Error:{self.CEND} {model}\n{log}')
+                        print(f'\n{CI_CONFIG.color.CRED}Error:{CI_CONFIG.color.CEND} {model}\n{log}')
                         error_model_message_dic[model] = log
                         whitelist_file.write(f'\n{model} \n \n')
                         error_log.write(f'\n \n Error in model:  {model} \n{log}')
                 self.dymola.savelog(f'{dymola_log}')
                 self.dymola.close()
-            print(f'{self.green}Whitelist check finished.{self.CEND}')
-            data_structure().prepare_data(source_target_dict={
+            print(f'{CI_CONFIG.color.green}Whitelist check finished.{CI_CONFIG.color.CEND}')
+            config_structure.prepare_data(source_target_dict={
                 err_log: Path(self.result_whitelist_dir, f'{self.whitelist_library}'),
                 dymola_log: Path(self.result_whitelist_dir, f'{self.whitelist_library}'),
                 whitelist_files: Path(self.result_whitelist_dir, f'{self.whitelist_library}')})
@@ -400,57 +398,44 @@ class CreateWhitelist(ci_config):
             exit(1)
 
 
-class Parser:
-    def __init__(self, args):
-        """
 
-        Args:
-            args ():
-        """
-        self.args = args
+def parse_args():
 
-    def main(self):
-        """
+    parser = argparse.ArgumentParser(description="Check and validate single packages")
+    check_test_group = parser.add_argument_group("Arguments to run check tests")
+    # [Library - settings]
+    check_test_group.add_argument("--library", default="AixLib", help="Library to test (e.g. AixLib")
+    check_test_group.add_argument("--packages", default=["Airflow"], nargs="+",
+                                  help="Library to test (e.g. Airflow.Multizone)")
+    check_test_group.add_argument("--root-library", default=Path("AixLib", "package.mo"),
+                                  help="root of library",
+                                  type=Path)
+    check_test_group.add_argument("--wh-library", default="IBPSA", help="library on a whitelist")
+    check_test_group.add_argument("--root-wh-library",
+                                  help="library on a whitelist")
 
-        Returns:
-
-        """
-        parser = argparse.ArgumentParser(description="Check and validate single packages")
-        check_test_group = parser.add_argument_group("Arguments to run check tests")
-        # [Library - settings]
-        check_test_group.add_argument("--library", default="AixLib", help="Library to test (e.g. AixLib")
-        check_test_group.add_argument("--packages", default=["Airflow"], nargs="+",
-                                      help="Library to test (e.g. Airflow.Multizone)")
-        check_test_group.add_argument("--root-library", default=Path("AixLib", "package.mo"),
-                                      help="root of library",
-                                      type=Path)
-        check_test_group.add_argument("--wh-library", default="IBPSA", help="library on a whitelist")
-        check_test_group.add_argument("--root-wh-library",
-                                      help="library on a whitelist")
-
-        # [Dymola - settings]
-        check_test_group.add_argument("--dymola-version",
-                                      default="2022",
-                                      help="Version of dymola (Give the number e.g. 2020")
-        # [ bool - flag]
-        check_test_group.add_argument("--changed-flag", default=False, action="store_true")
-        check_test_group.add_argument("--filter-wh-flag", default=False, action="store_true")
-        check_test_group.add_argument("--extended-ex-flag", default=False, action="store_true")
-        check_test_group.add_argument("--create-wh-flag", help="Create a whitelist of a library with failed models.",
-                                      action="store_true")
-        check_test_group.add_argument("--load-setting-flag",
-                                      default=False,
-                                      action="store_true")
-        # [dym - Options: DYM_CHECK, DYM_SIM]
-        check_test_group.add_argument("--dym-options",
-                                      default=["DYM_CHECK"], nargs="+",
-                                      help="Chose between openmodelica check, compare or simulate")
-        # [repository - setting ]
-        check_test_group.add_argument("--repo-dir", help="folder of a whitelist library ")
-        check_test_group.add_argument("--git-url", default="https://github.com/ibpsa/modelica-ibpsa.git",
-                                      help="url repository of whitelist library")
-        args = parser.parse_args()
-        return args
+    # [Dymola - settings]
+    check_test_group.add_argument("--dymola-version",
+                                  default="2022",
+                                  help="Version of dymola (Give the number e.g. 2020")
+    # [ bool - flag]
+    check_test_group.add_argument("--changed-flag", default=False, action="store_true")
+    check_test_group.add_argument("--filter-wh-flag", default=False, action="store_true")
+    check_test_group.add_argument("--extended-ex-flag", default=False, action="store_true")
+    check_test_group.add_argument("--create-wh-flag", help="Create a whitelist of a library with failed models.",
+                                  action="store_true")
+    check_test_group.add_argument("--load-setting-flag",
+                                  default=False,
+                                  action="store_true")
+    # [dym - Options: DYM_CHECK, DYM_SIM]
+    check_test_group.add_argument("--dym-options",
+                                  default=["DYM_CHECK"], nargs="+",
+                                  help="Chose between openmodelica check, compare or simulate")
+    # [repository - setting ]
+    check_test_group.add_argument("--repo-dir", help="folder of a whitelist library ")
+    check_test_group.add_argument("--git-url", default="https://github.com/ibpsa/modelica-ibpsa.git",
+                                  help="url repository of whitelist library")
+    return parser.parse_args()
 
 
 if __name__ == '__main__':
@@ -462,14 +447,14 @@ if __name__ == '__main__':
         install_libraries = data["Dymola_Check"]["install_libraries"]
         except_list = data["Dymola_Check"]["except_list"]
         additional_libraries_local = data["Dymola_Check"]["additional_libraries_local"]
-        additional_libraries_local = Convert_types().convert_list_to_dict_toml(convert_list=additional_libraries_local,
+        additional_libraries_local = ConvertTypes().convert_list_to_dict_toml(convert_list=additional_libraries_local,
                                                                                whitelist_library=args.whitelist_library)
     else:
         install_libraries = None
         except_list = None
         additional_libraries_local = None
     # [Check arguments, files, path]
-    check = data_structure()
+    check = config_structure
     check.check_arguments_settings(args.library, args.packages)
     check.check_file_setting(args.root_library)
     if additional_libraries_local is not None:
@@ -485,7 +470,7 @@ if __name__ == '__main__':
                                 add_libraries_loc=additional_libraries_local,
                                 inst_libraries=install_libraries)
         dym()
-        mm = modelica_model()
+        mm = ModelicaModel()
         option_check_dictionary = {}
         for package in args.packages:
             for options in args.dym_options:
@@ -527,7 +512,7 @@ if __name__ == '__main__':
             dym.return_exit_var(opt_check_dict=option_check_dictionary, pack=package)
     if args.create_whitelist_flag is True:
         check.check_arguments_settings(args.whitelist_library)
-        mo = modelica_model()
+        mo = ModelicaModel()
         conf = ci_config()
         check.create_path(conf.config_ci_dir, conf.whitelist_ci_dir)
 

@@ -1,11 +1,11 @@
 import argparse
 import os
 from pathlib import Path
-from ci_test_config import ci_config
+from ModelicaPyCI.config import CI_CONFIG
 import sys
 
 
-class LockModel(ci_config):
+class LockModel:
 
     def __init__(self, library, lock_library):
         """
@@ -16,7 +16,6 @@ class LockModel(ci_config):
         """
         self.library = library
         self.lock_library = lock_library
-        super().__init__()
 
     def _sort_whitelist_model(self):
         """
@@ -145,18 +144,12 @@ class LockModel(ci_config):
             exit(1)
 
 
-class Parser:
-
-    def __init__(self, args):
-        self.args = args
-
-    def main(self):
-        parser = argparse.ArgumentParser(description='Lock models.')
-        unit_test_group = parser.add_argument_group("arguments to run class LockModel")
-        unit_test_group.add_argument("--library", default="AixLib", help="Library to test")
-        unit_test_group.add_argument("--lock-library", default="IBPSA", help="Library to lock")
-        args = parser.parse_args()
-        return args
+def parse_args():
+    parser = argparse.ArgumentParser(description='Lock models.')
+    unit_test_group = parser.add_argument_group("arguments to run class LockModel")
+    unit_test_group.add_argument("--library", default="AixLib", help="Library to test")
+    unit_test_group.add_argument("--lock-library", default="IBPSA", help="Library to lock")
+    return parser.parse_args()
 
 
 if __name__ == '__main__':

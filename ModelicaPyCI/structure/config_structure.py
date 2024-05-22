@@ -44,7 +44,7 @@ def check_path_setting(*args: Path, create_flag: bool = False):
             print(
                 f'{COLOR.CRED}Error:{COLOR.CEND} {COLOR.blue}Path variable "{var}"{COLOR.CEND} in {COLOR.blue}"{path}"'
                 f'{COLOR.CEND} does not exist.')
-            """if var == "CI_CONFIG.whitelist.ci_dir":
+            """if var == "CI_CONFIG.whitelist_scripts.ci_dir":
                 print(f"If filter_whitelist_flag is True, a file must be stored under {path}.")
                 exit(1)"""
             if create_flag is True:
@@ -232,9 +232,9 @@ if __name__ == '__main__':
             CI_CONFIG.whitelist_ci_dir
         )
         create_files(
-            CI_CONFIG.whitelist.check_file,
-            CI_CONFIG.whitelist.simulate_file,
-            CI_CONFIG.whitelist.html_file,
-            CI_CONFIG.whitelist.ref_file
+            CI_CONFIG.whitelist_scripts.check_file,
+            CI_CONFIG.whitelist_scripts.simulate_file,
+            CI_CONFIG.whitelist_scripts.html_file,
+            CI_CONFIG.whitelist_scripts.ref_file
         )
         pass

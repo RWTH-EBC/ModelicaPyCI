@@ -1,16 +1,15 @@
 import os
 import platform
-from ci_test_config import ci_config
+from ModelicaPyCI.config import CI_CONFIG
 from pathlib import Path
 import codecs
 
-class ModelManagement(ci_config):
+class ModelManagement:
 
     def __init__(self,
                  dymola,
                  dymola_exception,
                  dymola_version: int = 2022):
-        super().__init__()
         self.dymola = dymola
         self.dymola_exception = dymola_exception
         self.dymola.ExecuteCommand("Advanced.TranslationInCommandLog:=true;")

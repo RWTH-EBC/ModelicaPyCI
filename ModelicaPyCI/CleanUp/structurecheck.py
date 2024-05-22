@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 import argparse
-from ci_test_config import ci_config
+from ModelicaPyCI.config import CI_CONFIG
 import sys
 
 from ModelicaPyCI.config import CI_CONFIG

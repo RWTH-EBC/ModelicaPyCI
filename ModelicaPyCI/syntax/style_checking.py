@@ -4,11 +4,11 @@ import os
 import platform
 import sys
 import time
-from ci_test_config import ci_config
-from ci_tests.py_dym_interface.modelmanagement import ModelManagement
-from ci_tests.py_dym_interface.PythonDymolaInterface import PythonDymolaInterface
-from ci_tests.structure.sort_mo_model import modelica_model
-from ci_tests.structure.config_structure import data_structure
+from ModelicaPyCI.config import CI_CONFIG
+from ModelicaPyCI.pydyminterface.model_management import ModelManagement
+from ModelicaPyCI.pydyminterface.python_dymola_interface import PythonDymolaInterface
+from ModelicaPyCI.structure.sort_mo_model import ModelicaModel
+from ModelicaPyCI.structure import config_structure
 from pathlib import Path
 
 
@@ -64,15 +64,15 @@ class StyleCheck(ci_config):
             if line.find("Check ok") > -1 or line.find("Library style check log") > -1 or len(line) == 0:
                 continue
             else:
-                print(f'{self.CRED}Error in model: {self.CEND}{line.lstrip()}')
+                print(f'{CI_CONFIG.color.CRED}Error in model: {CI_CONFIG.color.CEND}{line.lstrip()}')
                 error_list.append(line)
         log_file.close()
-        data_structure().prepare_data(source_target_dict={file: self.result_syntax_dir})
+        config_structure.prepare_data(source_target_dict={file: self.result_syntax_dir})
         if len(error_list) == 0:
-            print(f'{self.green}Style check for library {self.library} was successful{self.CEND}')
+            print(f'{CI_CONFIG.color.green}Style check for library {self.library} was successful{CI_CONFIG.color.CEND}')
             return 0
         elif len(error_list) > 0:
-            print(f'{self.CRED}Test failed. Look in {self.library}_StyleErrorLog.html{self.CEND}')
+            print(f'{CI_CONFIG.color.CRED}Test failed. Look in {self.library}_StyleErrorLog.html{CI_CONFIG.color.CEND}')
             return 1
 
 
@@ -116,7 +116,7 @@ if __name__ == '__main__':
                             add_libraries_loc=None,
                             inst_libraries=None)
     CheckStyle()
-    mo = modelica_model()
+    mo = ModelicaModel()
     model_list = mo.get_option_model(library=args.library,
                                      package="",
                                      changed_flag=args.changed_flag)

@@ -1,16 +1,15 @@
 import os
-from ci_test_config import ci_config
-from ci_tests.py_dym_interface.modelmanagement import ModelManagement
+from ModelicaPyCI.config import CI_CONFIG
+from ModelicaPyCI.pydyminterface.model_management import ModelManagement
 from pathlib import Path
-from ci_tests.structure.config_structure import data_structure
+from ModelicaPyCI.structure import config_structure
 
 
-class ModelicaModel(ci_config):
+class ModelicaModel:
 
     def __init__(self, library: str = "AixLib", package: str = "Airflow"):
         self.library = library
         self.package = package
-        super().__init__()
 
     def get_option_model(self,
                          library: str,
@@ -44,7 +43,7 @@ class ModelicaModel(ci_config):
             root_package ():
         Returns:
         """
-        check = data_structure()
+        check = config_structure
         check.check_arguments_settings(package, library, changed_flag, simulate_flag, filter_whitelist_flag, extended_ex_flag)
         if root_library is None:
             root_library = Path(path_dir, library, "package.mo")
