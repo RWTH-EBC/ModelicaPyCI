@@ -238,7 +238,7 @@ def parse_args():
                                   default="AixLib\\Resources\\Scripts",
                                   help="path to the library scripts")
     check_test_group.add_argument("--merge-library-dir",
-                                  default='modelica-ibpsa\\IBPSA\\Resources\\Scripts\\Dymola\\ConvertIBPSA_*',
+                                  default='modelica-ibpsa\\IBPSA\\Resources\\Scripts\\Conversion\\ConvertIBPSA_*',
                                   help="path to the merge library scripts")
     check_test_group.add_argument("--temporary-mos-path",
                                   default="Convertmos",
