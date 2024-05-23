@@ -113,9 +113,9 @@ def load_config():
             config_file = Path(__file__).parent.joinpath("config", "ci_test_config.toml")
         else:
             config_file = Path(os.environ["CI_PYTHON_CONFIG_FILE"])
-        if config_file.suffix == ".toml":
+        if config_file.suffix == ".toml" and os.path.exists(config_file):
             return load_toml_config(path=config_file)
-        raise TypeError("Currently, only .toml files are supported")
+        return CIConfig()  # Use default
     return CI_CONFIG
 
 

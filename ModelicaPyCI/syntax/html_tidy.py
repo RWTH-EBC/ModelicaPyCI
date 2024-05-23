@@ -598,7 +598,7 @@ class HtmlTidy:
         """
         whitelist_library_list = []
         try:
-            file = open(self.whitelist_html_file, "r")
+            file = open(CI_CONFIG.whitelist.html_file, "r")
             lines = file.readlines()
             file.close()
             for line in lines:
@@ -608,7 +608,7 @@ class HtmlTidy:
                     whitelist_library_list.append(line)
             return whitelist_library_list
         except IOError:
-            print(f'Error: File {self.whitelist_html_file} does not exist. Check without a whitelist.')
+            print(f'Error: File {CI_CONFIG.whitelist.html_file} does not exist. Check without a whitelist.')
             return whitelist_library_list
 
     def _get_library_model(self):
@@ -641,18 +641,17 @@ class HtmlTidy:
         return library_list
 
 
-class HtmlWhitelist:
+def write_whitelist(model_list):
+    """
+    write a whitelist with models
+    Args:
+        model_list (): models on the whitelist
+    """
 
-    def write_whitelist(self, model_list):
-        """
-        write a whitelist with models
-        Args:
-            model_list (): models on the whitelist
-        """
-        file = open(self.whitelist_html_file, "w")
-        for model in model_list:
-            file.write("\n" + model + ".mo" + "\n")
-        file.close()
+    file = open(CI_CONFIG.whitelist.html_file, "w")
+    for model in model_list:
+        file.write("\n" + model + ".mo" + "\n")
+    file.close()
 
 
 def parse_args():
@@ -686,21 +685,20 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    conf = ci_config()
-    check = config_structure
-    check.create_path(conf.config_ci_dir)
-    check.create_files(conf.config_ci_exit_file)
+
+    config_structure.create_path(CI_CONFIG.config_ci.dir)
+    config_structure.create_files(CI_CONFIG.config_ci.exit_file)
     mo = ModelicaModel()
     if args.whitelist_flag is True:
-        check.create_path(conf.whitelist_ci_dir)
-        check.create_files(conf.whitelist_html_file)
+        config_structure.create_path(CI_CONFIG.whitelist.ci_dir)
+        config_structure.create_files(CI_CONFIG.whitelist.html_file)
         clone_repository(repo_dir=args.root_whitelist_library, git_url=args.git_url)
         model_list = mo.get_models(library=args.whitelist_library,
                                    path=args.root_whitelist_library,
                                    simulate_flag=False,
                                    extended_ex_flag=False)
-        HtmlWhitelist().write_whitelist(model_list=model_list)
-        data_structure.prepare_data(source_target_dict={conf.whitelist_html_file: conf.result_whitelist_dir})
+        write_whitelist(model_list=model_list)
+        config_structure.prepare_data(source_target_dict={CI_CONFIG.whitelist.html_file: CI_CONFIG.result.whitelist_dir})
         exit(0)
     else:
         html_tidy_check = HtmlTidy(package=args.packages,
