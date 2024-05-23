@@ -10,7 +10,7 @@ from buildingspy.development import merger
 def merge_workflow(
         library_dir: Path,
         merge_library_dir: Path,
-        mos_path: Path,
+        temporary_mos_path: Path,
         library: str,
         merge_library: str
 ):
@@ -20,7 +20,7 @@ def merge_workflow(
     print("Merged.")
 
     last_mlibrary_conversion = _copy_merge_mos_script(
-        merge_library_dir=merge_library_dir, mos_path=mos_path
+        merge_library_dir=merge_library_dir, temporary_mos_path=temporary_mos_path
     )
     last_library_conversion = _read_last_library_conversion(
         library_dir=library_dir
@@ -39,12 +39,12 @@ def merge_workflow(
         file_new_conversion_script, old_to_numb, new_to_numb = _create_convert(
             library=library,
             merge_library=merge_library,
-            mos_path=mos_path,
+            temporary_mos_path=temporary_mos_path,
             last_mlibrary_conversion=last_mlibrary_conversion,
             last_library_conversion=last_library_conversion
         )
         new_conversion_script = shutil.copy(file_new_conversion_script, library_dir)
-        shutil.rmtree(mos_path)
+        shutil.rmtree(temporary_mos_path)
         _add_conversion_script_to_package_mo(
             library=library,
             last_library_conversion=last_library_conversion,
@@ -76,16 +76,16 @@ def _read_last_library_conversion(library_dir: Path, ):
 
 def _copy_merge_mos_script(
         merge_library_dir: Path,
-        mos_path: Path,
+        temporary_mos_path: Path,
 ):
     """
     Copy the Convert_IBPSA_mos Script
     Returns: return the latest conversion script
     """
-    if os.path.isdir(mos_path):
+    if os.path.isdir(temporary_mos_path):
         pass
     else:
-        os.mkdir(mos_path)
+        os.mkdir(temporary_mos_path)
     mos_file_list = (glob.glob(str(merge_library_dir)))
     if len(mos_file_list) == 0:
         print(f'Cant find a Conversion Script in IBPSA Repo')
@@ -94,14 +94,14 @@ def _copy_merge_mos_script(
     last_ibpsa_conv = last_ibpsa_conv.replace("/", os.sep)
     last_ibpsa_conv = last_ibpsa_conv.replace("\\", os.sep)
     print(f'Latest IBPSA Conversion script: {last_ibpsa_conv}')
-    shutil.copy(last_ibpsa_conv, mos_path)
+    shutil.copy(last_ibpsa_conv, temporary_mos_path)
     return last_ibpsa_conv
 
 
 def _create_convert(
         library: str,
         merge_library: str,
-        mos_path: Path,
+        temporary_mos_path: Path,
         last_mlibrary_conversion: str,
         last_library_conversion: str
 ):
@@ -130,7 +130,7 @@ def _create_convert(
     new_to_numb = f'{first_numb}.{int(sec_numb) + 1}.0'
     # Write new conversion number
     new_conv_number = old_to_numb + "_to_" + new_to_numb
-    file_new_conv = mos_path.joinpath(f"Convert{library}_from_{new_conv_number}.mos")
+    file_new_conv = temporary_mos_path.joinpath(f"Convert{library}_from_{new_conv_number}.mos")
     with open(last_mlibrary_conversion, "r") as file:
         lines = file.readlines()
     with open(last_library_conversion, "w+") as library_file:
@@ -237,7 +237,7 @@ def parse_args():
     check_test_group.add_argument("--merge-library-dir",
                                   default='modelica-ibpsa\\IBPSA\\Resources\\Scripts\\Dymola\\ConvertIBPSA_*',
                                   help="path to the merge library scripts")
-    check_test_group.add_argument("--mos-path",
+    check_test_group.add_argument("--temporary-mos-path",
                                   default="Convertmos",
                                   help="Folder where the conversion scripts are stored temporarily")
     check_test_group.add_argument("--library",
@@ -254,7 +254,7 @@ if __name__ == '__main__':
     merge_workflow(
         library_dir=ARGS.library_dir,
         merge_library_dir=ARGS.merge_library_dir,
-        mos_path=ARGS.mos_path,
+        temporary_mos_path=ARGS.temporary_mos_path,
         library=ARGS.library,
         merge_library=ARGS.merge_library
     )

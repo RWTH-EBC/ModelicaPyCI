@@ -400,7 +400,6 @@ class CreateWhitelist:
 
 
 def parse_args():
-
     parser = argparse.ArgumentParser(description="Check and validate single packages")
     check_test_group = parser.add_argument_group("Arguments to run check tests")
     # [Library - settings]
