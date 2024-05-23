@@ -16,13 +16,13 @@ def merge_workflow(
         merge_library_mos_scripts: str,
         temporary_mos_path: str,
 ):
-    # mer = merger.IBPSA(
-    #     ibpsa_dir=str(Path(merge_library_dir).joinpath(merge_library)),
-    #     dest_dir=str(Path(library_dir).joinpath(library))
-    # )
-    # mer.set_excluded_directories(["Experimental", "Obsolete"])
-    # mer.merge()
-    # print("Merged.")
+    mer = merger.IBPSA(
+        ibpsa_dir=str(Path(merge_library_dir).joinpath(merge_library)),
+        dest_dir=str(Path(library_dir).joinpath(library))
+    )
+    mer.set_excluded_directories(["Experimental", "Obsolete"])
+    mer.merge()
+    print("Merged.")
 
     temporary_mos_path = Path().joinpath(temporary_mos_path)
     merge_library_scripts_dir = Path(merge_library_dir).joinpath(merge_library, merge_library_mos_scripts)
