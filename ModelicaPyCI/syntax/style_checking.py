@@ -75,26 +75,21 @@ class StyleCheck(ci_config):
             print(f'{CI_CONFIG.color.CRED}Test failed. Look in {self.library}_StyleErrorLog.html{CI_CONFIG.color.CEND}')
             return 1
 
-
-class Parser:
-    def __init__(self, args):
-        self.args = args
-
-    def main(self):
-        parser = argparse.ArgumentParser(description="Check the Style of Packages")
-        check_test_group = parser.add_argument_group("Arguments to start style tests")
-        check_test_group.add_argument("--packages", default=["Airflow"], nargs="+",
-                                      help="Library to test (e.g. Airflow.Multizone)")
-        check_test_group.add_argument("--root-library", default=Path("AixLib", "package.mo"),
-                                      help="root of library",
-                                      type=Path)
-        check_test_group.add_argument("--library", default="AixLib",
-                                      help="Path where top-level package.mo of the library is located")
-        check_test_group.add_argument("--dymola-version", default="2022",
-                                      help="Version of Dymola(Give the number e.g. 2022")
-        check_test_group.add_argument("--changed-flag", default=False, action="store_true")
-        args = parser.parse_args()
-        return args
+def parse_args():
+    parser = argparse.ArgumentParser(description="Check the Style of Packages")
+    check_test_group = parser.add_argument_group("Arguments to start style tests")
+    check_test_group.add_argument("--packages", default=["Airflow"], nargs="+",
+                                  help="Library to test (e.g. Airflow.Multizone)")
+    check_test_group.add_argument("--root-library", default=Path("AixLib", "package.mo"),
+                                  help="root of library",
+                                  type=Path)
+    check_test_group.add_argument("--library", default="AixLib",
+                                  help="Path where top-level package.mo of the library is located")
+    check_test_group.add_argument("--dymola-version", default="2022",
+                                  help="Version of Dymola(Give the number e.g. 2022")
+    check_test_group.add_argument("--changed-flag", default=False, action="store_true")
+    args = parser.parse_args()
+    return args
 
 
 if __name__ == '__main__':

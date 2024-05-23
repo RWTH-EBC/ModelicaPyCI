@@ -505,61 +505,57 @@ class PlotCharts(ci_config):
             print(f'Setting package: {self.package}\n')
 
 
-class Parser:
-    def __init__(self, args):
-        self.args = args
-
-    def main(self):
-        parser = argparse.ArgumentParser(description='Plot diagramms')
-        unit_test_group = parser.add_argument_group("arguments to plot diagrams")
-        # [Library - settings]
-        unit_test_group.add_argument("--packages",
-                                     default="Airflow",
-                                     metavar="Modelica.Package",
-                                     help="Test only the Modelica package Modelica.Package")
-        unit_test_group.add_argument("--library", default="AixLib", help="Library to test")
-        # [ bool - flag]
-        unit_test_group.add_argument("--line-html-flag",
-                                     help='plot a google html chart in line form',
-                                     default=True,
-                                     action="store_true")
-        unit_test_group.add_argument("--error-flag",
-                                     default=True,
-                                     help='Plot only model with errors',
-                                     action="store_true")
-        unit_test_group.add_argument("--funnel-comp-flag", default=True,
-                                     help="Take the datas from funnel_comp",
-                                     action="store_true")
-        unit_test_group.add_argument("--create-layout-flag",
-                                     default=True,
-                                     help='Create a layout with a plots',
-                                     action="store_true")
-        unit_test_group.add_argument("--line-matplot-flag",
-                                     help='plot a matlab chart ',
-                                     default=False,
-                                     action="store_true")
-        unit_test_group.add_argument("--new-ref-flag",
-                                     help="Plot new models with new created reference files",
-                                     default=False,
-                                     action="store_true")
-        unit_test_group.add_argument("--show-ref-flag",
-                                     help='Plot only model on the interact ci list',
-                                     default=False,
-                                     action="store_true")
-        unit_test_group.add_argument("--update-ref-flag",
-                                     help='Plot only updated models',
-                                     default=False,
-                                     action="store_true")
-        unit_test_group.add_argument("--show-package-flag",
-                                     help='Plot only updated models',
-                                     default=False,
-                                     action="store_true")
-        unit_test_group.add_argument("--ref-txt-flag",
-                                     help="Take the datas from reference datas",
-                                     default=False,
-                                     action="store_true")
-        args = parser.parse_args()
-        return args
+def parse_args():
+    parser = argparse.ArgumentParser(description='Plot diagramms')
+    unit_test_group = parser.add_argument_group("arguments to plot diagrams")
+    # [Library - settings]
+    unit_test_group.add_argument("--packages",
+                                 default="Airflow",
+                                 metavar="Modelica.Package",
+                                 help="Test only the Modelica package Modelica.Package")
+    unit_test_group.add_argument("--library", default="AixLib", help="Library to test")
+    # [ bool - flag]
+    unit_test_group.add_argument("--line-html-flag",
+                                 help='plot a google html chart in line form',
+                                 default=True,
+                                 action="store_true")
+    unit_test_group.add_argument("--error-flag",
+                                 default=True,
+                                 help='Plot only model with errors',
+                                 action="store_true")
+    unit_test_group.add_argument("--funnel-comp-flag", default=True,
+                                 help="Take the datas from funnel_comp",
+                                 action="store_true")
+    unit_test_group.add_argument("--create-layout-flag",
+                                 default=True,
+                                 help='Create a layout with a plots',
+                                 action="store_true")
+    unit_test_group.add_argument("--line-matplot-flag",
+                                 help='plot a matlab chart ',
+                                 default=False,
+                                 action="store_true")
+    unit_test_group.add_argument("--new-ref-flag",
+                                 help="Plot new models with new created reference files",
+                                 default=False,
+                                 action="store_true")
+    unit_test_group.add_argument("--show-ref-flag",
+                                 help='Plot only model on the interact ci list',
+                                 default=False,
+                                 action="store_true")
+    unit_test_group.add_argument("--update-ref-flag",
+                                 help='Plot only updated models',
+                                 default=False,
+                                 action="store_true")
+    unit_test_group.add_argument("--show-package-flag",
+                                 help='Plot only updated models',
+                                 default=False,
+                                 action="store_true")
+    unit_test_group.add_argument("--ref-txt-flag",
+                                 help="Take the datas from reference datas",
+                                 default=False,
+                                 action="store_true")
+    args = parser.parse_args()
+    return args
 
 
 

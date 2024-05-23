@@ -180,41 +180,36 @@ class PullRequestGithub(object):
         response = requests.request("POST", url, headers=headers, data=payload)
 
 
-class Parser:
-    def __init__(self, args):
-        self.args = args
+def parse_args():
+    parser = argparse.ArgumentParser(description="Set Github Environment Variables")
+    check_test_group = parser.add_argument_group("Arguments to set Environment Variables")
+    # [Github - settings]
+    check_test_group.add_argument("--github-repository", default="RWTH-EBC/AixLib",
+                                  help="Environment Variable owner/RepositoryName")
+    check_test_group.add_argument("--working-branch", default="${TARGET_BRANCH}",
+                                  help="Your current working Branch")
+    check_test_group.add_argument("--base-branch", default="main",
+                                  help="your base branch (main)")
+    check_test_group.add_argument("--github-token", default="${GITHUB_API_TOKEN}",
+                                  help="Your Set GITHUB Token")
+    check_test_group.add_argument("--gitlab-page", default="${GITLAB_Page}", help="Set your gitlab page url")
 
-    def main(self):
-        parser = argparse.ArgumentParser(description="Set Github Environment Variables")
-        check_test_group = parser.add_argument_group("Arguments to set Environment Variables")
-        # [Github - settings]
-        check_test_group.add_argument("--github-repository", default="RWTH-EBC/AixLib",
-                                      help="Environment Variable owner/RepositoryName")
-        check_test_group.add_argument("--working-branch", default="${TARGET_BRANCH}",
-                                      help="Your current working Branch")
-        check_test_group.add_argument("--base-branch", default="main",
-                                      help="your base branch (main)")
-        check_test_group.add_argument("--github-token", default="${GITHUB_API_TOKEN}",
-                                      help="Your Set GITHUB Token")
-        check_test_group.add_argument("--gitlab-page", default="${GITLAB_Page}", help="Set your gitlab page url")
+    # [ bool - flag
+    check_test_group.add_argument("--prepare-plot-flag", help="Plot new models with new created reference files",
+                                  action="store_true", default=False)
+    check_test_group.add_argument("--show-plot-flag", help="Plot new models with new created reference files",
+                                  action="store_true", default=False)
+    check_test_group.add_argument("--post-pr-comment-flag", help="Plot new models with new created reference files",
+                                  action="store_true", default=False)
+    check_test_group.add_argument("--create-pr-flag", help="Plot new models with new created reference files",
+                                  action="store_true", default=False)
+    check_test_group.add_argument("--correct-html-flag", help="Plot new models with new created reference files",
+                                  action="store_true", default=False)
+    check_test_group.add_argument("--ibpsa-merge-flag", help="Plot new models with new created reference files",
+                                  action="store_true", default=False)
+    check_test_group.add_argument("--merge-request", help="Comment for a IBPSA Merge request", action="store_true")
 
-        # [ bool - flag
-        check_test_group.add_argument("--prepare-plot-flag", help="Plot new models with new created reference files",
-                                      action="store_true", default=False)
-        check_test_group.add_argument("--show-plot-flag", help="Plot new models with new created reference files",
-                                      action="store_true", default=False)
-        check_test_group.add_argument("--post-pr-comment-flag", help="Plot new models with new created reference files",
-                                      action="store_true", default=False)
-        check_test_group.add_argument("--create-pr-flag", help="Plot new models with new created reference files",
-                                      action="store_true", default=False)
-        check_test_group.add_argument("--correct-html-flag", help="Plot new models with new created reference files",
-                                      action="store_true", default=False)
-        check_test_group.add_argument("--ibpsa-merge-flag", help="Plot new models with new created reference files",
-                                      action="store_true", default=False)
-        check_test_group.add_argument("--merge-request", help="Comment for a IBPSA Merge request", action="store_true")
-
-        args = parser.parse_args()
-        return args
+    return parser.parse_args()
 
 
 if __name__ == '__main__':

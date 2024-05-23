@@ -330,23 +330,20 @@ class SlackNotification(object):
         except SlackApiError as e:
             logger.error(f"Error posting message: {e}")
 
-class Parser:
 
-    def __init__(self, args):
-        self.args = args
 
-    def main(self):
-        parser = argparse.ArgumentParser(
-            description="Set Github Environment Variables")  # Configure the argument parser
-        check_test_group = parser.add_argument_group("Arguments to set Environment Variables")
-        check_test_group.add_argument('-GT', "--github-token", default="${GITHUB_API_TOKEN}", help="Set GITHUB Token")
-        check_test_group.add_argument('-BB', "--base-branch", default="development", help="your base branch")
-        check_test_group.add_argument('-ST', "--slack-token", default="${secrets.SLACK_BOT_TOKEN}",
-                                      help="Your Set Slack Token")
-        check_test_group.add_argument("-GR", "--github-repository", default="RWTH-EBC/AixLib",
-                                      help="Environment Variable owner/RepositoryName")
-        args = parser.parse_args()
-        return args
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Set Github Environment Variables")  # Configure the argument parser
+    check_test_group = parser.add_argument_group("Arguments to set Environment Variables")
+    check_test_group.add_argument('-GT', "--github-token", default="${GITHUB_API_TOKEN}", help="Set GITHUB Token")
+    check_test_group.add_argument('-BB', "--base-branch", default="development", help="your base branch")
+    check_test_group.add_argument('-ST', "--slack-token", default="${secrets.SLACK_BOT_TOKEN}",
+                                  help="Your Set Slack Token")
+    check_test_group.add_argument("-GR", "--github-repository", default="RWTH-EBC/AixLib",
+                                  help="Environment Variable owner/RepositoryName")
+    args = parser.parse_args()
+    return args
 
 
 

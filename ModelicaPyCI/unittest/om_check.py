@@ -515,51 +515,41 @@ class CheckOpenModelica(ci_config):
             print(f'No Models to compare.')
             exit(0)
 
-
-class Parser:
-    def __init__(self, args):
-        """
-
-        Args:
-            args:
-        """
-        self.args = args
-
-    def main(self):
-        parser = argparse.ArgumentParser(description="Check and validate single packages")
-        check_test_group = parser.add_argument_group("Arguments to run check tests")
-        # [Library - settings]
-        """check_test_group.add_argument("--library", dest="libraries", action=StoreDictKeyPair, nargs="*",
-                                      metavar="Library1=Path_Lib1 Library2=Path_Lib2")
-        check_test_group.add_argument("--package", dest="packages", action=StoreDictKeyPairList, nargs="*",
-                                      metavar="Library1=Package1,Package2 Library2=Package3,Package4")"""
-        check_test_group.add_argument("--library", default="AixLib", help="Library to test (e.g. AixLib")
-        check_test_group.add_argument("--packages", default=["Airflow"], nargs="+", help="Library to test (e.g. Airflow.Multizone)")
-        check_test_group.add_argument("--root-library", default=Path("AixLib", "package.mo"), help="root of library",
-                                      type=Path)
-        check_test_group.add_argument("--wh-library",
-                                      default="IBPSA",
-                                      help="Library on whitelist")
-        # [ bool - flag]
-        check_test_group.add_argument("--changed-flag",
-                                      default=False,
-                                      action="store_true")
-        check_test_group.add_argument("--filter-wh-flag",
-                                      default=False,
-                                      action="store_true")
-        check_test_group.add_argument("--extended-ex-flag",
-                                      default=False,
-                                      action="store_true")
-        check_test_group.add_argument("--load-setting-flag",
-                                      default=False,
-                                      action="store_true")
-        # [OM - Options: OM_CHECK, OM_SIM, DYMOLA_SIM, COMPARE]
-        check_test_group.add_argument("--om-options",
-                                      nargs="+",
-                                      default=["OM_CHECK"],
-                                      help="Chose between openmodelica check, compare or simulate")
-        args = parser.parse_args()
-        return args
+def parse_args():
+    parser = argparse.ArgumentParser(description="Check and validate single packages")
+    check_test_group = parser.add_argument_group("Arguments to run check tests")
+    # [Library - settings]
+    """check_test_group.add_argument("--library", dest="libraries", action=StoreDictKeyPair, nargs="*",
+                                  metavar="Library1=Path_Lib1 Library2=Path_Lib2")
+    check_test_group.add_argument("--package", dest="packages", action=StoreDictKeyPairList, nargs="*",
+                                  metavar="Library1=Package1,Package2 Library2=Package3,Package4")"""
+    check_test_group.add_argument("--library", default="AixLib", help="Library to test (e.g. AixLib")
+    check_test_group.add_argument("--packages", default=["Airflow"], nargs="+", help="Library to test (e.g. Airflow.Multizone)")
+    check_test_group.add_argument("--root-library", default=Path("AixLib", "package.mo"), help="root of library",
+                                  type=Path)
+    check_test_group.add_argument("--wh-library",
+                                  default="IBPSA",
+                                  help="Library on whitelist")
+    # [ bool - flag]
+    check_test_group.add_argument("--changed-flag",
+                                  default=False,
+                                  action="store_true")
+    check_test_group.add_argument("--filter-wh-flag",
+                                  default=False,
+                                  action="store_true")
+    check_test_group.add_argument("--extended-ex-flag",
+                                  default=False,
+                                  action="store_true")
+    check_test_group.add_argument("--load-setting-flag",
+                                  default=False,
+                                  action="store_true")
+    # [OM - Options: OM_CHECK, OM_SIM, DYMOLA_SIM, COMPARE]
+    check_test_group.add_argument("--om-options",
+                                  nargs="+",
+                                  default=["OM_CHECK"],
+                                  help="Chose between openmodelica check, compare or simulate")
+    args = parser.parse_args()
+    return args
 
 
 
