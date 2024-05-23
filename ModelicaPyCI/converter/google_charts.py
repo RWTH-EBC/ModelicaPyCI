@@ -561,7 +561,7 @@ def parse_args():
 
 
 if __name__ == '__main__':
-    args = Parser(sys.argv[1:]).main()
+    args = parse_args()
     conf = ci_config()
     check = config_structure
     check.create_path(conf.chart_dir)

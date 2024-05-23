@@ -93,7 +93,7 @@ def parse_args():
 
 
 if __name__ == '__main__':
-    args = Parser(sys.argv[1:]).main()
+    args = parse_args()
     dym = PythonDymolaInterface.load_modelicapyci_interface(dymola_version=args.dymola_version)
     dymola = dym[0]
     dymola_exception = dym[1]

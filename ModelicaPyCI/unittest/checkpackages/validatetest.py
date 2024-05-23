@@ -439,7 +439,7 @@ def parse_args():
 
 if __name__ == '__main__':
     # Load Parser arguments
-    args = Parser(sys.argv[1:]).main()
+    args = parse_args()
     # Load dymola python interface and dymola exception
     if args.load_setting_flag is True:
         data = toml.load(Path("config", "toml_files", "script_settings.toml"))

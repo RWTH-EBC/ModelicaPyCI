@@ -554,7 +554,7 @@ def parse_args():
 
 
 if __name__ == '__main__':
-    args = Parser(sys.argv[1:]).main()
+    args = parse_args()
     # [Settings]
     if args.load_setting_flag is True:
         toml_file = f'test_config.toml'

@@ -448,7 +448,7 @@ if __name__ == '__main__':
     # todo: Package list bearbeiten.
     # todo: /bin/sh: 1: xdg-settings: not found
     # todo: Template für push hat changed:flag drin, ist falsch
-    args = Parser(sys.argv[1:]).main()
+    args = parse_args()
     dymola, dymola_exception = PythonDymolaInterface.load_modelicapyci_interface(dymola_version=args.dymola_version)
     for package in args.packages:
         if args.validate_html_only:

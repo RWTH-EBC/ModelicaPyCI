@@ -67,7 +67,7 @@ def parse_args(self):
     return parser.parse_args()  # Parse the arguments
 
 if __name__ == '__main__':
-    args = Parser(sys.argv[1:]).main()
+    args = parse_args()
     if args.create_path is True:
         if args.config_dir is True:
             _create_folder(path=CI_CONFIG.results.config_dir)

@@ -153,6 +153,6 @@ def parse_args():
 
 
 if __name__ == '__main__':
-    args = Parser(sys.argv[1:]).main()
+    args = parse_args()
     lock = LockModel(library=args.library, lock_library=args.lock_library)
     lock.call_lock_model()

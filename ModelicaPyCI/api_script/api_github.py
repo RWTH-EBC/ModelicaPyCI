@@ -160,7 +160,7 @@ def parse_args():
 
 
 if __name__ == '__main__':
-    args = Parser(sys.argv[1:]).main()
+    args = parse_args()
     git_diff()
     """pull_request = PullRequestGithub(github_repo=args.github_repository,
                                        working_branch=args.working_branch,
