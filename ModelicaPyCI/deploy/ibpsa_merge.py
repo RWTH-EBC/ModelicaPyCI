@@ -75,8 +75,8 @@ def _read_library_conversions(library_scripts_dir: Path):
     """
     filelist = (glob.glob(f'{library_scripts_dir}{os.sep}*.mos'))
     if len(filelist) == 0:
-        print("Cant find a Conversion Script in Repo to update")
-        exit(0)
+        print(f"Cant find a Conversion Script in {library_scripts_dir}")
+        exit(1)
     filelist = natsorted(filelist)[::-1]
     print(f'Conversion scripts: {filelist}')
     return filelist
@@ -96,8 +96,8 @@ def _copy_merge_mos_script(
         os.mkdir(temporary_mos_path)
     mos_file_list = (glob.glob(f"{merge_library_scripts_dir}{os.sep}*.mos"))
     if len(mos_file_list) == 0:
-        print(f'Cant find a Conversion Script in IBPSA Repo')
-        exit(0)
+        print(f'Cant find a Conversion Script in path {merge_library_scripts_dir}')
+        exit(1)
     last_ibpsa_conv = natsorted(mos_file_list)[(-1)]
     last_ibpsa_conv = last_ibpsa_conv.replace("/", os.sep)
     last_ibpsa_conv = last_ibpsa_conv.replace("\\", os.sep)
