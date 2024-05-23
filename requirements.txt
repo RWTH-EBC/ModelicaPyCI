@@ -23,9 +23,4 @@ matplotlib
 lib-platform
 toml
 tomli_w
-
-
-
-
-
-
+buildingspy>=5.1.0

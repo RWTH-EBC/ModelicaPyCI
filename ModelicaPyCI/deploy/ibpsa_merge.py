@@ -8,33 +8,37 @@ from buildingspy.development import merger
 
 
 def merge_workflow(
-        library_dir: Path,
-        merge_library_dir: Path,
-        temporary_mos_path: Path,
         library: str,
-        merge_library: str
+        library_dir: str,
+        library_mos_scripts: str,
+        merge_library: str,
+        merge_library_dir: str,
+        merge_library_mos_scripts: str,
+        temporary_mos_path: str,
 ):
-    mer = merger.IBPSA(
-        ibpsa_dir=str(Path(merge_library_dir).joinpath(merge_library)),
-        dest_dir=str(Path(library_dir).joinpath(library))
-    )
-    mer.set_excluded_directories(["Experimental", "Obsolete"])
-    mer.merge()
-    print("Merged.")
+    # mer = merger.IBPSA(
+    #     ibpsa_dir=str(Path(merge_library_dir).joinpath(merge_library)),
+    #     dest_dir=str(Path(library_dir).joinpath(library))
+    # )
+    # mer.set_excluded_directories(["Experimental", "Obsolete"])
+    # mer.merge()
+    # print("Merged.")
 
+    temporary_mos_path = Path().joinpath(temporary_mos_path)
+    merge_library_scripts_dir = Path(merge_library_dir).joinpath(merge_library, merge_library_mos_scripts)
     last_mlibrary_conversion = _copy_merge_mos_script(
-        merge_library_dir=merge_library_dir, temporary_mos_path=temporary_mos_path
+        merge_library_scripts_dir=merge_library_scripts_dir, temporary_mos_path=temporary_mos_path
     )
-    last_library_conversion = _read_last_library_conversion(
-        library_dir=library_dir
-    )
-    result = _compare_conversion(library=library,
-                                 merge_library=merge_library,
-                                 last_mlibrary_conversion=last_mlibrary_conversion,
-                                 last_library_conversion=last_library_conversion)
+    library_scripts_dir = Path(library_dir).joinpath(library, library_mos_scripts)
+    library_conversions = _read_library_conversions(library_scripts_dir=library_scripts_dir)
+
+    result, last_library_conversion = _compare_conversion(library=library,
+                                                          merge_library=merge_library,
+                                                          last_mlibrary_conversion=last_mlibrary_conversion,
+                                                          library_conversions=library_conversions)
     if result is True:
         print(
-            f'The latest {library} conversion script '
+            f'The {library} conversion script '
             f'{last_library_conversion} is up to date with '
             f'{merge_library} conversion script {last_mlibrary_conversion}'
         )
@@ -46,7 +50,10 @@ def merge_workflow(
             last_mlibrary_conversion=last_mlibrary_conversion,
             last_library_conversion=last_library_conversion
         )
-        new_conversion_script = shutil.copy(file_new_conversion_script, library_dir)
+        new_conversion_script = shutil.copy(
+            file_new_conversion_script,
+            library_scripts_dir.joinpath(file_new_conversion_script.name)
+        )
         shutil.rmtree(temporary_mos_path)
         _add_conversion_script_to_package_mo(
             library=library,
@@ -55,30 +62,28 @@ def merge_workflow(
             old_to_numb=old_to_numb,
             new_to_numb=new_to_numb
         )
-        print(f'New {library} Conversion scrip was created: {file_new_conv}')
+        print(f'New {library} Conversion scrip was created: {new_conversion_script}')
     correct_user_guide(library_dir)
 
 
-def _read_last_library_conversion(library_dir: Path, ):
+def _read_library_conversions(library_scripts_dir: Path):
     """
     Read the last conversion mos script of library to update, e.g. AixLib
 
     Returns:
         Return the latest library conversion script
     """
-    filelist = (glob.glob(f'{library_dir}{os.sep}*.mos'))
+    filelist = (glob.glob(f'{library_scripts_dir}{os.sep}*.mos'))
     if len(filelist) == 0:
-        print("Cant find a Conversion Script in IBPSA Repo")
+        print("Cant find a Conversion Script in Repo to update")
         exit(0)
-    last_library_conversion = natsorted(filelist)[(-1)]
-    last_library_conversion = last_library_conversion.replace("/", os.sep)
-    last_library_conversion = last_library_conversion.replace("\\", os.sep)
-    print(f'Latest Conversion script: {last_library_conversion}')
-    return last_library_conversion
+    filelist = natsorted(filelist)[::-1]
+    print(f'Conversion scripts: {filelist}')
+    return filelist
 
 
 def _copy_merge_mos_script(
-        merge_library_dir: Path,
+        merge_library_scripts_dir: Path,
         temporary_mos_path: Path,
 ):
     """
@@ -89,7 +94,7 @@ def _copy_merge_mos_script(
         pass
     else:
         os.mkdir(temporary_mos_path)
-    mos_file_list = (glob.glob(str(merge_library_dir)))
+    mos_file_list = (glob.glob(f"{merge_library_scripts_dir}{os.sep}*.mos"))
     if len(mos_file_list) == 0:
         print(f'Cant find a Conversion Script in IBPSA Repo')
         exit(0)
@@ -136,7 +141,7 @@ def _create_convert(
     file_new_conv = temporary_mos_path.joinpath(f"Convert{library}_from_{new_conv_number}.mos")
     with open(last_mlibrary_conversion, "r") as file:
         lines = file.readlines()
-    with open(last_library_conversion, "w+") as library_file:
+    with open(file_new_conv, "w+") as library_file:
         for line in lines:
             if line.find(f'Conversion script for {merge_library} library') > -1:
                 library_file.write(line)
@@ -148,26 +153,23 @@ def _create_convert(
     return file_new_conv, old_to_numb, new_to_numb
 
 
-def _compare_conversion(library: str, merge_library: str, last_mlibrary_conversion, last_library_conversion):
+def _compare_conversion(library: str, merge_library: str, last_mlibrary_conversion, library_conversions):
     """
     Compare the latest library conversion script with the latest merge library conversion script
     Args:
         last_mlibrary_conversion (): latest merge library conversion script
-        last_library_conversion (): latest library conversion script
+        library_conversions (): library conversion scripts
     Returns:
         False (): Boolean argument: True - Conversion script is up-to-date , False Conversion script is not up-to-date
     """
-    result = True
     with open(last_mlibrary_conversion) as file_1:
-        file_1_text = file_1.readlines()
-    with open(last_library_conversion) as file_2:
-        file_2_text = file_2.readlines()
-    for line1, line2 in zip(file_1_text, file_2_text):
-        if line1 == line2.replace(library, merge_library):
-            continue
-        else:
-            result = False
-    return result
+        file_1_lines = file_1.readlines()[:3]
+    for file in library_conversions:
+        with open(file) as file_2:
+            file_2_lines = file_2.readlines()[:3]
+        if all(line_1 == line_2 for line_1, line_2 in zip(file_1_lines, file_2_lines)):
+            return True, file
+    return False, library_conversions[0]
 
 
 def _add_conversion_script_to_package_mo(
@@ -234,30 +236,49 @@ def correct_user_guide(library_dir: Path):
 def parse_args():
     parser = argparse.ArgumentParser(description="Variables to start a library merge")
     check_test_group = parser.add_argument_group("Arguments to set environment variables")
-    check_test_group.add_argument("--library-dir",
-                                  default="AixLib\\Resources\\Scripts",
-                                  help="path to the library scripts")
-    check_test_group.add_argument("--merge-library-dir",
-                                  default='modelica-ibpsa\\IBPSA\\Resources\\Scripts\\Conversion\\ConvertIBPSA_*',
-                                  help="path to the merge library scripts")
-    check_test_group.add_argument("--temporary-mos-path",
-                                  default="Convertmos",
-                                  help="Folder where the conversion scripts are stored temporarily")
     check_test_group.add_argument("--library",
                                   default="AixLib",
                                   help="Library to be merged into")
+    check_test_group.add_argument("--library-dir",
+                                  default="AixLib\\Resources\\Scripts",
+                                  help="path to the library scripts")
+    check_test_group.add_argument("--library-mos-scripts",
+                                  default='Resources\\Scripts',
+                                  help="path to the library scripts, relative to Modelica package")
     check_test_group.add_argument("--merge-library",
                                   default='IBPSA',
                                   help="Library to be merged")
+    check_test_group.add_argument("--merge-library-dir",
+                                  default='modelica-ibpsa\\IBPSA\\Resources\\Scripts\\Conversion\\ConvertIBPSA_*',
+                                  help="path to the merge library")
+    check_test_group.add_argument("--temporary-mos-path",
+                                  default="Convertmos",
+                                  help="Folder where the conversion scripts are stored temporarily")
+    check_test_group.add_argument("--merge-library-mos-scripts",
+                                  default='Resources\\Scripts\\Conversion',
+                                  help="path to the merge library scripts, relative to Modelica package")
     return parser.parse_args()
 
 
 if __name__ == '__main__':
+    merge_workflow(
+        library_dir=r"D:\04_git\AixLib",
+        merge_library_dir=r"D:\04_git\modelica-ibpsa",
+        temporary_mos_path="TempMOSPATH",
+        merge_library_mos_scripts="Resources\\Scripts\\Conversion",
+        library_mos_scripts="Resources\\Scripts",
+        library="AixLib",
+        merge_library="IBPSA"
+    )
+    raise Exception
+
     ARGS = parse_args()
     merge_workflow(
-        library_dir=ARGS.library_dir,
-        merge_library_dir=ARGS.merge_library_dir,
-        temporary_mos_path=ARGS.temporary_mos_path,
         library=ARGS.library,
-        merge_library=ARGS.merge_library
+        library_dir=ARGS.library_dir,
+        library_mos_scripts=ARGS.library_mos_scripts,
+        merge_library=ARGS.merge_library,
+        merge_library_dir=ARGS.merge_library_dir,
+        merge_library_mos_scripts=ARGS.merge_library_mos_scripts,
+        temporary_mos_path=ARGS.temporary_mos_path,
     )

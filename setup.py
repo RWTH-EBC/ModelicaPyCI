@@ -10,6 +10,7 @@ with open("dependency_requirements.txt", 'r') as f:
     dep_required = f.read().splitlines()
 version = "0.1.0"
 
+
 def copy_non_code_file(non_code_dir:list, not_include:list):
     path_file_dict = {}
     for filename in non_code_dir:
