@@ -240,22 +240,22 @@ def parse_args():
                                   default="AixLib",
                                   help="Library to be merged into")
     check_test_group.add_argument("--library-dir",
-                                  default="AixLib\\Resources\\Scripts",
+                                  default="AixLib/Resources/Scripts",
                                   help="path to the library scripts")
     check_test_group.add_argument("--library-mos-scripts",
-                                  default='Resources\\Scripts',
+                                  default='Resources/Scripts',
                                   help="path to the library scripts, relative to Modelica package")
     check_test_group.add_argument("--merge-library",
                                   default='IBPSA',
                                   help="Library to be merged")
     check_test_group.add_argument("--merge-library-dir",
-                                  default='modelica-ibpsa\\IBPSA\\Resources\\Scripts\\Conversion\\ConvertIBPSA_*',
+                                  default='modelica-ibpsa/IBPSA/Resources/Scripts/Conversion/ConvertIBPSA_*',
                                   help="path to the merge library")
     check_test_group.add_argument("--temporary-mos-path",
                                   default="Convertmos",
                                   help="Folder where the conversion scripts are stored temporarily")
     check_test_group.add_argument("--merge-library-mos-scripts",
-                                  default='Resources\\Scripts\\Conversion',
+                                  default='Resources/Scripts/Conversion',
                                   help="path to the merge library scripts, relative to Modelica package")
     return parser.parse_args()
 
