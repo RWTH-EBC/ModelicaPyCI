@@ -84,10 +84,6 @@ class InteractConfig(BaseModel):
 
 
 class CIConfig(BaseModel):
-    dymola_ci_test_dir: str = 'dymola-ci-tests'
-    dymola_python_test_dir: str = 'Modelica-CI'
-    dymola_python_test_url: str = '--single-branch --branch 03_openModelica https://github.com/RWTH-EBC/Modelica-CI.git'
-
     result: ResultConfig = ResultConfig()
     color: ColorConfig = ColorConfig()
     config_ci: FilesConfig = FilesConfig()

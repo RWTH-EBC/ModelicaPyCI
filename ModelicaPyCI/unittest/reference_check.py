@@ -453,7 +453,7 @@ if __name__ == '__main__':
     # todo: /bin/sh: 1: xdg-settings: not found
     # todo: Template für push hat changed:flag drin, ist falsch
     args = Parser(sys.argv[1:]).main()
-    dymola, dymola_exception = PythonDymolaInterface.load_dymola_python_interface(dymola_version=args.dymola_version)
+    dymola, dymola_exception = PythonDymolaInterface.load_modelicapyci_interface(dymola_version=args.dymola_version)
     for package in args.packages:
         if args.validate_html_only:
             var = BuildingspyValidateTest(validate=validate,
@@ -500,7 +500,7 @@ if __name__ == '__main__':
                 ref_model.delete_ref_file(ref_list=ref_list)
                 package_list = ref_model.get_update_package(ref_list=ref_list)
             else:
-                config_structure.check_path_setting(Path("..", CI_CONFIG.config_ci.dir), create_flag=True)
+                config_structure.check_path_setting(Path("..", CI_CONFIG.config_ci.folder_name), create_flag=True)
                 if args.changed_flag is False:
                     config_structure.create_files(Path("..", CI_CONFIG.config_ci.exit_file))
                     package_list = args.packages

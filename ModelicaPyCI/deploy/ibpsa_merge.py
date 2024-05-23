@@ -4,6 +4,7 @@ import os
 import glob
 import shutil
 from natsort import natsorted
+from buildingspy.development import merger
 
 
 def merge_workflow(
@@ -13,6 +14,11 @@ def merge_workflow(
         library: str,
         merge_library: str
 ):
+    mer = merger.IBPSA(merge_library_dir, library_dir)
+    mer.set_excluded_directories(["Experimental", "Obsolete"])
+    mer.merge()
+    print("Merged.")
+
     last_mlibrary_conversion = _copy_merge_mos_script(
         merge_library_dir=merge_library_dir, mos_path=mos_path
     )

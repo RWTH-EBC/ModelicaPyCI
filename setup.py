@@ -38,7 +38,7 @@ setup(
     long_description_content_type='text/markdown',
     author='Sven Hinrichs',
     author_email='sven.hinrichs@eonerc.rwth-aachen.de',
-    url="https://git.rwth-aachen.de/EBC/EBC_all/gitlab_ci/Dymola_python_tests",
+    url="https://git.rwth-aachen.de/EBC/EBC_all/gitlab_ci/modelicapyci_tests",
     packages=find_packages(include=['ModelicaPyCI*',
                                     'config*',
                                     'templates*']),

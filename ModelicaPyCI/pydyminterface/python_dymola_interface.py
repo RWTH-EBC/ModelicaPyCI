@@ -138,7 +138,7 @@ class PythonDymolaInterface:
         sys.path.append(os.path.join(os.path.abspath('.'), "..", "..", "BuildingsPy"))
 
     @staticmethod
-    def load_dymola_python_interface(dymola_version: int = 2022):
+    def load_modelicapyci_interface(dymola_version: int = 2022):
         """
         Load dymola python interface and dymola exception
         Args:

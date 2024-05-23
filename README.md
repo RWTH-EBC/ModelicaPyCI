@@ -23,8 +23,8 @@ Create or update a pull request.
 #### GitLab
 | GitLab Variables | Description                                                                                                                                                                      | 
 |------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
-| CI_PYTHON_DYMOLA_NAME   | Deploy Username for Repository [Dymola_python_tests](https://git.rwth-aachen.de/EBC/EBC_all/gitlab_ci/Dymola_python_tests)                                                       |
-| CI_PYTHON_DYMOLA_TOKEN   | Deploy Token for Repository [Dymola_python_tests](https://git.rwth-aachen.de/EBC/EBC_all/gitlab_ci/Dymola_python_tests)                                                          |
+| CI_PYTHON_DYMOLA_NAME   | Deploy Username for Repository [modelicapyci_tests](https://git.rwth-aachen.de/EBC/EBC_all/gitlab_ci/modelicapyci_tests)                                                       |
+| CI_PYTHON_DYMOLA_TOKEN   | Deploy Token for Repository [modelicapyci_tests](https://git.rwth-aachen.de/EBC/EBC_all/gitlab_ci/modelicapyci_tests)                                                          |
 | GITHUB_API_TOKEN | API Github [Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)                                              |
 | GITHUB_PRIVATE_KEY  | RSA Private [Key](https://docs.github.com/de/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent), Used to push to a repository |
 
