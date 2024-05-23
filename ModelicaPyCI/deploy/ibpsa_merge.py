@@ -14,7 +14,10 @@ def merge_workflow(
         library: str,
         merge_library: str
 ):
-    mer = merger.IBPSA(merge_library_dir, library_dir)
+    mer = merger.IBPSA(
+        ibpsa_dir=Path(merge_library_dir).joinpath(merge_library),
+        dest_dir=Path(library_dir).joinpath(library)
+    )
     mer.set_excluded_directories(["Experimental", "Obsolete"])
     mer.merge()
     print("Merged.")
