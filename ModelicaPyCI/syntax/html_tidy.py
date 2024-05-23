@@ -4,7 +4,7 @@ import shutil
 from tidylib import tidy_document
 import sys
 from ModelicaPyCI.structure import config_structure
-from ModelicaPyCI.api_script.api_github import GitRepository
+from ModelicaPyCI.api_script.api_github import clone_repository
 from ModelicaPyCI.structure.sort_mo_model import ModelicaModel
 from ModelicaPyCI.config import CI_CONFIG
 
@@ -694,7 +694,7 @@ if __name__ == '__main__':
     if args.whitelist_flag is True:
         check.create_path(conf.whitelist_ci_dir)
         check.create_files(conf.whitelist_html_file)
-        GitRepository.clone_repository(repo_dir=args.root_whitelist_library, git_url=args.git_url)
+        clone_repository(repo_dir=args.root_whitelist_library, git_url=args.git_url)
         model_list = mo.get_models(library=args.whitelist_library,
                                    path=args.root_whitelist_library,
                                    simulate_flag=False,

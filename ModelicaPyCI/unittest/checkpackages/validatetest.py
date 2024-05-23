@@ -10,7 +10,7 @@ from ModelicaPyCI.structure.sort_mo_model import ModelicaModel
 from ModelicaPyCI.structure.toml_to_py import ConvertTypes
 from ModelicaPyCI.structure import config_structure
 from ModelicaPyCI.pydyminterface.python_dymola_interface import PythonDymolaInterface
-from ModelicaPyCI.api_script.api_github import GitRepository
+from ModelicaPyCI.api_script.api_github import clone_repository
 
 
 class CheckPythonDymola:
@@ -282,7 +282,7 @@ class CreateWhitelist:
         """
         root_whitelist_library = Path(whitelist_library, "package.mo")
         if git_url is not None and repo_dir is not None:
-            GitRepository.clone_repository(repo_dir=repo_dir, git_url=git_url)
+            clone_repository(repo_dir=repo_dir, git_url=git_url)
             root_whitelist_library = Path(Path.cwd(), repo_dir, whitelist_library, "package.mo")
         elif arg_root_whitelist_library is None:
             root_whitelist_library = Path(Path.cwd(), whitelist_library, "package.mo")

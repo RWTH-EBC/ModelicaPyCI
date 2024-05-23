@@ -6,65 +6,42 @@ import os
 from git import Repo
 import git
 
-class GitRepository(object):
+def clone_repository(repo_dir: Path, git_url: str):
+    """
+    Pull git repository.
 
-    #def __init__(self):
-    #    """
-    #    Args:
-    #        repo_dir ():  Folder of the cloned project.
-    #        git_url (): Git url of the cloned project.
-    #    """
-    #    pass
+    Args:
+        repo_dir ():  Folder of the cloned project.
+        git_url (): Git url of the cloned project.
+    """
+    if os.path.exists(repo_dir):
+        print(f'{repo_dir} folder already exists.')
+    else:
+        print(f'Clone {repo_dir} Repo')
+        Repo.clone_from(git_url, repo_dir)
 
-    @staticmethod
-    def clone_repository(repo_dir: Path, git_url: str):
-        """
-        Pull git repository.
+def git_diff():
+    # git diff --raw --diff-filter=AMT HEAD^1 >  dymola-ci-tests/Configfiles/ci_changed_model_list.txt
+    repo = git.Repo("")
+    t = repo.git()
+    diff_list = repo.head.commit.diff("HEAD~1")
+    _list = []
+    library = "ci_tests"
+    for file in diff_list:
 
-        Args:
-            repo_dir ():  Folder of the cloned project.
-            git_url (): Git url of the cloned project.
-        """
-        if os.path.exists(repo_dir):
-            print(f'{repo_dir} folder already exists.')
-        else:
-            print(f'Clone {repo_dir} Repo')
-            Repo.clone_from(git_url, repo_dir)
-
-    @staticmethod
-    def git_diff():
-        # git diff --raw --diff-filter=AMT HEAD^1 >  dymola-ci-tests/Configfiles/ci_changed_model_list.txt
-        repo = git.Repo("")
-        t = repo.git()
-        diff_list = repo.head.commit.diff("HEAD~1")
-        _list = []
-        library = "ci_tests"
-        for file in diff_list:
-
-            if library in str(file):
-                print(file)
-                _list.append(file)
+        if library in str(file):
+            print(file)
+            _list.append(file)
 
 
 class PullRequestGithub(object):
 
     def __init__(self, github_repo, working_branch, github_token):
-        """
-
-        Args:
-            github_repo ():
-            working_branch ():
-            github_token ():
-        """
         self.github_repo = github_repo
         self.working_branch = working_branch
         self.github_token = github_token
 
     def get_pr_number(self):
-        """
-        Returns:
-            pr_number (): Return the pull request number
-        """
         url = f'https://api.github.com/repos/{self.github_repo}/pulls'
         payload = {}
         headers = {'Content-Type': 'application/json'}
@@ -82,12 +59,6 @@ class PullRequestGithub(object):
                     return pr_number
 
     def get_github_username(self, branch):
-        """
-        Args:
-            branch ():
-        Returns:
-
-        """
         url = f'https://api.github.com/repos/{self.github_repo}/branches/{branch}'
         payload = {}
         headers = {}
@@ -113,17 +84,6 @@ class PullRequestGithub(object):
         return owner[0]
 
     def post_pull_request(self, owner, base_branch, pull_request_title, pull_request_message):
-        """
-
-        Args:
-            owner ():
-            base_branch ():
-            pull_request_title ():
-            pull_request_message ():
-
-        Returns:
-
-        """
         url = f'https://api.github.com/repos/{self.github_repo}/pulls'
         title = f'\"title\": \"{pull_request_title}\"'
         body = f'\"body\":\"{pull_request_message}\"'
@@ -139,13 +99,6 @@ class PullRequestGithub(object):
         return response
 
     def update_pull_request_assignees(self, pull_request_number, assignees_owner, label_name):
-        """
-
-        Args:
-            pull_request_number ():
-            assignees_owner ():
-            label_name ():
-        """
         url = f'https://api.github.com/repos/{self.github_repo}/issues/{str(pull_request_number)}'
         assignees = f'\"assignees\":[\"{assignees_owner}\"]'
         labels = f'\"labels\":[\"CI\", \"{label_name}\"]'
@@ -163,12 +116,6 @@ class PullRequestGithub(object):
         print(f'User {assignees_owner} assignee to pull request Number {str(pull_request_number)}')
 
     def post_pull_request_comment(self, pull_request_number, post_message):
-        """
-
-        Args:
-            pull_request_number ():
-            post_message ():
-        """
         url = f'https://api.github.com/repos/{self.github_repo}/issues/{str(pull_request_number)}/comments'
         message = f'{post_message}'
         body = f'\"body\":\"{message}\"'
@@ -214,7 +161,7 @@ def parse_args():
 
 if __name__ == '__main__':
     args = Parser(sys.argv[1:]).main()
-    GitRepository.git_diff()
+    git_diff()
     """pull_request = PullRequestGithub(github_repo=args.github_repository,
                                        working_branch=args.working_branch,
                                        github_token=args.github_token)
