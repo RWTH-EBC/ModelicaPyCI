@@ -261,16 +261,16 @@ def parse_args():
 
 
 if __name__ == '__main__':
-    merge_workflow(
-        library_dir=r"D:\04_git\AixLib",
-        merge_library_dir=r"D:\04_git\modelica-ibpsa",
-        temporary_mos_path="TempMOSPATH",
-        merge_library_mos_scripts="Resources\\Scripts\\Conversion",
-        library_mos_scripts="Resources\\Scripts",
-        library="AixLib",
-        merge_library="IBPSA"
-    )
-    raise Exception
+    # merge_workflow(
+    #     library_dir=r"D:\04_git\AixLib",
+    #     merge_library_dir=r"D:\04_git\modelica-ibpsa",
+    #     temporary_mos_path="TempMOSPATH",
+    #     merge_library_mos_scripts="Resources\\Scripts\\Conversion",
+    #     library_mos_scripts="Resources\\Scripts",
+    #     library="AixLib",
+    #     merge_library="IBPSA"
+    # )
+    # raise Exception
 
     ARGS = parse_args()
     merge_workflow(
