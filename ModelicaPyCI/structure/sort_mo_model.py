@@ -44,7 +44,8 @@ class ModelicaModel:
         Returns:
         """
         check = config_structure
-        check.check_arguments_settings(package, library, changed_flag, simulate_flag, filter_whitelist_flag, extended_ex_flag)
+        check.check_arguments_settings(package, library, changed_flag, simulate_flag, filter_whitelist_flag,
+                                       extended_ex_flag)
         if root_library is None:
             root_library = Path(path_dir, library, "package.mo")
         check.check_file_setting(root_library)
@@ -83,9 +84,9 @@ class ModelicaModel:
             check.check_path_setting(self.whitelist_ci_dir, create_flag=True)
             check.check_file_setting(file_list, create_flag=True)
             whitelist_list_models = self.get_whitelist_models(whitelist_file=ci_whitelist_file,
-                                                whitelist_library=whitelist_library,
-                                                library=library,
-                                                single_package=package)
+                                                              whitelist_library=whitelist_library,
+                                                              library=library,
+                                                              single_package=package)
             result = self.get_models(path=root_package,
                                      library=library,
                                      simulate_flag=simulate_flag,
@@ -100,7 +101,7 @@ class ModelicaModel:
                 model_list.extend(simulate_list)
                 model_list = list(set(model_list))
             model_list = self.filter_whitelist_models(models=model_list,
-                                               whitelist_list=whitelist_list_models)
+                                                      whitelist_list=whitelist_list_models)
         else:
             result = self.get_models(path=root_package,
                                      library=library,
@@ -220,9 +221,9 @@ class ModelicaModel:
 
     @staticmethod
     def get_whitelist_models(whitelist_file: str,
-                      whitelist_library: str,
-                      library: str,
-                      single_package: str):
+                             whitelist_library: str,
+                             library: str,
+                             single_package: str):
         """
         Returns: return models that are on the whitelist
         """

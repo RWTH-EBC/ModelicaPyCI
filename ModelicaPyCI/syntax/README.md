@@ -15,7 +15,7 @@ Return a log file.
 | --whitelist | Create a new whitelist for a Library.|
 | --correct-view  | Check and print the Correct HTML Code.|
 | --library  | library tested for correct html syntax.|
-| --wh-library | library tested for correct html syntax.|
+| --whitelist-library | library tested for correct html syntax.|
 | --git-url  | Url repository of a library for which a whitelist is written.|
 | --filter-whitelist | Argument that models on the whitelist are not tested (default: True).|
 
@@ -23,7 +23,7 @@ Return a log file.
 #### Example: Execution on gitlab runner (linux)
     python modelicapyci_tests/CITests/SyntaxTests/html_tidy_errors.py --s AixLib --correct-view --log  --filter-whitelist
     python modelicapyci_tests/CITests/SyntaxTests/html_tidy_errors.py --s AixLib --correct-overwrite --filter-whitelist --log
-    python modelicapyci_tests/CITests/SyntaxTests/html_tidy_errors.py --whitelist --git-url https://github.com/ibpsa/modelica-ibpsa.git --wh-library IBPSA
+    python modelicapyci_tests/CITests/SyntaxTests/html_tidy_errors.py --whitelist --git-url https://github.com/ibpsa/modelica-ibpsa.git --whitelist-library IBPSA
 
 ![ModelManagement_StyleChecking.PNG](../../Documentation/Images/HTMLProcess.png)
 For more information look at following [Repository](https://github.com/RWTH-EBC/HTML-Tidy-Modelica).

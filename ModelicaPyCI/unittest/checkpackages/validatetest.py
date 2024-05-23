@@ -98,7 +98,8 @@ class CheckPythonDymola:
                             if len(err_list) > 0:
                                 print(f'{CI_CONFIG.color.CRED}Error: {CI_CONFIG.color.CEND} {dym_model} \n{err_list}')
                             if len(warning_list) > 0:
-                                print(f'{CI_CONFIG.color.yellow} Warning: {CI_CONFIG.color.CEND} {dym_model} \n{warning_list}')
+                                print(
+                                    f'{CI_CONFIG.color.yellow} Warning: {CI_CONFIG.color.CEND} {dym_model} \n{warning_list}')
                             error_model_message_dic[dym_model] = log
                 except self.dymola_exception as ex:
                     print("Simulation failed: " + str(ex))
@@ -398,7 +399,6 @@ class CreateWhitelist:
             exit(1)
 
 
-
 def parse_args():
     parser = argparse.ArgumentParser(description="Check and validate single packages")
     check_test_group = parser.add_argument_group("Arguments to run check tests")
@@ -409,8 +409,8 @@ def parse_args():
     check_test_group.add_argument("--root-library", default=Path("AixLib", "package.mo"),
                                   help="root of library",
                                   type=Path)
-    check_test_group.add_argument("--wh-library", default="IBPSA", help="library on a whitelist")
-    check_test_group.add_argument("--root-wh-library",
+    check_test_group.add_argument("--whitelist-library", default="IBPSA", help="library on a whitelist")
+    check_test_group.add_argument("--root-whitelist-library",
                                   help="library on a whitelist")
 
     # [Dymola - settings]
@@ -419,9 +419,9 @@ def parse_args():
                                   help="Version of dymola (Give the number e.g. 2020")
     # [ bool - flag]
     check_test_group.add_argument("--changed-flag", default=False, action="store_true")
-    check_test_group.add_argument("--filter-wh-flag", default=False, action="store_true")
+    check_test_group.add_argument("--filter-whitelist-flag", default=False, action="store_true")
     check_test_group.add_argument("--extended-ex-flag", default=False, action="store_true")
-    check_test_group.add_argument("--create-wh-flag", help="Create a whitelist of a library with failed models.",
+    check_test_group.add_argument("--create-whitelist-flag", help="Create a whitelist of a library with failed models.",
                                   action="store_true")
     check_test_group.add_argument("--load-setting-flag",
                                   default=False,
@@ -447,7 +447,7 @@ if __name__ == '__main__':
         except_list = data["Dymola_Check"]["except_list"]
         additional_libraries_local = data["Dymola_Check"]["additional_libraries_local"]
         additional_libraries_local = ConvertTypes().convert_list_to_dict_toml(convert_list=additional_libraries_local,
-                                                                               whitelist_library=args.whitelist_library)
+                                                                              whitelist_library=args.whitelist_library)
     else:
         install_libraries = None
         except_list = None
@@ -487,8 +487,8 @@ if __name__ == '__main__':
                                                               exception_list=except_list,
                                                               sim_ex_flag=False)
                     error_log, ch_log = dym.write_error_log(pack=package,
-                                                                  error_dict=error_model_dict,
-                                                                  exception_list=except_list)
+                                                            error_dict=error_model_dict,
+                                                            exception_list=except_list)
                     var = dym.read_error_log(pack=package, err_log=error_log, check_log=ch_log)
                     option_check_dictionary[options] = var
 
@@ -504,8 +504,8 @@ if __name__ == '__main__':
                                                               exception_list=except_list,
                                                               sim_ex_flag=True)
                     error_log, ch_log = dym.write_error_log(pack=package,
-                                                                  error_dict=error_model_dict,
-                                                                  exception_list=except_list)
+                                                            error_dict=error_model_dict,
+                                                            exception_list=except_list)
                     var = dym.read_error_log(pack=package, err_log=error_log, check_log=ch_log)
                     option_check_dictionary[options] = var
             dym.return_exit_var(opt_check_dict=option_check_dictionary, pack=package)
@@ -522,10 +522,11 @@ if __name__ == '__main__':
                 version_check = CreateWhitelist.check_whitelist_version(version=version,
                                                                         whitelist_file=conf.whitelist_model_file)
                 if version_check is False:
-                    root_whitelist_library = CreateWhitelist.get_root_whitelist_library(whitelist_library=args.whitelist_library,
-                                                                          git_url=args.git_url,
-                                                                          repo_dir=args.repo_dir,
-                                                                          arg_root_whitelist_library=args.root_whitelist_library)
+                    root_whitelist_library = CreateWhitelist.get_root_whitelist_library(
+                        whitelist_library=args.whitelist_library,
+                        git_url=args.git_url,
+                        repo_dir=args.repo_dir,
+                        arg_root_whitelist_library=args.root_whitelist_library)
 
                     check.check_file_setting(root_whitelist_library)
                     wh = CreateWhitelist(dym=dymola,
@@ -555,10 +556,11 @@ if __name__ == '__main__':
                 version_check = CreateWhitelist.check_whitelist_version(version=version,
                                                                         whitelist_file=conf.whitelist_simulate_file)
                 if version_check is False:
-                    root_whitelist_library = CreateWhitelist.get_root_whitelist_library(whitelist_library=args.whitelist_library,
-                                                                          git_url=args.git_url,
-                                                                          repo_dir=args.repo_dir,
-                                                                          arg_root_whitelist_library=args.root_whitelist_library)
+                    root_whitelist_library = CreateWhitelist.get_root_whitelist_library(
+                        whitelist_library=args.whitelist_library,
+                        git_url=args.git_url,
+                        repo_dir=args.repo_dir,
+                        arg_root_whitelist_library=args.root_whitelist_library)
                     check.check_file_setting(root_whitelist_library)
                     wh = CreateWhitelist(dym=dymola,
                                          dymola_ex=dymola_exception,

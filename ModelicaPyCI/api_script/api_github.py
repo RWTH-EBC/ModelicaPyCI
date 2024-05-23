@@ -6,6 +6,7 @@ import os
 from git import Repo
 import git
 
+
 def clone_repository(repo_dir: Path, git_url: str):
     """
     Pull git repository.
@@ -19,6 +20,7 @@ def clone_repository(repo_dir: Path, git_url: str):
     else:
         print(f'Clone {repo_dir} Repo')
         Repo.clone_from(git_url, repo_dir)
+
 
 def git_diff():
     # git diff --raw --diff-filter=AMT HEAD^1 >  dymola-ci-tests/Configfiles/ci_changed_model_list.txt

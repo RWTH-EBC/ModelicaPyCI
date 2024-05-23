@@ -527,14 +527,14 @@ def parse_args():
     check_test_group.add_argument("--packages", default=["Airflow"], nargs="+", help="Library to test (e.g. Airflow.Multizone)")
     check_test_group.add_argument("--root-library", default=Path("AixLib", "package.mo"), help="root of library",
                                   type=Path)
-    check_test_group.add_argument("--wh-library",
+    check_test_group.add_argument("--whitelist-library",
                                   default="IBPSA",
                                   help="Library on whitelist")
     # [ bool - flag]
     check_test_group.add_argument("--changed-flag",
                                   default=False,
                                   action="store_true")
-    check_test_group.add_argument("--filter-wh-flag",
+    check_test_group.add_argument("--filter-whitelist-flag",
                                   default=False,
                                   action="store_true")
     check_test_group.add_argument("--extended-ex-flag",
