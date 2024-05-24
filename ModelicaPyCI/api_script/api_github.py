@@ -165,12 +165,12 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
     git_diff()
-    """pull_request = PullRequestGithub(github_repo=args.github_repository,
+    pull_request = PullRequestGithub(github_repo=args.github_repository,
                                        working_branch=args.working_branch,
                                        github_token=args.github_token)
-    message = """""
+    message = ""
 
-    """if args.post_pr_comment_flag is True:
+    if args.post_pr_comment_flag is True:
         page_url = f'{args.gitlab_page}/{args.working_branch}/charts'
         print(f'Setting gitlab page url: {page_url}')
         pr_number = pull_request.get_pr_number()
@@ -205,5 +205,4 @@ if __name__ == '__main__':
         pr_number = pull_request.get_pr_number()
         pull_request.update_pull_request_assignees(pull_request_number=pr_number, assignees_owner=assignees_owner,
                                                    label_name=label_name)
-        exit(0)"""
-
+        exit(0)
