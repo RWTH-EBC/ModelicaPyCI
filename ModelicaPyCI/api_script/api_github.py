@@ -22,20 +22,6 @@ def clone_repository(clone_into_folder: Path, git_url: str):
         Repo.clone_from(git_url, clone_into_folder)
 
 
-def git_diff():
-    # git diff --raw --diff-filter=AMT HEAD^1 >  dymola-ci-tests/Configfiles/ci_changed_model_list.txt
-    repo = git.Repo("")
-    t = repo.git()
-    diff_list = repo.head.commit.diff("HEAD~1")
-    _list = []
-    library = "ci_tests"
-    for file in diff_list:
-
-        if library in str(file):
-            print(file)
-            _list.append(file)
-
-
 class PullRequestGithub(object):
 
     def __init__(self, github_repo, working_branch, github_token):
@@ -164,10 +150,9 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    git_diff()
     pull_request = PullRequestGithub(github_repo=args.github_repository,
-                                       working_branch=args.working_branch,
-                                       github_token=args.github_token)
+                                     working_branch=args.working_branch,
+                                     github_token=args.github_token)
     message = ""
 
     if args.post_pr_comment_flag is True:
@@ -175,10 +160,15 @@ if __name__ == '__main__':
         print(f'Setting gitlab page url: {page_url}')
         pr_number = pull_request.get_pr_number()
         if args.prepare_plot_flag is True:
-            message = f'Errors in regression test. Compare the results on the following page\\n {page_url}'
+            message = (f'Errors in regression test. '
+                       f'Compare the results on the following page\\n {page_url}')
         if args.show_plot_flag is True:
-            message = f'Reference results have been displayed graphically and are created under the following page {page_url}'
-        pull_request.post_pull_request_comment(pull_request_number=pr_number, post_message=message)
+            message = (f'Reference results have been displayed graphically '
+                       f'and are created under the following page {page_url}')
+        pull_request.post_pull_request_comment(
+            pull_request_number=pr_number,
+            post_message=message
+        )
     if args.create_pr_flag is True:
         working_branch = str
         base_branch = str
@@ -186,13 +176,37 @@ if __name__ == '__main__':
         label_name = str
         if args.correct_html_flag is True:
             pull_request_title = f'Corrected HTML Code in branch {args.working_branch}'
-            message = f'Merge the corrected HTML Code. After confirm the pull request, **pull** your branch to your local repository. **Delete** the Branch {args.working_branch}'
+            message = (
+                f'Merge the corrected HTML Code. '
+                f'After confirm the pull request, '
+                f'**pull** your branch to your local repository. '
+                f'**Delete** the Branch {args.working_branch}'
+            )
             label_name = f'Correct HTML'
             base_branch = f'{args.working_branch.replace("correct_HTML_", "")}'
             working_branch = f'{args.working_branch.replace("correct_HTML_", "")}'
         if args.ibpsa_merge_flag is True:
             pull_request_title = f'IBPSA Merge'
-            message = f'**Following you will find the instructions for the IBPSA merge:**\\n  1. Please pull this branch ibpsamerge to your local repository.\\n 2. As an additional saftey check please open the AixLib library in dymola and check whether errors due to false package orders may have occurred. You do not need to translate the whole library or simulate any models. This was already done by the CI.\\n 3. If you need to fix bugs or perform changes to the models of the AixLib, push these changes using this commit message to prevent to run the automatic IBPSA merge again: **`fix errors manually`**. \\n  4. You can also output the different reference files between the IBPSA and the AixLib using the CI or perform an automatic update of the referent files which lead to problems. To do this, use one of the following commit messages \\n  **`ci_dif_ref`** \\n  **`ci_update_ref`** \\n The CI outputs the reference files as artifacts in GitLab. To find them go to the triggered pipeline git GitLab and find the artifacts as download on the right site. \\n 5. If the tests in the CI have passed successfully, merge the branch ibpsamerge to development branch. **Delete** the Branch {args.working_branch}'
+            message = (
+                f'**Following you will find the instructions for the IBPSA merge:**\\n  '
+                f'1. Please pull this branch ibpsamerge to your local repository.\\n '
+                f'2. As an additional saftey check please open the AixLib library in '
+                f'dymola and check whether errors due to false package orders may have occurred. '
+                f'You do not need to translate the whole library or simulate any models. '
+                f'This was already done by the CI.\\n '
+                f'3. If you need to fix bugs or perform changes to the models of the AixLib, '
+                f'push these changes using this commit message to prevent to run the automatic '
+                f'IBPSA merge again: **`fix errors manually`**. \\n '
+                f'4. You can also output the different reference files between the IBPSA and '
+                f'the AixLib using the CI or perform an automatic update of the referent files '
+                f'which lead to problems. To do this, use one of the following commit messages '
+                f'\\n **`ci_dif_ref`** \\n  **`ci_update_ref`** \\n '
+                f'The CI outputs the reference files as artifacts in GitLab. '
+                f'To find them go to the triggered pipeline git GitLab and find the '
+                f'artifacts as download on the right site. \\n '
+                f'5. If the tests in the CI have passed successfully, merge the branch ibpsamerge '
+                f'to development branch. **Delete** the Branch {args.working_branch}'
+            )
             label_name = f'ibpsamerge'
             base_branch = "development"
             working_branch = args.working_branch

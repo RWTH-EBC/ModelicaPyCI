@@ -67,19 +67,16 @@ class CheckOpenModelica:
                  library: str,
                  root_library: Path,
                  add_libraries_loc: dict = None,
-                 inst_libraries: list = None,
                  working_path: Path = Path(Path.cwd())):
         """
         Args:
             working_path:
             add_libraries_loc ():
-            inst_libraries ():
             library ():
             root_library ():
         """
         self.root_library = root_library
         self.add_libraries_loc = add_libraries_loc
-        self.install_libraries = inst_libraries
         self.working_path = working_path
 
         self.library = library
@@ -101,7 +98,6 @@ class CheckOpenModelica:
         self.load_library(root_library=self.root_library,
                           library=self.library,
                           add_libraries_loc=self.add_libraries_loc)
-        self.install_library(libraries=self.install_libraries)
 
     def simulate_examples(self, example_list: list = None, exception_list: list = None):
         """
@@ -551,7 +547,6 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
     # [Settings]
-    install_libraries = None
     except_list = None
     additional_libraries_local = None
     # [Check arguments, files, path]
@@ -565,8 +560,7 @@ if __name__ == '__main__':
 
     OM = CheckOpenModelica(library=args.library,
                            root_library=args.root_library,
-                           add_libraries_loc=additional_libraries_local,
-                           inst_libraries=install_libraries)
+                           add_libraries_loc=additional_libraries_local)
     OM()
     model = ModelicaModel()
 

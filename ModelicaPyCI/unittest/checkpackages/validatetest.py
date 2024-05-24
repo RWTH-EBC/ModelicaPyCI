@@ -19,9 +19,7 @@ class CheckPythonDymola:
                  dym_exp,
                  library: str,
                  library_package_mo: Path,
-                 working_path: Path = Path(Path.cwd()),
-                 add_libraries_loc: dict = None,
-                 inst_libraries: list = None):
+                 working_path: Path = Path(Path.cwd())):
         """
         The class check or simulate models. Return an error-log. Can filter models from a whitelist
         Args:
@@ -29,7 +27,6 @@ class CheckPythonDymola:
             dymola_version: Version of used dymola (2023)
             working_path:
             add_libraries_loc:
-            inst_libraries: installed libraries
             dym (): python_dymola_interface class.
             dym_exp (): python_dymola_exception class.
             library (): library to test.
@@ -37,7 +34,6 @@ class CheckPythonDymola:
         # [Libraries]
         self.library_package_mo = library_package_mo
         self.add_libraries_loc = add_libraries_loc
-        self.install_libraries = inst_libraries
         self.library = library
         self.working_path = working_path
         # [Start Dymola]
@@ -58,7 +54,6 @@ class CheckPythonDymola:
                                         dymola_exception=self.dymola_exception)
         dym_int.dym_check_lic()
         dym_int.load_library(root_library=self.library_package_mo, add_libraries_loc=self.add_libraries_loc)
-        dym_int.install_library(libraries=self.install_libraries)
 
     def check_dymola_model(self,
                            check_model_list: list = None,
@@ -225,7 +220,6 @@ class CreateWhitelist:
                  working_path: Path = Path(Path.cwd()),
                  dymola_version: int = 2022,
                  add_libraries_loc: dict = None,
-                 inst_libraries: list = None,
                  git_url: str = None,
                  root_whitelist_library: Path = None):
         """
@@ -234,7 +228,6 @@ class CreateWhitelist:
             working_path:
             dymola_version:
             add_libraries_loc:
-            inst_libraries:
             root_whitelist_library:
             dym (): python_dymola_interface class.
             dymola_ex (): python_dymola_exception class.
@@ -248,7 +241,6 @@ class CreateWhitelist:
         self.library_package_mo = root_whitelist_library
         # [libraries]
         self.add_libraries_loc = add_libraries_loc
-        self.install_libraries = inst_libraries
         # [dymola version]
         self.dymola_version = dymola_version
         # [Start Dymola]
@@ -260,7 +252,6 @@ class CreateWhitelist:
         dym_int = PythonDymolaInterface(dymola=self.dymola, dymola_exception=self.dymola_exception)
         dym_int.dym_check_lic()
         dym_int.load_library(root_library=self.library_package_mo, add_libraries_loc=self.add_libraries_loc)
-        dym_int.install_library(libraries=self.install_libraries)
 
     @staticmethod
     def get_root_whitelist_library(whitelist_library, git_url, root_whitelist_library):
@@ -426,7 +417,6 @@ def parse_args():
 if __name__ == '__main__':
     # Load Parser arguments
     args = parse_args()
-    install_libraries = None
     except_list = None
     additional_libraries_local = None
     # [Check arguments, files, path]
@@ -443,8 +433,7 @@ if __name__ == '__main__':
                                 dym_exp=dymola_exception,
                                 library=args.library,
                                 library_package_mo=args.library_package_mo,
-                                add_libraries_loc=additional_libraries_local,
-                                inst_libraries=install_libraries)
+                                add_libraries_loc=additional_libraries_local)
         dym()
         mm = ModelicaModel()
         option_check_dictionary = {}

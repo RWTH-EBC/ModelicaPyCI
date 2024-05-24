@@ -8,15 +8,11 @@ import sys
 
 class PythonDymolaInterface:
 
-    def __init__(self,
-                 dymola: classmethod = None,
-                 dymola_exception: classmethod = None):
-        """
-        Args:
-            dymola ():
-            dymola_exception ():
-            dymola_version ():
-        """
+    def __init__(
+            self,
+            dymola: classmethod = None,
+            dymola_exception: classmethod = None
+    ):
         super().__init__()
         self.dymola = dymola
         self.dymola_exception = dymola_exception
@@ -37,7 +33,8 @@ class PythonDymolaInterface:
         lic_counter = 0
         dym_sta_lic_available = self.dymola.ExecuteCommand('RequestOption("Standard");')
         while dym_sta_lic_available is False:
-            print(f'{CI_CONFIG.color.CRED} No Dymola License is available {CI_CONFIG.color.CEND} \n Check Dymola license after 180.0 seconds')
+            print(
+                f'{CI_CONFIG.color.CRED} No Dymola License is available {CI_CONFIG.color.CEND} \n Check Dymola license after 180.0 seconds')
             self.dymola.close()
             time.sleep(180.0)
             dym_sta_lic_available = self.dymola.ExecuteCommand('RequestOption("Standard");')
@@ -49,15 +46,6 @@ class PythonDymolaInterface:
                     exit(1)
         print(
             f'2: Using Dymola port {str(self.dymola._portnumber)} \n {CI_CONFIG.color.green} Dymola License is available {CI_CONFIG.color.CEND}')
-
-    def install_library(self, libraries: list = None):
-        """
-        Args:
-            libraries ():
-        """
-        # Add function if necessary
-        # todo: add function to install dymola libraries
-        pass
 
     def load_library(self, root_library: Path = None, add_libraries_loc: dict = None):
         """
@@ -86,73 +74,69 @@ class PythonDymolaInterface:
                 if load_add_bib is True:
                     print(f'{CI_CONFIG.color.green}Load library {library}:{CI_CONFIG.color.CEND} {lib_path}')
                 else:
-                    print(f'{CI_CONFIG.color.CRED}Error:{CI_CONFIG.color.CEND} Load of library {library} with path {lib_path} failed!')
+                    print(
+                        f'{CI_CONFIG.color.CRED}Error:{CI_CONFIG.color.CEND} Load of library {library} with path {lib_path} failed!')
                     exit(1)
 
+def set_environment_path(dymola_version):
+    """
+    Checks the Operating System, Important for the Python-Dymola Interface
+    Args:
+        dymola_version (): Version von dymola-docker image (e.g. 2022)
+    Set path of python dymola interface for windows or linux
+    """
+    if platform.system() == "Windows":
+        set_environment_variables("PATH",
+                                  os.path.join(os.path.abspath('.'), "Resources", "Library",
+                                               "win32"))
+        sys.path.insert(0, os.path.join('C:\\',
+                                        'Program Files',
+                                        'Dymola ' + dymola_version,
+                                        'Modelica',
+                                        'Library',
+                                        'python_interface',
+                                        'dymola.egg'))
+    else:
+        set_environment_variables("LD_LIBRARY_PATH",
+                                  os.path.join(os.path.abspath('.'), "Resources", "Library",
+                                               "linux32") + ":" +
+                                  os.path.join(os.path.abspath('.'), "Resources", "Library",
+                                               "linux64"))
+        sys.path.insert(0, os.path.join('/opt',
+                                        'dymola-' + dymola_version + '-x86_64',
+                                        'Modelica',
+                                        'Library',
+                                        'python_interface',
+                                        'dymola.egg'))
+    print(f'Operating system {platform.system()}')
+    sys.path.append(os.path.join(os.path.abspath('.'), "..", "..", "BuildingsPy"))
 
-    def set_environment_variables(self, var, value):
-        """
-        Args:
-            var ():
-            value ():
-        """
-        if var in os.environ:
-            if platform.system() == "Windows":
-                os.environ[var] = value + ";" + os.environ[var]
-            else:
-                os.environ[var] = value + ":" + os.environ[var]
-        else:
-            os.environ[var] = value
 
-    def set_environment_path(self, dymola_version):
-        """
-        Checks the Operating System, Important for the Python-Dymola Interface
-        Args:
-            dymola_version (): Version von dymola-docker image (e.g. 2022)
-        Set path of python dymola interface for windows or linux
-        """
+def load_dymola_python_interface(dymola_version: int = 2022):
+    """
+    Load dymola python interface and dymola exception
+    Args:
+        dymola_version ():
+    Returns:
+    """
+    PythonDymolaInterface().set_environment_path(dymola_version=dymola_version)
+    from dymola.dymola_interface import DymolaInterface
+    from dymola.dymola_exception import DymolaException
+    print(f'1: Starting Dymola instance')
+    if platform.system() == "Windows":
+        dymola = DymolaInterface()
+        dymola_exception = DymolaException()
+    else:
+        dymola = DymolaInterface(dymolapath="/usr/local/bin/dymola")
+        dymola_exception = DymolaException()
+    return dymola, dymola_exception
+
+
+def set_environment_variables(var, value):
+    if var in os.environ:
         if platform.system() == "Windows":
-            self.set_environment_variables("PATH",
-                                           os.path.join(os.path.abspath('.'), "Resources", "Library",
-                                                        "win32"))
-            sys.path.insert(0, os.path.join('C:\\',
-                                            'Program Files',
-                                            'Dymola ' + dymola_version,
-                                            'Modelica',
-                                            'Library',
-                                            'python_interface',
-                                            'dymola.egg'))
+            os.environ[var] = value + ";" + os.environ[var]
         else:
-            self.set_environment_variables("LD_LIBRARY_PATH",
-                                           os.path.join(os.path.abspath('.'), "Resources", "Library",
-                                                        "linux32") + ":" +
-                                           os.path.join(os.path.abspath('.'), "Resources", "Library",
-                                                        "linux64"))
-            sys.path.insert(0, os.path.join('/opt',
-                                            'dymola-' + dymola_version + '-x86_64',
-                                            'Modelica',
-                                            'Library',
-                                            'python_interface',
-                                            'dymola.egg'))
-        print(f'Operating system {platform.system()}')
-        sys.path.append(os.path.join(os.path.abspath('.'), "..", "..", "BuildingsPy"))
-
-    @staticmethod
-    def load_modelicapyci_interface(dymola_version: int = 2022):
-        """
-        Load dymola python interface and dymola exception
-        Args:
-            dymola_version ():
-        Returns:
-        """
-        PythonDymolaInterface().set_environment_path(dymola_version=dymola_version)
-        from dymola.dymola_interface import DymolaInterface
-        from dymola.dymola_exception import DymolaException
-        print(f'1: Starting Dymola instance')
-        if platform.system() == "Windows":
-            dymola = DymolaInterface()
-            dymola_exception = DymolaException()
-        else:
-            dymola = DymolaInterface(dymolapath="/usr/local/bin/dymola")
-            dymola_exception = DymolaException()
-        return dymola, dymola_exception
+            os.environ[var] = value + ":" + os.environ[var]
+    else:
+        os.environ[var] = value

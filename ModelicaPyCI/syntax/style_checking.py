@@ -22,7 +22,6 @@ class StyleCheck:
                  root_library: Path,
                  working_path: Path = Path(Path.cwd().parent),
                  add_libraries_loc: dict = None,
-                 inst_libraries: list = None
                  ):
         """
         Class to Check the style of packages and models.
@@ -37,7 +36,6 @@ class StyleCheck:
         self.dymola_version = dymola_version
         self.working_path = working_path
         self.add_libraries_loc = add_libraries_loc
-        self.inst_libraries = inst_libraries
         self.root_library = root_library
         self.dymola = dymola
         self.dymola_exception = dymola_exception
@@ -49,7 +47,6 @@ class StyleCheck:
                                         dymola_version=self.dymola_version)
         # dym_int.dym_check_lic()
         dym_int.load_library(root_library=self.root_library, add_libraries_loc=self.add_libraries_loc)
-        dym_int.install_library(libraries=self.inst_libraries)
 
     def read_log(self, file):
         """
@@ -93,7 +90,7 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    dym = PythonDymolaInterface.load_modelicapyci_interface(dymola_version=args.dymola_version)
+    dym = PythonDymolaInterface.load_dymola_python_interface(dymola_version=args.dymola_version)
     dymola = dym[0]
     dymola_exception = dym[1]
 
@@ -107,8 +104,7 @@ if __name__ == '__main__':
                             dymola_version=args.dymola_version,
                             root_library=args.root_library,
                             working_path=Path(Path.cwd().parent),
-                            add_libraries_loc=None,
-                            inst_libraries=None)
+                            add_libraries_loc=None)
     CheckStyle()
     mo = ModelicaModel()
     model_list = mo.get_option_model(library=args.library,
