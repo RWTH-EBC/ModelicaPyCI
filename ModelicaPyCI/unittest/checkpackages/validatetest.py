@@ -45,7 +45,7 @@ class CheckPythonDymola:
         self.dymola_exception = dym_exp
         if self.dymola is None:
             self.dymola.ExecuteCommand("Advanced.TranslationInCommandLog:=true;")
-        self.dymola_log = Path(self.root_library, f'{self.library}-log.txt')
+        self.dymola_log = Path(self.root_library).parent.joinpath(f'{self.library}-log.txt')
 
     def __call__(self):
         """

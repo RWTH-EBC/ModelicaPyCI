@@ -25,23 +25,23 @@ class ResultConfig(BaseModel):
 class ColorConfig(BaseModel):
     CRED: str = Field(
         description="Start ANSI escape code for red text",
-        default=r'\033[91m'
+        default='\033[91m'
     )
     CEND: str = Field(
         description="End ANSI escape code for colored text",
-        default=r'\033[0m'
+        default='\033[0m'
     )
     green: str = Field(
         description="Start ANSI escape code for green text",
-        default=r'\033[0;32m'
+        default='\033[0;32m'
     )
     yellow: str = Field(
         description="Start ANSI escape code for yellow text",
-        default=r'\033[33m'
+        default='\033[33m'
     )
     blue: str = Field(
         description="Start ANSI escape code for blue text",
-        default=r'\033[44m'
+        default='\033[44m'
     )
 
 
