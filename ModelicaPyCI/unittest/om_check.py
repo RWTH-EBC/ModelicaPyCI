@@ -551,7 +551,7 @@ if __name__ == '__main__':
     additional_libraries_to_load = None
     # [Check arguments, files, path]
     check = config_structure
-    check.check_arguments_settings(args.library, args.packages)
+    check.check_arguments_settings(library=args.library, packages=args.packages)
     check.check_file_setting(args.root_library)
     if additional_libraries_to_load is not None:
         for lib in additional_libraries_to_load:

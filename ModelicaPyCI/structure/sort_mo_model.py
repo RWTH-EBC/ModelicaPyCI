@@ -43,24 +43,29 @@ class ModelicaModel:
             root_package ():
         Returns:
         """
-        check = config_structure
-        check.check_arguments_settings(package, library, changed_flag, simulate_flag, filter_whitelist_flag,
-                                       extended_ex_flag)
+        config_structure.check_arguments_settings(
+            package=package,
+            library=library,
+            changed_flag=changed_flag,
+            simulate_flag=simulate_flag,
+            filter_whitelist_flag=filter_whitelist_flag,
+            extended_ex_flag=extended_ex_flag,
+        )
         if root_library is None:
             root_library = Path(path_dir, library, "package.mo")
-        check.check_file_setting(root_library)
+        config_structure.check_file_setting(root_library)
         if root_package is None:
             if package == ".":
                 root_package = Path(Path(root_library).parent)
             else:
                 root_package = Path(Path(root_library).parent, package.replace(".", os.sep))
-        check.check_path_setting(root_package)
+        config_structure.check_path_setting(root_package)
         if dymola is None:
             extended_ex_flag = False
         if changed_flag is True:
             # todo: ci_changed_file selbst im skript erschaffen, nicht in der gitlab pipeline selbst
-            check.check_path_setting(self.config_ci_dir)
-            check.check_file_setting(self.config_ci_changed_file)
+            config_structure.check_path_setting(self.config_ci_dir)
+            config_structure.check_file_setting(self.config_ci_changed_file)
             result = self.get_changed_models(ch_file=self.config_ci_changed_file,
                                              library=library,
                                              single_package=package,
@@ -81,8 +86,8 @@ class ModelicaModel:
             else:
                 ci_whitelist_file = self.whitelist_model_file
                 file_list = self.whitelist_model_file
-            check.check_path_setting(self.whitelist_ci_dir, create_flag=True)
-            check.check_file_setting(file_list, create_flag=True)
+            config_structure.check_path_setting(self.whitelist_ci_dir, create_flag=True)
+            config_structure.check_file_setting(file_list, create_flag=True)
             whitelist_list_models = self.get_whitelist_models(whitelist_file=ci_whitelist_file,
                                                               whitelist_library=whitelist_library,
                                                               library=library,

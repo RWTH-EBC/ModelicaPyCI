@@ -10,22 +10,20 @@ from ModelicaPyCI.config import CI_CONFIG
 COLOR = CI_CONFIG.color
 
 
-def check_arguments_settings(*args):
-    frame = inspect.currentframe().f_back
-    s = inspect.getframeinfo(frame).code_context[0]
-    r = re.search(r"check_arguments_settings\((.*)\)", s).group(1)
-    var_names = r.split(",")
+def check_arguments_settings(**kwargs):
     print(f'*** --- Argument setting --- ****')
-    for i, (var, val) in enumerate(zip(var_names, args)):
+    for var, val in kwargs.items():
         if val is None:
             print(
                 f'{COLOR.CRED}Error:{COLOR.CEND} {COLOR.blue}Variable "{var.strip()}"{COLOR.CEND} has value '
-                f'{COLOR.CRED}"{val}". "{var}"{COLOR.CEND} is not set!')
+                f'{COLOR.CRED}"{val}". "{var}"{COLOR.CEND} is not set!'
+            )
             exit(1)
         else:
             print(
                 f'{COLOR.green}Setting:{COLOR.CEND} {COLOR.blue}Variable "{var.strip()}" {COLOR.CEND} is set as: '
-                f'{COLOR.blue}"{val}"{COLOR.CEND}')
+                f'{COLOR.blue}"{val}"{COLOR.CEND}'
+            )
 
 
 def check_path_setting(*args: Path, create_flag: bool = False):

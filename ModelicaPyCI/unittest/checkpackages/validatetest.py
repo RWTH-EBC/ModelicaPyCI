@@ -385,7 +385,7 @@ def check_whitelist_version(version, whitelist_file):
 
 
 def create_whitelist(args, dymola, dymola_exception):
-    config_structure.check_arguments_settings(args.whitelist_library)
+    config_structure.check_arguments_settings(whitelist_library=args.whitelist_library)
     mo = ModelicaModel()
     config_structure.create_path(CI_CONFIG.config_ci.dir, CI_CONFIG.whitelist.ci_dir)
     version = read_script_version(library_package_mo=args.library_package_mo)
@@ -519,7 +519,7 @@ if __name__ == '__main__':
     # Load Parser arguments
     ARGS = parse_args()
     # [Check arguments, files, path]
-    config_structure.check_arguments_settings(ARGS.library, ARGS.packages)
+    config_structure.check_arguments_settings(library=ARGS.library, packages=ARGS.packages)
     config_structure.check_file_setting(ARGS.library_package_mo)
     for lib in ARGS.additional_libraries_to_load:
         add_lib_path = Path(ARGS.additional_libraries_to_load[lib], lib, "package.mo")

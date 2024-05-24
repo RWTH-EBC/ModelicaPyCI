@@ -112,48 +112,74 @@ class PullRequestGithub(object):
             'Authorization': 'Bearer ' + self.github_token,
             'Content-Type': 'application/json'
         }
-        response = requests.request("POST", url, headers=headers, data=payload)
+        requests.request("POST", url, headers=headers, data=payload)
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Set Github Environment Variables")
     check_test_group = parser.add_argument_group("Arguments to set Environment Variables")
     # [Github - settings]
-    check_test_group.add_argument("--github-repository",
-                                  default="RWTH-EBC/AixLib",
-                                  help="Environment Variable owner/RepositoryName")
-    check_test_group.add_argument("--working-branch",
-                                  help="Your current working Branch")
-    check_test_group.add_argument("--base-branch", default="main",
-                                  help="your base branch (main)")
-    check_test_group.add_argument("--github-token", default="${GITHUB_API_TOKEN}",
-                                  help="Your Set GITHUB Token")
-    check_test_group.add_argument("--gitlab-page", default="${GITLAB_Page}", help="Set your gitlab page url")
-
+    check_test_group.add_argument(
+        "--github-repository",
+        help="Environment Variable owner/RepositoryName"
+    )
+    check_test_group.add_argument(
+        "--working-branch",
+        help="Your current working Branch",
+        default="$CI_COMMIT_BRANCH"
+    )
+    check_test_group.add_argument(
+        "--base-branch",
+        help="your base branch (main)"
+    )
+    check_test_group.add_argument(
+        "--github-token",
+        default="${GITHUB_API_TOKEN}",
+        help="Your Set GITHUB Token"
+    )
+    check_test_group.add_argument(
+        "--gitlab-page",
+        default="${GITLAB_Page}",
+        help="Set your gitlab page url"
+    )
     # [ bool - flag
-    check_test_group.add_argument("--prepare-plot-flag", help="Plot new models with new created reference files",
-                                  action="store_true", default=False)
-    check_test_group.add_argument("--show-plot-flag", help="Plot new models with new created reference files",
-                                  action="store_true", default=False)
-    check_test_group.add_argument("--post-pr-comment-flag", help="Plot new models with new created reference files",
-                                  action="store_true", default=False)
-    check_test_group.add_argument("--create-pr-flag", help="Plot new models with new created reference files",
-                                  action="store_true", default=False)
-    check_test_group.add_argument("--correct-html-flag", help="Plot new models with new created reference files",
-                                  action="store_true", default=False)
-    check_test_group.add_argument("--ibpsa-merge-flag", help="Plot new models with new created reference files",
-                                  action="store_true", default=False)
-    check_test_group.add_argument("--merge-request", help="Comment for a IBPSA Merge request", action="store_true")
+    check_test_group.add_argument(
+        "--prepare-plot-flag",
+        action="store_true",
+        default=False
+    )
+    check_test_group.add_argument(
+        "--show-plot-flag",
+        action="store_true",
+        default=False
+    )
+    check_test_group.add_argument(
+        "--post-pr-comment-flag",
+        action="store_true",
+    )
+    check_test_group.add_argument(
+        "--create-pr-flag",
+        action="store_true",
+    )
+    check_test_group.add_argument(
+        "--correct-html-flag",
+        action="store_true",
+    )
+    check_test_group.add_argument(
+        "--ibpsa-merge-flag",
+        action="store_true",
+    )
 
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     args = parse_args()
-    pull_request = PullRequestGithub(github_repo=args.github_repository,
-                                     working_branch=args.working_branch,
-                                     github_token=args.github_token)
-    message = ""
+    pull_request = PullRequestGithub(
+        github_repo=args.github_repository,
+        working_branch=args.working_branch,
+        github_token=args.github_token
+    )
 
     if args.post_pr_comment_flag is True:
         page_url = f'{args.gitlab_page}/{args.working_branch}/charts'

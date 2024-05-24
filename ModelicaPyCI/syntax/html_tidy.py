@@ -76,7 +76,7 @@ class HtmlTidy:
         self.whitelist_library = whitelist_library
         self.filter_whitelist = filter_whitelist
         self.root_dir = self.package.replace(".", os.sep)
-        config_structure.check_arguments_settings(self.root_dir)
+        config_structure.check_arguments_settings(root_dir=self.root_dir)
         self.html_error_log = Path(self.root_dir, "HTML_error_log.txt")
         self.html_correct_log = Path(self.root_dir, "HTML_correct_log.txt")
         config_structure.check_file_setting(self.html_error_log, self.html_correct_log, create_flag=True)
