@@ -65,10 +65,10 @@ class WhitelistConfig(BaseModel):
 
 class PlotConfig(BaseModel):
     chart_dir: str = 'dymola-ci-tests/charts'
-    templates_chart_dir: str = 'Modelica-CI/templates/google_templates'
-    templates_chart_file: str = 'Modelica-CI/templates/google_templates/google_chart.txt'
-    templates_index_file: str = 'Modelica-CI/templates/google_templates/index.txt'
-    templates_layout_file: str = 'Modelica-CI/templates/google_templates/layout_index.txt'
+    templates_chart_dir: str = 'MoCITempGen/templates/google_templates'
+    templates_chart_file: str = 'MoCITempGen/templates/google_templates/google_chart.txt'
+    templates_index_file: str = 'MoCITempGen/templates/google_templates/index.txt'
+    templates_layout_file: str = 'MoCITempGen/templates/google_templates/layout_index.txt'
 
 
 class ArtifactsConfig(BaseModel):

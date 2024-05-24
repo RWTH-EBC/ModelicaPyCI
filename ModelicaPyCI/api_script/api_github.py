@@ -7,19 +7,19 @@ from git import Repo
 import git
 
 
-def clone_repository(repo_dir: Path, git_url: str):
+def clone_repository(clone_into_folder: Path, git_url: str):
     """
     Pull git repository.
 
     Args:
-        repo_dir ():  Folder of the cloned project.
+        clone_into_folder ():  Folder of the cloned project.
         git_url (): Git url of the cloned project.
     """
-    if os.path.exists(repo_dir):
-        print(f'{repo_dir} folder already exists.')
+    if os.path.exists(clone_into_folder):
+        print(f'{clone_into_folder} folder already exists.')
     else:
-        print(f'Clone {repo_dir} Repo')
-        Repo.clone_from(git_url, repo_dir)
+        print(f'Clone {clone_into_folder} Repo')
+        Repo.clone_from(git_url, clone_into_folder)
 
 
 def git_diff():

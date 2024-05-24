@@ -226,7 +226,6 @@ class CreateWhitelist:
                  dymola_version: int = 2022,
                  add_libraries_loc: dict = None,
                  inst_libraries: list = None,
-                 repo_dir: Path = None,
                  git_url: str = None,
                  root_whitelist_library: Path = None):
         """
@@ -241,11 +240,9 @@ class CreateWhitelist:
             dymola_ex (): python_dymola_exception class.
             library (): library to be tested.
             whitelist_library ():  Library and its models that can be on the whitelist.
-            repo_dir ():  Folder of the cloned project.
             git_url (): Git url of the cloned project.
         """
         self.whitelist_library = whitelist_library
-        self.repo_dir = repo_dir
         self.git_url = git_url
         self.working_path = working_path
         self.root_library = root_whitelist_library
@@ -266,26 +263,18 @@ class CreateWhitelist:
         dym_int.install_library(libraries=self.install_libraries)
 
     @staticmethod
-    def get_root_whitelist_library(whitelist_library, git_url, repo_dir, arg_root_whitelist_library):
+    def get_root_whitelist_library(whitelist_library, git_url, root_whitelist_library):
         """
 
         Args:
             whitelist_library (): Library on the whitelist
             git_url (): git url of the whitelist library
-            repo_dir (): Project name of github repository
-            arg_root_whitelist_library (): root of the whitelist library
+            root_whitelist_library (): root of the whitelist library
         Returns:
             root_whitelist_library: Return the full Path of root of the whitelist library
         """
-        root_whitelist_library = Path(whitelist_library, "package.mo")
-        if git_url is not None and repo_dir is not None:
-            clone_repository(repo_dir=repo_dir, git_url=git_url)
-            root_whitelist_library = Path(Path.cwd(), repo_dir, whitelist_library, "package.mo")
-        elif arg_root_whitelist_library is None:
-            root_whitelist_library = Path(Path.cwd(), whitelist_library, "package.mo")
-        elif arg_root_whitelist_library is not None:
-            root_whitelist_library = arg_root_whitelist_library
-        return root_whitelist_library
+        clone_repository(clone_into_folder=root_whitelist_library, git_url=git_url)
+        return Path().joinpath(root_whitelist_library, whitelist_library, "package.mo")
 
     @staticmethod
     def write_exit_log(vers_check: bool):
@@ -399,15 +388,16 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Check and validate single packages")
     check_test_group = parser.add_argument_group("Arguments to run check tests")
     # [Library - settings]
-    check_test_group.add_argument("--library", default="AixLib", help="Library to test (e.g. AixLib")
-    check_test_group.add_argument("--packages", default=["Airflow"], nargs="+",
+    check_test_group.add_argument("--library",
+                                  default="AixLib",
+                                  help="Library to test (e.g. AixLib")
+    check_test_group.add_argument("--packages",
+                                  default=["Airflow"], nargs="+",
                                   help="Library to test (e.g. Airflow.Multizone)")
-    check_test_group.add_argument("--root-library", default=Path("AixLib", "package.mo"),
+    check_test_group.add_argument("--root-library",
+                                  default=Path("AixLib", "package.mo"),
                                   help="root of library",
                                   type=Path)
-    check_test_group.add_argument("--whitelist-library", default="IBPSA", help="library on a whitelist")
-    check_test_group.add_argument("--root-whitelist-library",
-                                  help="library on a whitelist")
 
     # [Dymola - settings]
     check_test_group.add_argument("--dymola-version",
@@ -424,9 +414,14 @@ def parse_args():
                                   default=["DYM_CHECK"], nargs="+",
                                   help="Chose between openmodelica check, compare or simulate")
     # [repository - setting ]
-    check_test_group.add_argument("--repo-dir", help="folder of a whitelist library ")
     check_test_group.add_argument("--git-url", default="https://github.com/ibpsa/modelica-ibpsa.git",
                                   help="url repository of whitelist library")
+    check_test_group.add_argument("--whitelist-library",
+                                  default="IBPSA",
+                                  help="library on a whitelist")
+    check_test_group.add_argument("--root-whitelist-library",
+                                  help="library on a whitelist")
+
     return parser.parse_args()
 
 
@@ -510,14 +505,12 @@ if __name__ == '__main__':
                     root_whitelist_library = CreateWhitelist.get_root_whitelist_library(
                         whitelist_library=args.whitelist_library,
                         git_url=args.git_url,
-                        repo_dir=args.repo_dir,
-                        arg_root_whitelist_library=args.root_whitelist_library)
+                        root_whitelist_library=args.root_whitelist_library)
 
                     config_structure.check_file_setting(root_whitelist_library)
                     wh = CreateWhitelist(dym=dymola,
                                          dymola_ex=dymola_exception,
                                          whitelist_library=args.whitelist_library,
-                                         repo_dir=args.repo_dir,
                                          git_url=args.git_url,
                                          dymola_version=args.dymola_version,
                                          add_libraries_loc=additional_libraries_local,
@@ -545,13 +538,12 @@ if __name__ == '__main__':
                     root_whitelist_library = CreateWhitelist.get_root_whitelist_library(
                         whitelist_library=args.whitelist_library,
                         git_url=args.git_url,
-                        repo_dir=args.repo_dir,
-                        arg_root_whitelist_library=args.root_whitelist_library)
+                        root_whitelist_library=args.root_whitelist_library
+                    )
                     config_structure.check_file_setting(root_whitelist_library)
                     wh = CreateWhitelist(dym=dymola,
                                          dymola_ex=dymola_exception,
                                          whitelist_library=args.whitelist_library,
-                                         repo_dir=args.repo_dir,
                                          git_url=args.git_url,
                                          dymola_version=args.dymola_version,
                                          add_libraries_loc=additional_libraries_local,

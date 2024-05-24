@@ -40,7 +40,7 @@ if __name__ == '__main__':
     mo = ModelicaModel()
     config_structure.create_path(CI_CONFIG.whitelist.ci_dir)
     config_structure.create_files(CI_CONFIG.whitelist.html_file)
-    clone_repository(repo_dir=args.root_whitelist_library, git_url=args.git_url)
+    clone_repository(clone_into_folder=args.root_whitelist_library, git_url=args.git_url)
     MODEL_LIST = mo.get_models(library=args.whitelist_library,
                                path=args.root_whitelist_library,
                                simulate_flag=False,
