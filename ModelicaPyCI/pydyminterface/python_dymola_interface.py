@@ -119,7 +119,7 @@ def load_dymola_python_interface(dymola_version: int = 2022):
         dymola_version ():
     Returns:
     """
-    PythonDymolaInterface().set_environment_path(dymola_version=dymola_version)
+    set_environment_path(dymola_version=dymola_version)
     from dymola.dymola_interface import DymolaInterface
     from dymola.dymola_exception import DymolaException
     print(f'1: Starting Dymola instance')
