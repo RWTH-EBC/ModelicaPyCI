@@ -1,13 +1,11 @@
 import argparse
 from pathlib import Path
 import os
-import sys
 import buildingspy.development.validator as validate
 import buildingspy.development.regressiontest as regression
-from ModelicaPyCI.config import CI_CONFIG
 from ModelicaPyCI.structure.sort_mo_model import ModelicaModel
 from ModelicaPyCI.structure import config_structure
-from ModelicaPyCI.pydyminterface.python_dymola_interface import PythonDymolaInterface
+from ModelicaPyCI.pydyminterface import python_dymola_interface
 from ModelicaPyCI.config import CI_CONFIG
 
 COLOR = CI_CONFIG.color
@@ -447,7 +445,7 @@ if __name__ == '__main__':
     # todo: /bin/sh: 1: xdg-settings: not found
     # todo: Template für push hat changed:flag drin, ist falsch
     args = parse_args()
-    dymola, dymola_exception = PythonDymolaInterface.load_dymola_python_interface(dymola_version=args.dymola_version)
+    dymola, dymola_exception = python_dymola_interface.load_dymola_python_interface(dymola_version=args.dymola_version)
     for package in args.packages:
         if args.validate_html_only:
             var = BuildingspyValidateTest(validate=validate,
@@ -465,10 +463,11 @@ if __name__ == '__main__':
                                                                             package=package)
             exit(var)
         else:
-            dym_interface = PythonDymolaInterface(dymola=dymola,
-                                                  dymola_exception=dymola_exception)
+            dym_interface = python_dymola_interface.PythonDymolaInterface(
+                dymola=dymola, dymola_exception=dymola_exception
+            )
             dym_interface.load_library(root_library=args.root_library,
-                                       add_libraries_loc=None)
+                                       additional_libraries_to_load=None)
             ref_model = ReferenceModel(library=args.library)
             package_list = []
             if args.ref_list:

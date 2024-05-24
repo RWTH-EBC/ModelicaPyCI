@@ -47,12 +47,9 @@ class PythonDymolaInterface:
         print(
             f'2: Using Dymola port {str(self.dymola._portnumber)} \n {CI_CONFIG.color.green} Dymola License is available {CI_CONFIG.color.CEND}')
 
-    def load_library(self, root_library: Path = None, add_libraries_loc: dict = None):
+    def load_library(self, root_library: Path = None, additional_libraries_to_load: dict = None):
         """
         Open library in dymola and  checks if the library was opened correctly.
-        Args:
-            root_library ():
-            add_libraries_loc ():
         """
         if root_library is not None:
             print(f'Library path: {root_library}')
@@ -67,16 +64,17 @@ class PythonDymolaInterface:
         else:
             print(f'Library path is not set.')
             exit(1)
-        if add_libraries_loc is not None:
-            for library in add_libraries_loc:
-                lib_path = Path(add_libraries_loc[library], library, "package.mo")
-                load_add_bib = self.dymola.openModel(lib_path)
-                if load_add_bib is True:
-                    print(f'{CI_CONFIG.color.green}Load library {library}:{CI_CONFIG.color.CEND} {lib_path}')
-                else:
-                    print(
-                        f'{CI_CONFIG.color.CRED}Error:{CI_CONFIG.color.CEND} Load of library {library} with path {lib_path} failed!')
-                    exit(1)
+        if additional_libraries_to_load is None:
+            return
+        for library in additional_libraries_to_load:
+            lib_path = Path(additional_libraries_to_load[library], library, "package.mo")
+            load_add_bib = self.dymola.openModel(lib_path)
+            if load_add_bib is True:
+                print(f'{CI_CONFIG.color.green}Load library {library}:{CI_CONFIG.color.CEND} {lib_path}')
+            else:
+                print(
+                    f'{CI_CONFIG.color.CRED}Error:{CI_CONFIG.color.CEND} Load of library {library} with path {lib_path} failed!')
+                exit(1)
 
 def set_environment_path(dymola_version):
     """

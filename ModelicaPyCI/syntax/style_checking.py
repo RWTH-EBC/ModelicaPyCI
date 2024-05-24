@@ -1,12 +1,8 @@
 import argparse
 import codecs
-import os
-import platform
-import sys
-import time
 from ModelicaPyCI.config import CI_CONFIG
 from ModelicaPyCI.pydyminterface.model_management import ModelManagement
-from ModelicaPyCI.pydyminterface.python_dymola_interface import PythonDymolaInterface
+from ModelicaPyCI.pydyminterface import python_dymola_interface
 from ModelicaPyCI.structure.sort_mo_model import ModelicaModel
 from ModelicaPyCI.structure import config_structure
 from pathlib import Path
@@ -21,7 +17,7 @@ class StyleCheck:
                  dymola_version: int,
                  root_library: Path,
                  working_path: Path = Path(Path.cwd().parent),
-                 add_libraries_loc: dict = None,
+                 additional_libraries_to_load: dict = None,
                  ):
         """
         Class to Check the style of packages and models.
@@ -35,18 +31,19 @@ class StyleCheck:
         self.library = library
         self.dymola_version = dymola_version
         self.working_path = working_path
-        self.add_libraries_loc = add_libraries_loc
+        self.additional_libraries_to_load = additional_libraries_to_load
         self.root_library = root_library
         self.dymola = dymola
         self.dymola_exception = dymola_exception
         self.dymola.ExecuteCommand("Advanced.TranslationInCommandLog:=true;")
 
     def __call__(self):
-        dym_int = PythonDymolaInterface(dymola=self.dymola,
-                                        dymola_exception=self.dymola_exception,
-                                        dymola_version=self.dymola_version)
+        dym_int = python_dymola_interface.PythonDymolaInterface(
+            dymola=self.dymola,
+            dymola_exception=self.dymola_exception,
+            dymola_version=self.dymola_version)
         # dym_int.dym_check_lic()
-        dym_int.load_library(root_library=self.root_library, add_libraries_loc=self.add_libraries_loc)
+        dym_int.load_library(root_library=self.root_library, additional_libraries_to_load=self.additional_libraries_to_load)
 
     def read_log(self, file):
         """
@@ -71,6 +68,7 @@ class StyleCheck:
             print(f'{CI_CONFIG.color.CRED}Test failed. Look in {self.library}_StyleErrorLog.html{CI_CONFIG.color.CEND}')
             return 1
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Check the Style of Packages")
     check_test_group = parser.add_argument_group("Arguments to start style tests")
@@ -90,7 +88,7 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    dym = PythonDymolaInterface.load_dymola_python_interface(dymola_version=args.dymola_version)
+    dym = python_dymola_interface.load_dymola_python_interface(dymola_version=args.dymola_version)
     dymola = dym[0]
     dymola_exception = dym[1]
 
@@ -104,7 +102,7 @@ if __name__ == '__main__':
                             dymola_version=args.dymola_version,
                             root_library=args.root_library,
                             working_path=Path(Path.cwd().parent),
-                            add_libraries_loc=None)
+                            additional_libraries_to_load=None)
     CheckStyle()
     mo = ModelicaModel()
     model_list = mo.get_option_model(library=args.library,

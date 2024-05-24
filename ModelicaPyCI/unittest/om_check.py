@@ -66,17 +66,17 @@ class CheckOpenModelica:
     def __init__(self,
                  library: str,
                  root_library: Path,
-                 add_libraries_loc: dict = None,
+                 additional_libraries_to_load: dict = None,
                  working_path: Path = Path(Path.cwd())):
         """
         Args:
             working_path:
-            add_libraries_loc ():
+            additional_libraries_to_load ():
             library ():
             root_library ():
         """
         self.root_library = root_library
-        self.add_libraries_loc = add_libraries_loc
+        self.additional_libraries_to_load = additional_libraries_to_load
         self.working_path = working_path
 
         self.library = library
@@ -97,7 +97,7 @@ class CheckOpenModelica:
         """
         self.load_library(root_library=self.root_library,
                           library=self.library,
-                          add_libraries_loc=self.add_libraries_loc)
+                          additional_libraries_to_load=self.additional_libraries_to_load)
 
     def simulate_examples(self, example_list: list = None, exception_list: list = None):
         """
@@ -332,7 +332,7 @@ class CheckOpenModelica:
                     exit(1)
         print(self.omc.sendExpression("getErrorString()"))
 
-    def load_library(self, root_library: Path = None, library:str = None, add_libraries_loc: dict = None):
+    def load_library(self, root_library: Path = None, library:str = None, additional_libraries_to_load: dict = None):
         if root_library is not None:
             load_bib = self.omc.sendExpression(f'loadFile("{root_library}")')
             if load_bib is True:
@@ -343,9 +343,9 @@ class CheckOpenModelica:
         else:
             print(f'Library path is not set.')
             exit(1)
-        if add_libraries_loc is not None:
-            for lib in add_libraries_loc:
-                lib_path = Path(add_libraries_loc[lib], lib, "package.mo")
+        if additional_libraries_to_load is not None:
+            for lib in additional_libraries_to_load:
+                lib_path = Path(additional_libraries_to_load[lib], lib, "package.mo")
                 load_add_bib = self.omc.sendExpression(f'loadFile("{lib_path}")')
                 if load_add_bib is True:
                     print(f'{CI_CONFIG.color.green}Load library {lib}:{CI_CONFIG.color.CEND} {lib_path}')
@@ -548,19 +548,19 @@ if __name__ == '__main__':
     args = parse_args()
     # [Settings]
     except_list = None
-    additional_libraries_local = None
+    additional_libraries_to_load = None
     # [Check arguments, files, path]
     check = config_structure
     check.check_arguments_settings(args.library, args.packages)
     check.check_file_setting(args.root_library)
-    if additional_libraries_local is not None:
-        for lib in additional_libraries_local:
-            add_lib_path = Path(additional_libraries_local[lib], lib, "package.mo")
+    if additional_libraries_to_load is not None:
+        for lib in additional_libraries_to_load:
+            add_lib_path = Path(additional_libraries_to_load[lib], lib, "package.mo")
             check.check_file_setting(add_lib_path)
 
     OM = CheckOpenModelica(library=args.library,
                            root_library=args.root_library,
-                           add_libraries_loc=additional_libraries_local)
+                           additional_libraries_to_load=additional_libraries_to_load)
     OM()
     model = ModelicaModel()
 
