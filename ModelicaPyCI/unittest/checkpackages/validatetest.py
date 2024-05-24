@@ -41,7 +41,7 @@ class CheckPythonDymola:
         self.dymola_exception = dym_exp
         self.dymola_log = Path(self.library_package_mo).parent.joinpath(f'{self.library}-log.txt')
 
-    def __call__(self):
+    def start_dummy_dymola_instance(self):
         """
         1. Start dymola interface
         2. Check dymola license
@@ -210,7 +210,7 @@ class CreateWhitelist:
         self.dymola_exception = dymola_ex
         self.dymola.ExecuteCommand("Advanced.TranslationInCommandLog:=true;")
 
-    def __call__(self):
+    def start_dummy_dymola_instance(self):
         dym_int = python_dymola_interface.PythonDymolaInterface(
             dymola=self.dymola, dymola_exception=self.dymola_exception
         )
@@ -414,7 +414,7 @@ def create_whitelist(args, dymola, dymola_exception):
                 additional_libraries_to_load=args.additional_libraries_to_load,
                 root_whitelist_library=root_whitelist_library
             )
-            #wh()
+            wh.start_dummy_dymola_instance()
             model_list = mo.get_option_model(
                 library=args.whitelist_library,
                 package=".",
@@ -440,7 +440,7 @@ def validate_only(args, dymola, dymola_exception):
                             library=args.library,
                             library_package_mo=args.library_package_mo,
                             additional_libraries_to_load=args.additional_libraries_to_load)
-    #dym()
+    dym.start_dummy_dymola_instance()
     mm = ModelicaModel()
     package_results = {}
     for package in args.packages:
