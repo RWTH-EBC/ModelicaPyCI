@@ -64,9 +64,9 @@ class ModelicaModel:
             extended_ex_flag = False
         if changed_flag is True:
             # todo: ci_changed_file selbst im skript erschaffen, nicht in der gitlab pipeline selbst
-            config_structure.check_path_setting(CI_CONFIG.config_ci.dir)
-            config_structure.check_file_setting(CI_CONFIG.config_ci.changed_file)
-            result = self.get_changed_models(ch_file=CI_CONFIG.config_ci.changed_file,
+            config_structure.check_path_setting(CI_CONFIG.get_dir_path("ci_files"))
+            config_structure.check_file_setting(CI_CONFIG.get_file_path("ci_files", "changed_file"))
+            result = self.get_changed_models(ch_file=CI_CONFIG.get_file_path("ci_files", "changed_file"),
                                              library=library,
                                              single_package=package,
                                              simulate_examples=simulate_flag)
@@ -81,12 +81,12 @@ class ModelicaModel:
                 model_list = list(set(model_list))
         elif filter_whitelist_flag is True:
             if simulate_flag is True:
-                ci_whitelist_file = CI_CONFIG.whitelist.get(simulate_file)
-                file_list = CI_CONFIG.whitelist.get(simulate_file)
+                ci_whitelist_file = CI_CONFIG.get_file_path("whitelist", "simulate_file")
+                file_list = CI_CONFIG.get_file_path("whitelist", "simulate_file")
             else:
                 ci_whitelist_file = CI_CONFIG.whitelist.model_file
                 file_list = CI_CONFIG.whitelist.model_file
-            config_structure.check_path_setting(CI_CONFIG.whitelist.dir, create_flag=True)
+            config_structure.check_path_setting(CI_CONFIG.get_dir_path("whitelist"), create_flag=True)
             config_structure.check_file_setting(file_list, create_flag=True)
             whitelist_list_models = self.get_whitelist_models(whitelist_file=ci_whitelist_file,
                                                               whitelist_library=whitelist_library,

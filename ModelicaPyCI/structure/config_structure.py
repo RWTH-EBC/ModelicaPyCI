@@ -84,7 +84,7 @@ def create_files(*args):
                 f'{COLOR.CRED}File: {COLOR.CEND}  {file} does not exist. '
                 f'Create a new one under {COLOR.green}{file}{COLOR.CEND}')
             with open(file, 'w') as write_file:
-                if os.path.basename(file) == os.path.basename(CI_CONFIG.config_ci.eof_file):
+                if os.path.basename(file) == os.path.basename(CI_CONFIG.get_file_path("ci_files", "eof_file")):
                     write_file.write(f'y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n')
 
 

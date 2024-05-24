@@ -16,13 +16,13 @@ def write_exit_file(var):
     write an exit file, use for gitlab ci.
     """
     try:
-        with open(CI_CONFIG.config_ci.exit_file, "w") as ex_file:
+        with open(CI_CONFIG.get_file_path("ci_files", "exit_file"), "w") as ex_file:
             if var == 0:
                 ex_file.write(f'successful')
             else:
                 ex_file.write(f'FAIL')
     except IOError:
-        print(f'Error: File {CI_CONFIG.config_ci.exit_file} does not exist.')
+        print(f'Error: File {CI_CONFIG.get_file_path("ci_files", "exit_file")} does not exist.')
 
 
 class BuildingspyRegressionCheck():
@@ -178,11 +178,11 @@ class ReferenceModel:
         """
         mos_list = self._get_mos_scripts()
         try:
-            with open(CI_CONFIG.config_ci.ref_file, "w") as whitelist_file:
+            with open(CI_CONFIG.get_file_path("ci_files", "ref_file"), "w") as whitelist_file:
                 for mos in mos_list:
                     whitelist_file.write(f'\n{mos}\n')
         except IOError:
-            print(f'Error: File {CI_CONFIG.config_ci.ref_file} does not exist.')
+            print(f'Error: File {CI_CONFIG.get_file_path("ci_files", "ref_file")} does not exist.')
 
     def _get_mos_scripts(self):
         """
@@ -308,7 +308,7 @@ def get_update_ref():
     Returns:
     """
     try:
-        with open(f'..{os.sep}{CI_CONFIG.interact.update_ref_file}', "r") as file:
+        with open(f'..{os.sep}{CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)}', "r") as file:
             lines = file.readlines()
         update_ref_list = []
         for line in lines:
@@ -318,13 +318,13 @@ def get_update_ref():
                 update_ref_list.append(line.strip())
         if len(update_ref_list) == 0:
             print(
-                f'No reference files in file {CI_CONFIG.interact.update_ref_file}. '
+                f'No reference files in file {CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)}. '
                 f'Please add here your reference files you '
                 f'want to update')
             exit(0)
         return update_ref_list
     except IOError:
-        print(f'Error: File ..{os.sep}{CI_CONFIG.interact.update_ref_file} does not exist.')
+        print(f'Error: File ..{os.sep}{CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)} does not exist.')
         exit(0)
 
 
@@ -492,13 +492,13 @@ if __name__ == '__main__':
                 ref_model.delete_ref_file(ref_list=ref_list)
                 package_list = ref_model.get_update_package(ref_list=ref_list)
             else:
-                config_structure.check_path_setting(Path("..", CI_CONFIG.config_ci.folder_name), create_flag=True)
+                config_structure.check_path_setting(Path("..", CI_CONFIG.ci_files.folder_name), create_flag=True)
                 if args.changed_flag is False:
-                    config_structure.create_files(Path("..", CI_CONFIG.config_ci.exit_file))
+                    config_structure.create_files(Path("..", CI_CONFIG.get_file_path("ci_files", "exit_file")))
                     package_list = args.packages
                 if args.changed_flag is True:
-                    config_structure.create_files(Path("..", CI_CONFIG.config_ci.changed_file),
-                                                  Path("..", CI_CONFIG.config_ci.exit_file))
+                    config_structure.create_files(Path("..", CI_CONFIG.get_file_path("ci_files", "changed_file")),
+                                                  Path("..", CI_CONFIG.get_file_path("ci_files", "exit_file")))
                     # package = args.packages[args.packages.rfind(".") + 1:]
                     package = args.packages[0]  # todo: Schleife ergänzen
                     mo = ModelicaModel()
@@ -509,7 +509,7 @@ if __name__ == '__main__':
                                                                     root_package=Path(package.replace(".", os.sep)),
                                                                     library=args.library,
                                                                     ch_file=Path("..",
-                                                                                 CI_CONFIG.config_ci.changed_file))
+                                                                                 CI_CONFIG.get_file_path("ci_files", "changed_file")))
             # Start regression test
             val = 0
             if package_list is None or len(package_list) == 0:
@@ -530,7 +530,7 @@ if __name__ == '__main__':
                         config_structure.prepare_data(
                             source_target_dict={
                                 f'{CI_CONFIG.artifacts.library_ref_results_dir}{os.sep}{ref.replace(".", "_")}.txt':
-                                    Path("..", CI_CONFIG.result.regression_dir, "referencefiles")})
+                                    Path("..", CI_CONFIG.get_file_path("result", "regression_dir"), "referencefiles")})
                 write_exit_file(var=1)
 
             else:

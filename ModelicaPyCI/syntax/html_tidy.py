@@ -219,7 +219,7 @@ class HtmlTidy:
         """
         whitelist_library_list = []
         try:
-            file = open(CI_CONFIG.whitelist.get(html_file), "r")
+            file = open(CI_CONFIG.get_file_path("whitelist", "html_file"), "r")
             lines = file.readlines()
             file.close()
             for line in lines:
@@ -229,7 +229,7 @@ class HtmlTidy:
                     whitelist_library_list.append(line)
             return whitelist_library_list
         except IOError:
-            print(f'Error: File {CI_CONFIG.whitelist.get(html_file)} does not exist. Check without a whitelist.')
+            print(f'Error: File {CI_CONFIG.get_file_path("whitelist", "html_file")} does not exist. Check without a whitelist.')
             return whitelist_library_list
 
 def _get_library_model(package, library):
@@ -566,10 +566,10 @@ def call_read_log(html_error_log, html_correct_log):
     """
     err_list = read_log_file(html_error_log)
     var = _write_exit(err_list=err_list)
-    config_structure.create_path(CI_CONFIG.result.dir, CI_CONFIG.result.syntax_dir)
+    config_structure.create_path(CI_CONFIG.get_dir_path("result"), CI_CONFIG.get_file_path("result", "syntax_dir"))
     config_structure.prepare_data(del_flag=True,
-                                  source_target_dict={html_error_log: CI_CONFIG.result.syntax_dir,
-                                                      html_correct_log: CI_CONFIG.result.syntax_dir})
+                                  source_target_dict={html_error_log: CI_CONFIG.get_file_path("result", "syntax_dir"),
+                                                      html_correct_log: CI_CONFIG.get_file_path("result", "syntax_dir")})
     return var
 
 
@@ -581,7 +581,7 @@ def _write_exit(err_list):
     Returns: return a variable (if 0: check was successful, 1: check failed)
     """
     try:
-        exit_file = open(CI_CONFIG.config_ci.exit_file, "w")
+        exit_file = open(CI_CONFIG.get_file_path("ci_files", "exit_file"), "w")
         if len(err_list) > 0:
             print(f'{CI_CONFIG.color.CRED}Syntax Error:{CI_CONFIG.color.CEND} Check HTML-logfile')
             exit_file.write("exit 1")
@@ -593,7 +593,7 @@ def _write_exit(err_list):
         exit_file.close()
         return var
     except IOError:
-        print(f'Error: File {CI_CONFIG.config_ci.exit_file} does not exist.')
+        print(f'Error: File {CI_CONFIG.get_file_path("ci_files", "exit_file")} does not exist.')
 
 
 def _remove_whitelist_model(library_list, whitelist_library_list):
@@ -669,8 +669,8 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
 
-    config_structure.create_path(CI_CONFIG.config_ci.dir)
-    config_structure.create_files(CI_CONFIG.config_ci.exit_file)
+    config_structure.create_path(CI_CONFIG.get_dir_path("ci_files"))
+    config_structure.create_files(CI_CONFIG.get_file_path("ci_files", "exit_file"))
     mo = ModelicaModel()
 
     html_tidy_check = HtmlTidy(package=args.packages,

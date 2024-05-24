@@ -60,7 +60,7 @@ class StyleCheck:
                 print(f'{CI_CONFIG.color.CRED}Error in model: {CI_CONFIG.color.CEND}{line.lstrip()}')
                 error_list.append(line)
         log_file.close()
-        config_structure.prepare_data(source_target_dict={file: CI_CONFIG.result.syntax_dir})
+        config_structure.prepare_data(source_target_dict={file: CI_CONFIG.get_file_path("result", "syntax_dir")})
         if len(error_list) == 0:
             print(f'{CI_CONFIG.color.green}Style check for library {self.library} was successful{CI_CONFIG.color.CEND}')
             return 0

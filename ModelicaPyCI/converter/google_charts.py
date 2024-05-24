@@ -62,12 +62,12 @@ class PlotCharts:
         """
         Returns:
         """
-        if os.path.isfile(CI_CONFIG.interact.show_ref_file) is False:
-            print(f'File {CI_CONFIG.interact.show_ref_file} does not exist.')
+        if os.path.isfile(CI_CONFIG.interact.get_path(CI_CONFIG.interact.show_ref_file)) is False:
+            print(f'File {CI_CONFIG.interact.get_path(CI_CONFIG.interact.show_ref_file)} does not exist.')
             exit(0)
         else:
-            print(f'Plot results from file {CI_CONFIG.interact.show_ref_file}')
-            with open(CI_CONFIG.interact.show_ref_file, "r") as file:
+            print(f'Plot results from file {CI_CONFIG.interact.get_path(CI_CONFIG.interact.show_ref_file)}')
+            with open(CI_CONFIG.interact.get_path(CI_CONFIG.interact.show_ref_file), "r") as file:
                 lines = file.readlines()
             reference_file_list = list()
             for line in lines:
@@ -76,7 +76,7 @@ class PlotCharts:
                     continue
             if len(reference_file_list) == 0:
                 print(
-                    f'No reference files in file {CI_CONFIG.interact.show_ref_file}. Please add here your reference files you want to '
+                    f'No reference files in file {CI_CONFIG.interact.get_path(CI_CONFIG.interact.show_ref_file)}. Please add here your reference files you want to '
                     f'update')
                 exit(0)
             else:
@@ -146,12 +146,12 @@ class PlotCharts:
         """
         Returns:
         """
-        if os.path.isfile(CI_CONFIG.interact.update_ref_file) is False:
-            print(f'File {CI_CONFIG.interact.update_ref_file} directory does not exist.')
+        if os.path.isfile(CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)) is False:
+            print(f'File {CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)} directory does not exist.')
             exit(0)
         else:
-            print(f'Plot results from file {CI_CONFIG.interact.update_ref_file}')
-        with open(CI_CONFIG.interact.update_ref_file, "r") as file:
+            print(f'Plot results from file {CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)}')
+        with open(CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file), "r") as file:
             lines = file.readlines()
         reference_list = list()
         for line in lines:
@@ -165,12 +165,12 @@ class PlotCharts:
         """
         Returns:
         """
-        if os.path.isfile(CI_CONFIG.config_ci.new_create_ref_file) is False:
-            print(f'File {CI_CONFIG.config_ci.new_create_ref_file} directory does not exist.')
+        if os.path.isfile(CI_CONFIG.get_file_path("ci_files", "new_create_ref_file")) is False:
+            print(f'File {CI_CONFIG.get_file_path("ci_files", "new_create_ref_file")} directory does not exist.')
             exit(0)
         else:
-            print(f'Plot results from file {CI_CONFIG.config_ci.new_create_ref_file}')
-        with open(CI_CONFIG.config_ci.new_create_ref_file, "r") as file:
+            print(f'Plot results from file {CI_CONFIG.get_file_path("ci_files", "new_create_ref_file")}')
+        with open(CI_CONFIG.get_file_path("ci_files", "new_create_ref_file"), "r") as file:
             lines = file.readlines()
         reference_list = list()
         for line in lines:
@@ -557,8 +557,6 @@ def parse_args():
     return args
 
 
-
-
 if __name__ == '__main__':
     args = parse_args()
     check = config_structure
@@ -615,12 +613,11 @@ if __name__ == '__main__':
                              layout_html_file=Path(CI_CONFIG.plots.chart_dir, "index.html"))
         config_structure.prepare_data(
             source_target_dict={
-                CI_CONFIG.plots.chart_dir: Path(CI_CONFIG.result.plot_dir, args.packages)
+                CI_CONFIG.plots.chart_dir: Path(CI_CONFIG.get_file_path("result", "plot_dir"), args.packages)
             }
         )
 
     if args.create_layout_flag is True:
-        config_structure.create_path(Path(CI_CONFIG.result.plot_dir))
-        charts.create_layout(temp_dir=Path(CI_CONFIG.result.plot_dir),
-                             layout_html_file=Path(CI_CONFIG.result.plot_dir, "index.html"))
-
+        config_structure.create_path(Path(CI_CONFIG.get_file_path("result", "plot_dir")))
+        charts.create_layout(temp_dir=Path(CI_CONFIG.get_file_path("result", "plot_dir")),
+                             layout_html_file=Path(CI_CONFIG.get_file_path("result", "plot_dir"), "index.html"))

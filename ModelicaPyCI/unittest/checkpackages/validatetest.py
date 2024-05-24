@@ -116,9 +116,9 @@ class CheckPythonDymola:
         """
         if error_dict is not None:
             if pack is not None:
-                ch_log = Path(self.working_path, CI_CONFIG.result.check_result_dir,
+                ch_log = Path(self.working_path, CI_CONFIG.get_file_path("result", "check_result_dir"),
                               f'{self.library}.{pack}-check_log.txt')
-                error_log = Path(self.working_path, CI_CONFIG.result.check_result_dir,
+                error_log = Path(self.working_path, CI_CONFIG.get_file_path("result", "check_result_dir"),
                                  f'{self.library}.{pack}-error_log.txt')
                 os.makedirs(Path(ch_log).parent, exist_ok=True)
                 with open(ch_log, 'w') as check_log, open(error_log, "w") as err_log:
@@ -162,8 +162,8 @@ class CheckPythonDymola:
                     print(f'{CI_CONFIG.color.CRED}{line}{CI_CONFIG.color.CEND}')
 
         config_structure.prepare_data(source_target_dict={
-            check_log: Path(CI_CONFIG.result.check_result_dir, f'{self.library}.{pack}'),
-            err_log: Path(CI_CONFIG.result.check_result_dir, f'{self.library}.{pack}')},
+            check_log: Path(CI_CONFIG.get_file_path("result", "check_result_dir"), f'{self.library}.{pack}'),
+            err_log: Path(CI_CONFIG.get_file_path("result", "check_result_dir"), f'{self.library}.{pack}')},
             del_flag=True)
         if len(error_log_list) > 0:
             print(f'{CI_CONFIG.color.CRED}Dymola check failed{CI_CONFIG.color.CEND}')
@@ -253,9 +253,9 @@ class CreateWhitelist:
                 self.dymola.close()
             print(f'{CI_CONFIG.color.green}Whitelist check finished.{CI_CONFIG.color.CEND}')
             config_structure.prepare_data(source_target_dict={
-                err_log: Path(CI_CONFIG.result.whitelist_dir).joinpath(self.whitelist_library),
-                dymola_log: Path(CI_CONFIG.result.whitelist_dir).joinpath(self.whitelist_library),
-                whitelist_files: Path(CI_CONFIG.result.whitelist_dir).joinpath(self.whitelist_library)
+                err_log: Path(CI_CONFIG.get_file_path("result", "whitelist_dir")).joinpath(self.whitelist_library),
+                dymola_log: Path(CI_CONFIG.get_file_path("result", "whitelist_dir")).joinpath(self.whitelist_library),
+                whitelist_files: Path(CI_CONFIG.get_file_path("result", "whitelist_dir")).joinpath(self.whitelist_library)
             })
             return error_model_message_dic
         except IOError:
@@ -327,13 +327,13 @@ def write_exit_log(vers_check: bool):
         vers_check (): Boolean that check if the version number is up-to-date.
     """
     try:
-        with open(CI_CONFIG.config_ci.exit_file, "w") as exit_file:
+        with open(CI_CONFIG.get_file_path("ci_files", "exit_file"), "w") as exit_file:
             if vers_check is False:
                 exit_file.write(f'FAIL')
             else:
                 exit_file.write(f'successful')
     except IOError:
-        print(f'Error: File {CI_CONFIG.config_ci.exit_file} does not exist.')
+        print(f'Error: File {CI_CONFIG.get_file_path("ci_files", "exit_file")} does not exist.')
         exit(1)
 
 
@@ -387,13 +387,13 @@ def check_whitelist_version(version, whitelist_file):
 def create_whitelist(args, dymola, dymola_exception):
     config_structure.check_arguments_settings(whitelist_library=args.whitelist_library)
     mo = ModelicaModel()
-    config_structure.create_path(CI_CONFIG.config_ci.dir, CI_CONFIG.whitelist.dir)
+    config_structure.create_path(CI_CONFIG.get_dir_path("ci_files"), CI_CONFIG.get_dir_path("whitelist"))
     version = read_script_version(library_package_mo=args.library_package_mo)
     for options in args.dym_options:
         simulate_flag = options == "DYM_SIM"
-        ci_file = CI_CONFIG.whitelist.get(simulate_file) if options == "DYM_SIM" else CI_CONFIG.whitelist.get(check_file)
+        ci_file = CI_CONFIG.get_file_path("whitelist", "simulate_file") if options == "DYM_SIM" else CI_CONFIG.get_file_path("whitelist", "check_file")
 
-        config_structure.create_files(ci_file, CI_CONFIG.config_ci.exit_file)
+        config_structure.create_files(ci_file, CI_CONFIG.get_file_path("ci_files", "exit_file"))
         version_check = check_whitelist_version(
             version=version,
             whitelist_file=ci_file

@@ -12,7 +12,7 @@ def write_whitelist(model_list):
         model_list (): models on the whitelist
     """
 
-    file = open(CI_CONFIG.whitelist.get(html_file), "w")
+    file = open(CI_CONFIG.get_file_path("whitelist", "html_file"), "w")
     for model in model_list:
         file.write("\n" + model + ".mo" + "\n")
     file.close()
@@ -35,11 +35,11 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
 
-    config_structure.create_path(CI_CONFIG.config_ci.dir)
-    config_structure.create_files(CI_CONFIG.config_ci.exit_file)
+    config_structure.create_path(CI_CONFIG.get_dir_path("ci_files"))
+    config_structure.create_files(CI_CONFIG.get_file_path("ci_files", "exit_file"))
     mo = ModelicaModel()
-    config_structure.create_path(CI_CONFIG.whitelist.dir)
-    config_structure.create_files(CI_CONFIG.whitelist.get(html_file))
+    config_structure.create_path(CI_CONFIG.get_dir_path("whitelist")
+    config_structure.create_files(CI_CONFIG.get_file_path("whitelist", "html_file"))
     clone_repository(clone_into_folder=args.root_whitelist_library, git_url=args.git_url)
     MODEL_LIST, _ = mo.get_models(library=args.whitelist_library,
                                   path=args.root_whitelist_library,
@@ -47,5 +47,5 @@ if __name__ == '__main__':
                                   extended_ex_flag=False)
     write_whitelist(model_list=MODEL_LIST)
     config_structure.prepare_data(
-        source_target_dict={CI_CONFIG.whitelist.get(html_file): CI_CONFIG.result.whitelist_dir}
+        source_target_dict={CI_CONFIG.get_file_path("whitelist", "html_file"): CI_CONFIG.get_file_path("result", "whitelist_dir)}
     )

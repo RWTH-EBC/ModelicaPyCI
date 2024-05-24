@@ -12,7 +12,7 @@ def _sort_whitelist_model(library, lock_library):
         model_list (): return a list of models to lock
     """
     try:
-        wh = open(CI_CONFIG.whitelist.get(html_file), "r")
+        wh = open(CI_CONFIG.get_file_path("whitelist", "html_file"), "r")
         whitelist_lines = wh.readlines()
         wh.close()
         model_list = []
@@ -27,7 +27,7 @@ def _sort_whitelist_model(library, lock_library):
                 model_list.append(mo)
         return model_list
     except IOError:
-        print(f'Error: File {CI_CONFIG.whitelist.get(html_file)} does not exist.')
+        print(f'Error: File {CI_CONFIG.get_file_path("whitelist", "html_file")} does not exist.')
         exit(1)
 
 
