@@ -133,9 +133,10 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Set Github Environment Variables")
     check_test_group = parser.add_argument_group("Arguments to set Environment Variables")
     # [Github - settings]
-    check_test_group.add_argument("--github-repository", default="RWTH-EBC/AixLib",
+    check_test_group.add_argument("--github-repository",
+                                  default="RWTH-EBC/AixLib",
                                   help="Environment Variable owner/RepositoryName")
-    check_test_group.add_argument("--working-branch", default="${TARGET_BRANCH}",
+    check_test_group.add_argument("--working-branch",
                                   help="Your current working Branch")
     check_test_group.add_argument("--base-branch", default="main",
                                   help="your base branch (main)")

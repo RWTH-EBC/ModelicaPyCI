@@ -41,7 +41,7 @@ if __name__ == '__main__':
     config_structure.create_path(CI_CONFIG.whitelist.ci_dir)
     config_structure.create_files(CI_CONFIG.whitelist.html_file)
     clone_repository(clone_into_folder=args.root_whitelist_library, git_url=args.git_url)
-    MODEL_LIST = mo.get_models(library=args.whitelist_library,
+    MODEL_LIST, _ = mo.get_models(library=args.whitelist_library,
                                path=args.root_whitelist_library,
                                simulate_flag=False,
                                extended_ex_flag=False)

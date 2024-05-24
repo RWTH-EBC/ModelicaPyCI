@@ -462,7 +462,8 @@ class ModelicaModel:
                                                               library=library)
                         if example_test is None:
                             print(
-                                f'Model {filepath} is not a simulation example because it does not contain the following "Modelica.Icons.Example"')
+                                f'Model {filepath} is not a simulation example because '
+                                f'it does not contain the following "Modelica.Icons.Example"')
                             if extended_ex_flag is True:
                                 no_example = filepath.replace(os.sep, ".")
                                 no_example = no_example[no_example.rfind(library):no_example.rfind(".mo")]
