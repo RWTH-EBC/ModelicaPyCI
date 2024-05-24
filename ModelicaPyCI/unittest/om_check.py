@@ -61,7 +61,7 @@ class StoreDictKey(argparse.Action):
             return None
 
 
-class CheckOpenModelica(ci_config):
+class CheckOpenModelica:
 
     def __init__(self,
                  library: str,
@@ -77,7 +77,6 @@ class CheckOpenModelica(ci_config):
             library ():
             root_library ():
         """
-        super().__init__()
         self.root_library = root_library
         self.add_libraries_loc = add_libraries_loc
         self.install_libraries = inst_libraries

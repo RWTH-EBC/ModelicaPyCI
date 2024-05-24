@@ -3,7 +3,6 @@ import os
 import shutil
 from tidylib import tidy_document
 from ModelicaPyCI.structure import config_structure
-from ModelicaPyCI.api_script.api_github import clone_repository
 from ModelicaPyCI.structure.sort_mo_model import ModelicaModel
 from ModelicaPyCI.config import CI_CONFIG
 
@@ -612,19 +611,6 @@ def _remove_whitelist_model(library_list, whitelist_library_list):
     return library_list
 
 
-def write_whitelist(model_list):
-    """
-    write a whitelist with models
-    Args:
-        model_list (): models on the whitelist
-    """
-
-    file = open(CI_CONFIG.whitelist.html_file, "w")
-    for model in model_list:
-        file.write("\n" + model + ".mo" + "\n")
-    file.close()
-
-
 def read_log_file(html_error_log):
     """
     read logfile for possible errors
@@ -667,10 +653,6 @@ def parse_args():
                         help="Package to test for a html test")
     parser.add_argument("--library", default="AixLib", help="Library to test")
     parser.add_argument("--whitelist-library", default="IBPSA", help="Library that is written to a whitelist")
-    parser.add_argument("--git-url", default="https://github.com/ibpsa/modelica-ibpsa.git",
-                        help="url repository of library for whitelist")
-    parser.add_argument("--root-whitelist-library",
-                        help="library on a whitelist")
     # [ bool - flag]
     parser.add_argument("--correct-overwrite-flag", action="store_true", default=False,
                         help="correct html code in modelica files and overwrite old files")
@@ -678,8 +660,6 @@ def parse_args():
                         help="backup old files")
     parser.add_argument("--log-flag", action="store_true",
                         default=True, help="create logfile of model with errors")
-    parser.add_argument("--whitelist-flag", action="store_true", default=False,
-                        help="Create a new whitelist for a Library")
     parser.add_argument("--correct-view-flag", action="store_true", default=False,
                         help="Check and print the Correct HTML Code")
     parser.add_argument("--filter-whitelist-flag", default=False, action="store_true", help="Argument for ")
@@ -692,40 +672,28 @@ if __name__ == '__main__':
     config_structure.create_path(CI_CONFIG.config_ci.dir)
     config_structure.create_files(CI_CONFIG.config_ci.exit_file)
     mo = ModelicaModel()
-    if args.whitelist_flag is True:
-        config_structure.create_path(CI_CONFIG.whitelist.ci_dir)
-        config_structure.create_files(CI_CONFIG.whitelist.html_file)
-        clone_repository(repo_dir=args.root_whitelist_library, git_url=args.git_url)
-        model_list = mo.get_models(library=args.whitelist_library,
-                                   path=args.root_whitelist_library,
-                                   simulate_flag=False,
-                                   extended_ex_flag=False)
-        write_whitelist(model_list=model_list)
-        config_structure.prepare_data(
-            source_target_dict={CI_CONFIG.whitelist.html_file: CI_CONFIG.result.whitelist_dir})
-        exit(0)
-    else:
-        html_tidy_check = HtmlTidy(package=args.packages,
-                                   correct_overwrite=args.correct_overwrite_flag,
-                                   correct_backup=args.correct_backup_flag,
-                                   log=args.log_flag,
-                                   correct_view=args.correct_view_flag,
-                                   library=args.library,
-                                   whitelist_library=args.whitelist_library,
-                                   filter_whitelist=args.filter_whitelist_flag)
 
-        html_model = mo.get_option_model(library=args.library,
-                                         package=args.library,
-                                         filter_whitelist_flag=args.filter_whitelist_flag,
-                                         whitelist_library=args.whitelist_library,
-                                         root_package=Path(args.library))
-        html_tidy_check.run_files()
-        html_tidy_check.check_html_files(model_list=html_model)
-        if args.log_flag is True:
-            variable = call_read_log(
-                html_error_log=html_tidy_check.html_error_log,
-                html_correct_log=html_tidy_check.html_correct_log
-            )
-            exit(variable)
-        if args.correct_overwrite_flag is False and args.correct_backup_flag is False and args.log_flag is False and args.correct_view_flag is False:
-            print("please use -h or --help for help")
+    html_tidy_check = HtmlTidy(package=args.packages,
+                               correct_overwrite=args.correct_overwrite_flag,
+                               correct_backup=args.correct_backup_flag,
+                               log=args.log_flag,
+                               correct_view=args.correct_view_flag,
+                               library=args.library,
+                               whitelist_library=args.whitelist_library,
+                               filter_whitelist=args.filter_whitelist_flag)
+
+    html_model = mo.get_option_model(library=args.library,
+                                     package=args.library,
+                                     filter_whitelist_flag=args.filter_whitelist_flag,
+                                     whitelist_library=args.whitelist_library,
+                                     root_package=Path(args.library))
+    html_tidy_check.run_files()
+    html_tidy_check.check_html_files(model_list=html_model)
+    if args.log_flag is True:
+        variable = call_read_log(
+            html_error_log=html_tidy_check.html_error_log,
+            html_correct_log=html_tidy_check.html_correct_log
+        )
+        exit(variable)
+    if args.correct_overwrite_flag is False and args.correct_backup_flag is False and args.log_flag is False and args.correct_view_flag is False:
+        print("please use -h or --help for help")

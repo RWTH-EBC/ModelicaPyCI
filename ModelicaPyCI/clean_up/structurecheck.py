@@ -59,12 +59,13 @@ def _create_folder(path):
         pass
 
 
-def parse_args(self):
+def parse_args():
     parser = argparse.ArgumentParser(description="Config files for the CI")  # Configure the argument parser
     check_test_group = parser.add_argument_group("Arguments to build the CI structure")
     check_test_group.add_argument("--config-dir", default=False, action="store_true")
     check_test_group.add_argument("--create-path", default=False, action="store_true")
     return parser.parse_args()  # Parse the arguments
+
 
 if __name__ == '__main__':
     args = parse_args()

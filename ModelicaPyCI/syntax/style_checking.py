@@ -12,7 +12,7 @@ from ModelicaPyCI.structure import config_structure
 from pathlib import Path
 
 
-class StyleCheck(ci_config):
+class StyleCheck:
 
     def __init__(self,
                  dymola,
@@ -39,7 +39,6 @@ class StyleCheck(ci_config):
         self.add_libraries_loc = add_libraries_loc
         self.inst_libraries = inst_libraries
         self.root_library = root_library
-        super().__init__()
         self.dymola = dymola
         self.dymola_exception = dymola_exception
         self.dymola.ExecuteCommand("Advanced.TranslationInCommandLog:=true;")

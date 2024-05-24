@@ -90,6 +90,7 @@ class CIConfig(BaseModel):
     whitelist: WhitelistConfig = WhitelistConfig()
     artifacts: ArtifactsConfig = ArtifactsConfig()
     interact: InteractConfig = InteractConfig()
+    plots: PlotConfig = PlotConfig()
 
 
 def load_toml_config(path: Union[Path, str]):

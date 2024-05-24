@@ -4,7 +4,6 @@ import os
 import shutil
 import glob
 from pathlib import Path
-import argparse
 import distutils.dir_util
 
 from ModelicaPyCI.config import CI_CONFIG

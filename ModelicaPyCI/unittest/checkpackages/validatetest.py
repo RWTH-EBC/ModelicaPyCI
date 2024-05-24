@@ -260,9 +260,6 @@ class CreateWhitelist:
         self.dymola.ExecuteCommand("Advanced.TranslationInCommandLog:=true;")
 
     def __call__(self):
-        """
-
-        """
         dym_int = PythonDymolaInterface(dymola=self.dymola, dymola_exception=self.dymola_exception)
         dym_int.dym_check_lic()
         dym_int.load_library(root_library=self.root_library, add_libraries_loc=self.add_libraries_loc)
@@ -298,13 +295,13 @@ class CreateWhitelist:
             vers_check (): Boolean that check if the version number is up-to-date.
         """
         try:
-            with open(ci_config().config_ci_exit_file, "w") as exit_file:
+            with open(CI_CONFIG.config_ci.exit_file, "w") as exit_file:
                 if vers_check is False:
                     exit_file.write(f'FAIL')
                 else:
                     exit_file.write(f'successful')
         except IOError:
-            print(f'Error: File {ci_config().config_ci_exit_file} does not exist.')
+            print(f'Error: File {CI_CONFIG.config_ci.exit_file} does not exist.')
             exit(1)
 
     @staticmethod
@@ -499,15 +496,16 @@ if __name__ == '__main__':
     if args.create_whitelist_flag is True:
         config_structure.check_arguments_settings(args.whitelist_library)
         mo = ModelicaModel()
-        conf = ci_config()
-        config_structure.create_path(conf.config_ci_dir, conf.whitelist_ci_dir)
+        config_structure.create_path(CI_CONFIG.config_ci.dir, CI_CONFIG.whitelist.ci_dir)
 
         version = CreateWhitelist.read_script_version(root_library=args.root_library)
         for options in args.dym_options:
             if options == "DYM_CHECK":
-                config_structure.create_files(conf.whitelist_model_file, conf.config_ci_exit_file)
-                version_check = CreateWhitelist.check_whitelist_version(version=version,
-                                                                        whitelist_file=conf.whitelist_model_file)
+                config_structure.create_files(CI_CONFIG.whitelist.check_file, CI_CONFIG.config_ci.exit_file)
+                version_check = CreateWhitelist.check_whitelist_version(
+                    version=version,
+                    whitelist_file=CI_CONFIG.whitelist.check_file
+                )
                 if version_check is False:
                     root_whitelist_library = CreateWhitelist.get_root_whitelist_library(
                         whitelist_library=args.whitelist_library,
@@ -534,14 +532,15 @@ if __name__ == '__main__':
                                                      extended_ex_flag=False,
                                                      root_library=root_whitelist_library)
                     wh.check_whitelist_model(model_list=model_list,
-                                             whitelist_files=conf.whitelist_model_file,
+                                             whitelist_files=CI_CONFIG.whitelist.check_file,
                                              version=version,
                                              simulate_examples=False)
                 CreateWhitelist.write_exit_log(vers_check=version_check)
             if options == "DYM_SIM":
-                config_structure.create_files(conf.whitelist_simulate_file, conf.config_ci_exit_file)
-                version_check = CreateWhitelist.check_whitelist_version(version=version,
-                                                                        whitelist_file=conf.whitelist_simulate_file)
+                config_structure.create_files(CI_CONFIG.whitelist.simulate_file, CI_CONFIG.model_config.exit_file)
+                version_check = CreateWhitelist.check_whitelist_version(
+                    version=version,
+                    whitelist_file=CI_CONFIG.whitelist.simulate_file)
                 if version_check is False:
                     root_whitelist_library = CreateWhitelist.get_root_whitelist_library(
                         whitelist_library=args.whitelist_library,
@@ -567,7 +566,7 @@ if __name__ == '__main__':
                                                      extended_ex_flag=False,
                                                      root_library=root_whitelist_library)
                     wh.check_whitelist_model(model_list=model_list,
-                                             whitelist_files=conf.whitelist_simulate_file,
+                                             whitelist_files=CI_CONFIG.whitelist.simulate_file,
                                              version=version,
                                              simulate_examples=True)
                 CreateWhitelist.write_exit_log(vers_check=version_check)  # todo: Brauch ich die Datei noch?

@@ -8,7 +8,7 @@ from ModelicaPyCI.structure import config_structure
 import sys
 from pathlib import Path
 
-class PlotCharts(ci_config):
+class PlotCharts:
 
     def __init__(self,  package, library):
         """
@@ -21,11 +21,10 @@ class PlotCharts(ci_config):
         """
         self.package = package
         self.library = library
-        super().__init__()
         self.f_log = Path(self.library, "unitTests-dymola.log")
         self.csv_file = Path("reference.csv")
         self.test_csv = Path("test.csv")
-        self.temp_chart_path = Path(self.chart_dir, self.package)
+        self.temp_chart_path = Path(CI_CONFIG.plots.chart_dir, self.package)
         self.funnel_path = Path(self.library, "funnel_comp")
         self.ref_path = Path(self.library, self.library_ref_results_dir)
         self.index_html_file = Path(self.temp_chart_path, "index.html")
@@ -324,8 +323,8 @@ class PlotCharts(ci_config):
         if os.path.isdir(self.temp_chart_path) is False:
             os.mkdir(self.temp_chart_path)
             print(f'Save plot in {self.temp_chart_path}')
-        if os.path.isdir(self.chart_dir) is False:
-            os.mkdir(self.chart_dir)
+        if os.path.isdir(CI_CONFIG.plots.chart_dir) is False:
+            os.mkdir(CI_CONFIG.plots.chart_dir)
 
     def mako_line_html_chart(self, model, var):
         """
@@ -346,7 +345,7 @@ class PlotCharts(ci_config):
                     else:
                         print(f'Plot model: {CI_CONFIG.color.green}{model}{CI_CONFIG.color.CEND} with variable:{CI_CONFIG.color.green} {var}{CI_CONFIG.color.CEND}')
                         value = self._read_csv_funnel(url=path_name)
-                        my_template = Template(filename=self.temp_chart_file)
+                        my_template = Template(filename=CI_CONFIG.plots.templates_chart_file)
                         html_chart = my_template.render(values=value,
                                                         var=[f'{var}_ref', var],
                                                         model=model,
@@ -360,7 +359,7 @@ class PlotCharts(ci_config):
             else:
                 print(f'Plot model: {CI_CONFIG.color.green}{model}{CI_CONFIG.color.CEND} with variable:{CI_CONFIG.color.green} {var}{CI_CONFIG.color.CEND}')
                 value = self._read_csv_funnel(url=path_name)
-                my_template = Template(filename=self.temp_chart_file)
+                my_template = Template(filename=CI_CONFIG.plots.templates_chart_file)
                 html_chart = my_template.render(values=value,
                                                 var=[f'{var}_ref', var],
                                                 model=model,
@@ -382,7 +381,7 @@ class PlotCharts(ci_config):
         else:
             print(
                 f'Plot model: {CI_CONFIG.color.green}{reference_file[reference_file.rfind(os.sep) + 1:]}{CI_CONFIG.color.CEND} with variables:\n{CI_CONFIG.color.green}{legend_list}{CI_CONFIG.color.CEND}\n')
-            my_template = Template(filename=self.temp_chart_file)
+            my_template = Template(filename=CI_CONFIG.plots.templates_chart_file)
             html_chart = my_template.render(values=value_list,
                                             var=legend_list,
                                             model=reference_file,
@@ -404,7 +403,7 @@ class PlotCharts(ci_config):
         else:
             print(f'Plot model: {CI_CONFIG.color.green}{model}{CI_CONFIG.color.CEND} with variable:{CI_CONFIG.color.green} {var}{CI_CONFIG.color.CEND}')
             value = self._read_csv_funnel(url=path_name)
-            my_template = Template(filename=self.temp_chart_file)
+            my_template = Template(filename=CI_CONFIG.plots.templates_chart_file)
             html_chart = my_template.render(values=value,
                                             var=[f'{var}_ref', var],
                                             model=model,
@@ -420,14 +419,14 @@ class PlotCharts(ci_config):
         for file in os.listdir(self.temp_chart_path):
             if file.endswith(".html") and file != "index.html":
                 html_file_list.append(file)
-        my_template = Template(filename=self.temp_index_file)
+        my_template = Template(filename=CI_CONFIG.plots.templates_index_file)
         if len(html_file_list) == 0:
             print(f'No html files')
             os.rmdir(self.temp_chart_path)
             exit(0)
         else:
             html_chart = my_template.render(html_model=html_file_list)
-            with open(self.index_html_file, "w") as file_tmp:
+            with open(CI_CONFIG.plots.templates_index_file, "w") as file_tmp:
                 file_tmp.write(html_chart)
             print(f'Create html file with reference results.')
 
@@ -446,7 +445,7 @@ class PlotCharts(ci_config):
             exit(0)
         else:
             print(package_list)
-            my_template = Template(filename=self.temp_layout_file)
+            my_template = Template(filename=CI_CONFIG.plots.templates_layout_file)
             html_chart = my_template.render(packages=package_list)
             with open(layout_html_file, "w") as file_tmp:
                 file_tmp.write(html_chart)
@@ -478,16 +477,16 @@ class PlotCharts(ci_config):
         """
 
         """
-        if os.path.isdir(self.chart_dir) is False:
-            print(f'Directory {self.chart_dir} does not exist.')
+        if os.path.isdir(CI_CONFIG.plots.chart_dir) is False:
+            print(f'Directory {CI_CONFIG.plots.chart_dir} does not exist.')
         else:
-            folder_list = os.listdir(self.chart_dir)
+            folder_list = os.listdir(CI_CONFIG.plots.chart_dir)
             for folders in folder_list:
                 if folders.find(".html") > -1:
-                    os.remove(f'{self.chart_dir}{os.sep}{folders}')
+                    os.remove(f'{CI_CONFIG.plots.chart_dir}{os.sep}{folders}')
                     continue
                 else:
-                    shutil.rmtree(f'{self.chart_dir}{os.sep}{folders}')
+                    shutil.rmtree(f'{CI_CONFIG.plots.chart_dir}{os.sep}{folders}')
 
     def check_setting(self):
         """
@@ -562,11 +561,17 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    conf = ci_config()
     check = config_structure
-    check.create_path(conf.chart_dir)
-    check.check_path_setting(conf.chart_dir, conf.temp_chart_dir)
-    check.check_file_setting(conf.temp_chart_file, conf.temp_index_file,  conf.temp_layout_file)
+    config_structure.create_path(CI_CONFIG.plots.chart_dir)
+    config_structure.check_path_setting(
+        CI_CONFIG.plots.chart_dir,
+        CI_CONFIG.plots.templates_chart_dir
+    )
+    config_structure.check_file_setting(
+        CI_CONFIG.plots.templates_chart_file,
+        CI_CONFIG.plots.templates_index_file,
+        CI_CONFIG.plots.templates_layout_file,
+    )
     charts = PlotCharts(package=args.packages,
                         library=args.library)
     if args.line_html_flag is True:
@@ -606,12 +611,16 @@ if __name__ == '__main__':
                     charts.mako_line_html_chart(model=ref[:ref.find(".mat")],
                                                 var=ref[ref.rfind(".mat") + 5:])
         charts.create_index_layout()
-        charts.create_layout(temp_dir=Path(conf.chart_dir),
-                             layout_html_file=Path(conf.chart_dir,"index.html"))
-        check.prepare_data(source_target_dict={conf.chart_dir: Path(conf.result_plot_dir, args.packages)})
+        charts.create_layout(temp_dir=Path(CI_CONFIG.plots.chart_dir),
+                             layout_html_file=Path(CI_CONFIG.plots.chart_dir, "index.html"))
+        config_structure.prepare_data(
+            source_target_dict={
+                CI_CONFIG.plots.chart_dir: Path(CI_CONFIG.result.plot_dir, args.packages)
+            }
+        )
 
     if args.create_layout_flag is True:
-        check.create_path(Path(conf.result_plot_dir))
-        charts.create_layout(temp_dir=Path(conf.result_plot_dir),
-                             layout_html_file=Path(conf.result_plot_dir, "index.html"))
+        config_structure.create_path(Path(CI_CONFIG.result.plot_dir))
+        charts.create_layout(temp_dir=Path(CI_CONFIG.result.plot_dir),
+                             layout_html_file=Path(CI_CONFIG.result.plot_dir, "index.html"))
 

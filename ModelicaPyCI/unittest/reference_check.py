@@ -27,7 +27,7 @@ def write_exit_file(var):
         print(f'Error: File {CI_CONFIG.config_ci.exit_file} does not exist.')
 
 
-class BuildingspyRegressionCheck(ci_config):
+class BuildingspyRegressionCheck():
 
     def __init__(self, buildingspy_regression, pack, n_pro, tool, batch, show_gui, path, library):
         """
@@ -47,7 +47,6 @@ class BuildingspyRegressionCheck(ci_config):
         self.show_gui = show_gui
         self.path = path
         self.library = library
-        super().__init__()
         self.ut = buildingspy_regression.Tester(tool=self.tool)
 
     def check_regression_test(self, package_list):
@@ -331,7 +330,7 @@ def get_update_ref():
         exit(0)
 
 
-class BuildingspyValidateTest(ci_config):
+class BuildingspyValidateTest:
 
     def __init__(self, validate, path):
         """
@@ -342,7 +341,6 @@ class BuildingspyValidateTest(ci_config):
         """
         self.path = path
         self.validate = validate
-        super().__init__()
 
     def validate_html(self):
         """
@@ -471,7 +469,6 @@ if __name__ == '__main__':
                                                   dymola_exception=dymola_exception)
             dym_interface.load_library(root_library=args.root_library,
                                        add_libraries_loc=None)
-            conf = ci_config()
             ref_model = ReferenceModel(library=args.library)
             package_list = []
             if args.ref_list:
@@ -502,7 +499,7 @@ if __name__ == '__main__':
                     package_list = args.packages
                 if args.changed_flag is True:
                     config_structure.create_files(Path("..", CI_CONFIG.config_ci.changed_file),
-                                                  Path("..", conf.config_ci_exit_file))
+                                                  Path("..", CI_CONFIG.config_ci.exit_file))
                     # package = args.packages[args.packages.rfind(".") + 1:]
                     package = args.packages[0]  # todo: Schleife ergänzen
                     mo = ModelicaModel()
