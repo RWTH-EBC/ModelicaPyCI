@@ -42,7 +42,7 @@ def check_path_setting(*args: Path, create_flag: bool = False):
         else:
             print(
                 f'{COLOR.CRED}Error:{COLOR.CEND} {COLOR.blue}Path variable "{var}"{COLOR.CEND} in {COLOR.blue}"{path}"'
-                f'{COLOR.CEND} does not exist.')
+                f'{COLOR.CEND} does not exist in path {Path().absolute()} with content {os.listdir(os.getcwd())}.')
             if create_flag is True:
                 create_path(path)
             else:
@@ -63,7 +63,7 @@ def check_file_setting(*args, create_flag: bool = False):
         else:
             print(
                 f'{COLOR.CRED}Error:{COLOR.CEND} {COLOR.blue}File_variable "{var}"{COLOR.CEND} in {COLOR.blue}"{file}"'
-                f'{COLOR.CEND} does not exist.')
+                f'{COLOR.CEND} does not exist in path {Path().absolute()} with content {os.listdir(os.getcwd())}.')
             if create_flag is True:
                 create_files(file)
             else:

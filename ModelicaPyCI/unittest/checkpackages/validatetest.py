@@ -18,14 +18,14 @@ class CheckPythonDymola:
                  dym,
                  dym_exp,
                  library: str,
-                 root_library: Path,
+                 library_package_mo: Path,
                  working_path: Path = Path(Path.cwd()),
                  add_libraries_loc: dict = None,
                  inst_libraries: list = None):
         """
         The class check or simulate models. Return an error-log. Can filter models from a whitelist
         Args:
-            root_library: root path of library (e.g. ../AixLib/package.mo)
+            library_package_mo: root path of library (e.g. ../AixLib/package.mo)
             dymola_version: Version of used dymola (2023)
             working_path:
             add_libraries_loc:
@@ -35,7 +35,7 @@ class CheckPythonDymola:
             library (): library to test.
         """
         # [Libraries]
-        self.root_library = root_library
+        self.library_package_mo = library_package_mo
         self.add_libraries_loc = add_libraries_loc
         self.install_libraries = inst_libraries
         self.library = library
@@ -45,7 +45,7 @@ class CheckPythonDymola:
         self.dymola_exception = dym_exp
         if self.dymola is None:
             self.dymola.ExecuteCommand("Advanced.TranslationInCommandLog:=true;")
-        self.dymola_log = Path(self.root_library).parent.joinpath(f'{self.library}-log.txt')
+        self.dymola_log = Path(self.library_package_mo).parent.joinpath(f'{self.library}-log.txt')
 
     def __call__(self):
         """
@@ -57,7 +57,7 @@ class CheckPythonDymola:
         dym_int = PythonDymolaInterface(dymola=self.dymola,
                                         dymola_exception=self.dymola_exception)
         dym_int.dym_check_lic()
-        dym_int.load_library(root_library=self.root_library, add_libraries_loc=self.add_libraries_loc)
+        dym_int.load_library(root_library=self.library_package_mo, add_libraries_loc=self.add_libraries_loc)
         dym_int.install_library(libraries=self.install_libraries)
 
     def check_dymola_model(self,
@@ -245,7 +245,7 @@ class CreateWhitelist:
         self.whitelist_library = whitelist_library
         self.git_url = git_url
         self.working_path = working_path
-        self.root_library = root_whitelist_library
+        self.library_package_mo = root_whitelist_library
         # [libraries]
         self.add_libraries_loc = add_libraries_loc
         self.install_libraries = inst_libraries
@@ -259,7 +259,7 @@ class CreateWhitelist:
     def __call__(self):
         dym_int = PythonDymolaInterface(dymola=self.dymola, dymola_exception=self.dymola_exception)
         dym_int.dym_check_lic()
-        dym_int.load_library(root_library=self.root_library, add_libraries_loc=self.add_libraries_loc)
+        dym_int.load_library(root_library=self.library_package_mo, add_libraries_loc=self.add_libraries_loc)
         dym_int.install_library(libraries=self.install_libraries)
 
     @staticmethod
@@ -294,22 +294,22 @@ class CreateWhitelist:
             exit(1)
 
     @staticmethod
-    def read_script_version(root_library):
+    def read_script_version(library_package_mo):
         """
         Returns:
             version (): return the latest version number of aixlib conversion script.
         """
-        path = Path(Path.cwd(), Path(root_library).parent, "Resources", "Scripts")
+        path = Path(Path.cwd(), Path(library_package_mo).parent, "Resources", "Scripts")
         print(path)
         filelist = (glob.glob(f'{path}{os.sep}*.mos'))
         if len(filelist) == 0:
-            print(f'Cannot find a Conversion Script in {Path(root_library).parent} repository.')
+            print(f'Cannot find a Conversion Script in {Path(library_package_mo).parent} repository.')
             exit(0)
         else:
             l_aixlib_conv = natsorted(filelist)[(-1)]
             l_aixlib_conv = l_aixlib_conv.split(os.sep)
             vers = (l_aixlib_conv[len(l_aixlib_conv) - 1])
-            print(f'Latest {Path(root_library).parent} version: {vers}')
+            print(f'Latest {Path(library_package_mo).parent} version: {vers}')
             return vers
 
     @staticmethod
@@ -351,8 +351,8 @@ class CreateWhitelist:
             simulate_examples() : bool simulate or not
         """
         error_model_message_dic = {}
-        err_log = Path(Path(self.root_library).parent, f'{self.whitelist_library}-error_log.txt')
-        dymola_log = Path(Path(self.root_library).parent, f'{self.whitelist_library}-log.txt')
+        err_log = Path(Path(self.library_package_mo).parent, f'{self.whitelist_library}-error_log.txt')
+        dymola_log = Path(Path(self.library_package_mo).parent, f'{self.whitelist_library}-log.txt')
         if model_list is None or len(model_list) == 0:
             print(f'{CI_CONFIG.color.CRED}Error:{CI_CONFIG.color.CEND} Found no models')
             exit(0)
@@ -393,8 +393,8 @@ def parse_args():
     check_test_group.add_argument("--packages",
                                   nargs="+",
                                   help="Library to test (e.g. Airflow.Multizone)")
-    check_test_group.add_argument("--root-library",
-                                  help="root of library",
+    check_test_group.add_argument("--library-package-mo",
+                                  help="package.mo of library",
                                   type=Path)
 
     # [Dymola - settings]
@@ -432,7 +432,7 @@ if __name__ == '__main__':
     # [Check arguments, files, path]
     check = config_structure
     config_structure.check_arguments_settings(args.library, args.packages)
-    config_structure.check_file_setting(args.root_library)
+    config_structure.check_file_setting(args.library_package_mo)
     if additional_libraries_local is not None:
         for lib in additional_libraries_local:
             add_lib_path = Path(additional_libraries_local[lib], lib, "package.mo")
@@ -442,7 +442,7 @@ if __name__ == '__main__':
         dym = CheckPythonDymola(dym=dymola,
                                 dym_exp=dymola_exception,
                                 library=args.library,
-                                root_library=args.root_library,
+                                library_package_mo=args.library_package_mo,
                                 add_libraries_loc=additional_libraries_local,
                                 inst_libraries=install_libraries)
         dym()
@@ -458,7 +458,7 @@ if __name__ == '__main__':
                                                      changed_flag=args.changed_flag,
                                                      simulate_flag=False,
                                                      filter_whitelist_flag=args.filter_whitelist_flag,
-                                                     root_library=args.root_library)
+                                                     root_library=args.library_package_mo)
 
                     error_model_dict = dym.check_dymola_model(check_model_list=model_list,
                                                               exception_list=except_list,
@@ -476,7 +476,7 @@ if __name__ == '__main__':
                                                      changed_flag=args.changed_flag,
                                                      simulate_flag=True,
                                                      filter_whitelist_flag=args.filter_whitelist_flag,
-                                                     root_library=args.root_library)
+                                                     root_library=args.library_package_mo)
                     error_model_dict = dym.check_dymola_model(check_model_list=model_list,
                                                               exception_list=except_list,
                                                               sim_ex_flag=True)
@@ -491,7 +491,7 @@ if __name__ == '__main__':
         mo = ModelicaModel()
         config_structure.create_path(CI_CONFIG.config_ci.dir, CI_CONFIG.whitelist.ci_dir)
 
-        version = CreateWhitelist.read_script_version(root_library=args.root_library)
+        version = CreateWhitelist.read_script_version(library_package_mo=args.library_package_mo)
         for options in args.dym_options:
             if options == "DYM_CHECK":
                 config_structure.create_files(CI_CONFIG.whitelist.check_file, CI_CONFIG.config_ci.exit_file)
