@@ -7,7 +7,6 @@ from natsort import natsorted
 from pathlib import Path
 from ModelicaPyCI.config import CI_CONFIG
 from ModelicaPyCI.structure.sort_mo_model import ModelicaModel
-from ModelicaPyCI.structure.toml_to_py import ConvertTypes
 from ModelicaPyCI.structure import config_structure
 from ModelicaPyCI.pydyminterface.python_dymola_interface import PythonDymolaInterface
 from ModelicaPyCI.api_script.api_github import clone_repository
@@ -423,9 +422,6 @@ def parse_args():
     check_test_group.add_argument("--extended-ex-flag", default=False, action="store_true")
     check_test_group.add_argument("--create-whitelist-flag", help="Create a whitelist of a library with failed models.",
                                   action="store_true")
-    check_test_group.add_argument("--load-setting-flag",
-                                  default=False,
-                                  action="store_true")
     # [dym - Options: DYM_CHECK, DYM_SIM]
     check_test_group.add_argument("--dym-options",
                                   default=["DYM_CHECK"], nargs="+",
@@ -440,26 +436,17 @@ def parse_args():
 if __name__ == '__main__':
     # Load Parser arguments
     args = parse_args()
-    # Load dymola python interface and dymola exception
-    if args.load_setting_flag is True:
-        data = toml.load(Path("config", "toml_files", "script_settings.toml"))
-        install_libraries = data["Dymola_Check"]["install_libraries"]
-        except_list = data["Dymola_Check"]["except_list"]
-        additional_libraries_local = data["Dymola_Check"]["additional_libraries_local"]
-        additional_libraries_local = ConvertTypes().convert_list_to_dict_toml(convert_list=additional_libraries_local,
-                                                                              whitelist_library=args.whitelist_library)
-    else:
-        install_libraries = None
-        except_list = None
-        additional_libraries_local = None
+    install_libraries = None
+    except_list = None
+    additional_libraries_local = None
     # [Check arguments, files, path]
     check = config_structure
-    check.check_arguments_settings(args.library, args.packages)
-    check.check_file_setting(args.root_library)
+    config_structure.check_arguments_settings(args.library, args.packages)
+    config_structure.check_file_setting(args.root_library)
     if additional_libraries_local is not None:
         for lib in additional_libraries_local:
             add_lib_path = Path(additional_libraries_local[lib], lib, "package.mo")
-            check.check_file_setting(add_lib_path)
+            config_structure.check_file_setting(add_lib_path)
     dymola, dymola_exception = PythonDymolaInterface.load_dymola_python_interface(dymola_version=args.dymola_version)
     if args.create_whitelist_flag is False:
         dym = CheckPythonDymola(dym=dymola,
@@ -510,15 +497,15 @@ if __name__ == '__main__':
                     option_check_dictionary[options] = var
             dym.return_exit_var(opt_check_dict=option_check_dictionary, pack=package)
     if args.create_whitelist_flag is True:
-        check.check_arguments_settings(args.whitelist_library)
+        config_structure.check_arguments_settings(args.whitelist_library)
         mo = ModelicaModel()
         conf = ci_config()
-        check.create_path(conf.config_ci_dir, conf.whitelist_ci_dir)
+        config_structure.create_path(conf.config_ci_dir, conf.whitelist_ci_dir)
 
         version = CreateWhitelist.read_script_version(root_library=args.root_library)
         for options in args.dym_options:
             if options == "DYM_CHECK":
-                check.create_files(conf.whitelist_model_file, conf.config_ci_exit_file)
+                config_structure.create_files(conf.whitelist_model_file, conf.config_ci_exit_file)
                 version_check = CreateWhitelist.check_whitelist_version(version=version,
                                                                         whitelist_file=conf.whitelist_model_file)
                 if version_check is False:
@@ -528,7 +515,7 @@ if __name__ == '__main__':
                         repo_dir=args.repo_dir,
                         arg_root_whitelist_library=args.root_whitelist_library)
 
-                    check.check_file_setting(root_whitelist_library)
+                    config_structure.check_file_setting(root_whitelist_library)
                     wh = CreateWhitelist(dym=dymola,
                                          dymola_ex=dymola_exception,
                                          whitelist_library=args.whitelist_library,
@@ -552,7 +539,7 @@ if __name__ == '__main__':
                                              simulate_examples=False)
                 CreateWhitelist.write_exit_log(vers_check=version_check)
             if options == "DYM_SIM":
-                check.create_files(conf.whitelist_simulate_file, conf.config_ci_exit_file)
+                config_structure.create_files(conf.whitelist_simulate_file, conf.config_ci_exit_file)
                 version_check = CreateWhitelist.check_whitelist_version(version=version,
                                                                         whitelist_file=conf.whitelist_simulate_file)
                 if version_check is False:
@@ -561,7 +548,7 @@ if __name__ == '__main__':
                         git_url=args.git_url,
                         repo_dir=args.repo_dir,
                         arg_root_whitelist_library=args.root_whitelist_library)
-                    check.check_file_setting(root_whitelist_library)
+                    config_structure.check_file_setting(root_whitelist_library)
                     wh = CreateWhitelist(dym=dymola,
                                          dymola_ex=dymola_exception,
                                          whitelist_library=args.whitelist_library,

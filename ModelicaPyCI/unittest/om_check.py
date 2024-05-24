@@ -4,7 +4,6 @@ from ebcpy.utils.statistics_analyzer import StatisticsAnalyzer
 from OMPython import OMCSessionZMQ
 from ModelicaPyCI.config import CI_CONFIG
 from ModelicaPyCI.structure.sort_mo_model import ModelicaModel
-from ModelicaPyCI.structure.toml_to_py import ConvertTypes
 from pathlib import Path
 from ModelicaPyCI.structure import config_structure
 import numpy as np
@@ -540,9 +539,6 @@ def parse_args():
     check_test_group.add_argument("--extended-ex-flag",
                                   default=False,
                                   action="store_true")
-    check_test_group.add_argument("--load-setting-flag",
-                                  default=False,
-                                  action="store_true")
     # [OM - Options: OM_CHECK, OM_SIM, DYMOLA_SIM, COMPARE]
     check_test_group.add_argument("--om-options",
                                   nargs="+",
@@ -556,18 +552,9 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
     # [Settings]
-    if args.load_setting_flag is True:
-        toml_file = f'test_config.toml'
-        data = toml.load(f'{toml_file}')
-        install_libraries = data["OM_Check"]["install_libraries"]
-        except_list = data["OM_Check"]["except_list"]
-        additional_libraries_local = data["OM_Check"]["additional_libraries_local"]
-        additional_libraries_local = ConvertTypes().convert_list_to_dict_toml(convert_list=additional_libraries_local,
-                                                                               whitelist_library=args.whitelist_library)
-    else:
-        install_libraries = None
-        except_list = None
-        additional_libraries_local = None
+    install_libraries = None
+    except_list = None
+    additional_libraries_local = None
     # [Check arguments, files, path]
     check = config_structure
     check.check_arguments_settings(args.library, args.packages)
