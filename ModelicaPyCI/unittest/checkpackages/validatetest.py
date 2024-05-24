@@ -387,11 +387,11 @@ def check_whitelist_version(version, whitelist_file):
 def create_whitelist(args, dymola, dymola_exception):
     config_structure.check_arguments_settings(whitelist_library=args.whitelist_library)
     mo = ModelicaModel()
-    config_structure.create_path(CI_CONFIG.config_ci.dir, CI_CONFIG.whitelist.ci_dir)
+    config_structure.create_path(CI_CONFIG.config_ci.dir, CI_CONFIG.whitelist.dir)
     version = read_script_version(library_package_mo=args.library_package_mo)
     for options in args.dym_options:
         simulate_flag = options == "DYM_SIM"
-        ci_file = CI_CONFIG.whitelist.simulate_file if options == "DYM_SIM" else CI_CONFIG.whitelist.check_file
+        ci_file = CI_CONFIG.whitelist.get(simulate_file) if options == "DYM_SIM" else CI_CONFIG.whitelist.get(check_file)
 
         config_structure.create_files(ci_file, CI_CONFIG.config_ci.exit_file)
         version_check = check_whitelist_version(

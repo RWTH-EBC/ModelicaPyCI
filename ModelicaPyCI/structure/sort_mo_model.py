@@ -81,12 +81,12 @@ class ModelicaModel:
                 model_list = list(set(model_list))
         elif filter_whitelist_flag is True:
             if simulate_flag is True:
-                ci_whitelist_file = CI_CONFIG.whitelist.simulate_file
-                file_list = CI_CONFIG.whitelist.simulate_file
+                ci_whitelist_file = CI_CONFIG.whitelist.get(simulate_file)
+                file_list = CI_CONFIG.whitelist.get(simulate_file)
             else:
                 ci_whitelist_file = CI_CONFIG.whitelist.model_file
                 file_list = CI_CONFIG.whitelist.model_file
-            config_structure.check_path_setting(CI_CONFIG.whitelist.ci_dir, create_flag=True)
+            config_structure.check_path_setting(CI_CONFIG.whitelist.dir, create_flag=True)
             config_structure.check_file_setting(file_list, create_flag=True)
             whitelist_list_models = self.get_whitelist_models(whitelist_file=ci_whitelist_file,
                                                               whitelist_library=whitelist_library,

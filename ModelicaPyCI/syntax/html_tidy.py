@@ -219,7 +219,7 @@ class HtmlTidy:
         """
         whitelist_library_list = []
         try:
-            file = open(CI_CONFIG.whitelist.html_file, "r")
+            file = open(CI_CONFIG.whitelist.get(html_file), "r")
             lines = file.readlines()
             file.close()
             for line in lines:
@@ -229,7 +229,7 @@ class HtmlTidy:
                     whitelist_library_list.append(line)
             return whitelist_library_list
         except IOError:
-            print(f'Error: File {CI_CONFIG.whitelist.html_file} does not exist. Check without a whitelist.')
+            print(f'Error: File {CI_CONFIG.whitelist.get(html_file)} does not exist. Check without a whitelist.')
             return whitelist_library_list
 
 def _get_library_model(package, library):

@@ -56,11 +56,13 @@ class FilesConfig(BaseModel):
 
 
 class WhitelistConfig(BaseModel):
-    ci_dir: Path = "dymola-ci-tests/ci_whitelist"
-    check_file: Path = 'dymola-ci-tests/ci_whitelist/ci_check_whitelist.txt'
-    simulate_file: Path = 'dymola-ci-tests/ci_whitelist/ci_simulate_whitelist.txt'
-    html_file: Path = 'dymola-ci-tests/ci_whitelist/rci_html_whitelist.txt'
-    ref_file: Path = 'dymola-ci-tests/ci_whitelist/ci_reference_check_whitelist.txt'
+    dir: Path = "dymola-ci-tests/ci_whitelist"
+    check_file: Path = 'ci_check_whitelist.txt'
+    simulate_file: Path = 'ci_simulate_whitelist.txt'
+    html_file: Path = 'rci_html_whitelist.txt'
+
+    def get_path(self, file):
+        return Path().joinpath(self.dir, file)
 
 
 class PlotConfig(BaseModel):
