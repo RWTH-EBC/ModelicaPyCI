@@ -389,13 +389,11 @@ def parse_args():
     check_test_group = parser.add_argument_group("Arguments to run check tests")
     # [Library - settings]
     check_test_group.add_argument("--library",
-                                  default="AixLib",
                                   help="Library to test (e.g. AixLib")
     check_test_group.add_argument("--packages",
-                                  default=["Airflow"], nargs="+",
+                                  nargs="+",
                                   help="Library to test (e.g. Airflow.Multizone)")
     check_test_group.add_argument("--root-library",
-                                  default=Path("AixLib", "package.mo"),
                                   help="root of library",
                                   type=Path)
 
@@ -411,7 +409,7 @@ def parse_args():
                                   action="store_true")
     # [dym - Options: DYM_CHECK, DYM_SIM]
     check_test_group.add_argument("--dym-options",
-                                  default=["DYM_CHECK"], nargs="+",
+                                  nargs="+",
                                   help="Chose between openmodelica check, compare or simulate")
     # [repository - setting ]
     check_test_group.add_argument("--git-url", default="https://github.com/ibpsa/modelica-ibpsa.git",
