@@ -399,7 +399,7 @@ def create_whitelist(args, dymola, dymola_exception):
             whitelist_file=ci_file
         )
         if version_check is False:
-            root_whitelist_library = CreateWhitelist.get_root_whitelist_library(
+            root_whitelist_library = get_root_whitelist_library(
                 whitelist_library=args.whitelist_library,
                 git_url=args.git_url,
                 root_whitelist_library=args.root_whitelist_library)
