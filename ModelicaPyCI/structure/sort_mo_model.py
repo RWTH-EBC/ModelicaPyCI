@@ -64,9 +64,9 @@ class ModelicaModel:
             extended_ex_flag = False
         if changed_flag is True:
             # todo: ci_changed_file selbst im skript erschaffen, nicht in der gitlab pipeline selbst
-            config_structure.check_path_setting(self.config_ci_dir)
-            config_structure.check_file_setting(self.config_ci_changed_file)
-            result = self.get_changed_models(ch_file=self.config_ci_changed_file,
+            config_structure.check_path_setting(CI_CONFIG.config_ci.dir)
+            config_structure.check_file_setting(CI_CONFIG.config_ci.changed_file)
+            result = self.get_changed_models(ch_file=CI_CONFIG.config_ci.changed_file,
                                              library=library,
                                              single_package=package,
                                              simulate_examples=simulate_flag)
@@ -81,12 +81,12 @@ class ModelicaModel:
                 model_list = list(set(model_list))
         elif filter_whitelist_flag is True:
             if simulate_flag is True:
-                ci_whitelist_file = self.whitelist_simulate_file
-                file_list = self.whitelist_simulate_file
+                ci_whitelist_file = CI_CONFIG.whitelist.simulate_file
+                file_list = CI_CONFIG.whitelist.simulate_file
             else:
-                ci_whitelist_file = self.whitelist_model_file
-                file_list = self.whitelist_model_file
-            config_structure.check_path_setting(self.whitelist_ci_dir, create_flag=True)
+                ci_whitelist_file = CI_CONFIG.whitelist.model_file
+                file_list = CI_CONFIG.whitelist.model_file
+            config_structure.check_path_setting(CI_CONFIG.whitelist.ci_dir, create_flag=True)
             config_structure.check_file_setting(file_list, create_flag=True)
             whitelist_list_models = self.get_whitelist_models(whitelist_file=ci_whitelist_file,
                                                               whitelist_library=whitelist_library,
@@ -265,8 +265,8 @@ class ModelicaModel:
             exit(0)
         else:
             for element in models:
-                for subelement in whitelist_list:
-                    if element == subelement:
+                for sub_element in whitelist_list:
+                    if element == sub_element:
                         whitelist_list_mo.append(element)
             whitelist_list_mo = list(set(whitelist_list_mo))
             for example in whitelist_list_mo:
@@ -306,7 +306,7 @@ class ModelicaModel:
     def _mos_script_to_model_exist(self, model):
         test_model = model.replace(f'{self.library}.', "")
         test_model = test_model.replace(".", os.sep)
-        for subdir, dirs, files in os.walk(self.library_resource_dir):
+        for subdir, dirs, files in os.walk(CI_CONFIG.artifacts.library_resource_dir):
             for file in files:
                 filepath = subdir + os.sep + file
                 if filepath.endswith(".mos") and filepath.find(self.package.replace(".", os.sep)) > -1:
@@ -418,7 +418,9 @@ class ModelicaModel:
                                                                   library=library)
                             if example_test is None:
                                 print(
-                                    f'Model {model_name} is not a simulation example because it does not contain the following "Modelica.Icons.Example"')
+                                    f'Model {model_name} is not a simulation example because it '
+                                    f'does not contain the following "Modelica.Icons.Example"'
+                                )
                                 if extended_ex_flag is True:
                                     no_example = line.replace(os.sep, ".")
                                     no_example = no_example[no_example.rfind(library):no_example.rfind(".mo")]
