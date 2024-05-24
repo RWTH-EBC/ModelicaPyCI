@@ -414,7 +414,7 @@ def create_whitelist(args, dymola, dymola_exception):
                 additional_libraries_to_load=args.additional_libraries_to_load,
                 root_whitelist_library=root_whitelist_library
             )
-            wh()
+            #wh()
             model_list = mo.get_option_model(
                 library=args.whitelist_library,
                 package=".",
@@ -440,7 +440,7 @@ def validate_only(args, dymola, dymola_exception):
                             library=args.library,
                             library_package_mo=args.library_package_mo,
                             additional_libraries_to_load=args.additional_libraries_to_load)
-    dym()
+    #dym()
     mm = ModelicaModel()
     package_results = {}
     for package in args.packages:
