@@ -24,7 +24,6 @@ class CheckPythonDymola:
         The class check or simulate models. Return an error-log. Can filter models from a whitelist
         Args:
             library_package_mo: root path of library (e.g. ../AixLib/package.mo)
-            dymola_version: Version of used dymola (2023)
             working_path:
             additional_libraries_to_load:
             dym (): python_dymola_interface class.
@@ -112,7 +111,7 @@ class CheckPythonDymola:
         Args:
             pack (): Package to check.
             exception_list (): Exceptions like certain warnings that are not recognized as errors.
-            error_dict (): Dicitonary of models with log message, that does not pass the check.
+            error_dict (): Dictionary of models with log message, that does not pass the check.
         """
         if error_dict is not None:
             if pack is not None:
@@ -193,7 +192,6 @@ class CreateWhitelist:
             root_whitelist_library:
             dym (): python_dymola_interface class.
             dymola_ex (): python_dymola_exception class.
-            library (): library to be tested.
             whitelist_library ():  Library and its models that can be on the whitelist.
             git_url (): Git url of the cloned project.
         """
@@ -263,7 +261,7 @@ class CreateWhitelist:
             exit(1)
 
 
-def sort_warnings_from_log(self, log: str = None, exception_list: list = None):
+def sort_warnings_from_log(log: str = None, exception_list: list = None):
     err_list, warning_list = [], []
     """result = ' '.join(map(str, log))
     exception_flag = False
@@ -340,7 +338,7 @@ def write_exit_log(vers_check: bool):
 def read_script_version(library_package_mo):
     """
     Returns:
-        version (): return the latest version number of aixlib conversion script.
+        version (): return the latest version number of conversion script.
     """
     path = Path(Path.cwd(), Path(library_package_mo).parent, "Resources", "Scripts")
     print(path)
@@ -349,19 +347,19 @@ def read_script_version(library_package_mo):
         print(f'Cannot find a Conversion Script in {Path(library_package_mo).parent} repository.')
         exit(0)
     else:
-        l_aixlib_conv = natsorted(filelist)[(-1)]
-        l_aixlib_conv = l_aixlib_conv.split(os.sep)
-        vers = (l_aixlib_conv[len(l_aixlib_conv) - 1])
+        last_conversion_script = natsorted(filelist)[(-1)]
+        last_conversion_script = last_conversion_script.split(os.sep)
+        vers = (last_conversion_script[len(last_conversion_script) - 1])
         print(f'Latest {Path(library_package_mo).parent} version: {vers}')
         return vers
 
 
 def check_whitelist_version(version, whitelist_file):
     """
-    Check the latest whitelist version with the latest version of Aixlib conversion script.
+    Check the latest whitelist version with the latest version of conversion script.
     Read the last version of whitelist-
     Args:
-        version (): Latest version number of aixlib conversion script.
+        version (): Latest version number of conversion script.
     Returns:
         version_check (): Boolean - return true, if the whitelist version is equal to Aixlib conversion script version
         @param version:

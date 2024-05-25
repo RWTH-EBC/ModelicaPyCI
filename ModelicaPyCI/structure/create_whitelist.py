@@ -38,7 +38,7 @@ if __name__ == '__main__':
     config_structure.create_path(CI_CONFIG.get_dir_path("ci_files"))
     config_structure.create_files(CI_CONFIG.get_file_path("ci_files", "exit_file"))
     mo = ModelicaModel()
-    config_structure.create_path(CI_CONFIG.get_dir_path("whitelist")
+    config_structure.create_path(CI_CONFIG.get_dir_path("whitelist"))
     config_structure.create_files(CI_CONFIG.get_file_path("whitelist", "html_file"))
     clone_repository(clone_into_folder=args.root_whitelist_library, git_url=args.git_url)
     MODEL_LIST, _ = mo.get_models(library=args.whitelist_library,
@@ -47,5 +47,7 @@ if __name__ == '__main__':
                                   extended_ex_flag=False)
     write_whitelist(model_list=MODEL_LIST)
     config_structure.prepare_data(
-        source_target_dict={CI_CONFIG.get_file_path("whitelist", "html_file"): CI_CONFIG.get_file_path("result", "whitelist_dir)}
+        source_target_dict={
+            CI_CONFIG.get_file_path("whitelist", "html_file"): CI_CONFIG.get_file_path("result", "whitelist_dir")
+        }
     )

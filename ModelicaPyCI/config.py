@@ -18,7 +18,6 @@ class ResultConfig(BaseModel):
     check_result_dir: str = 'Dymola_check'
 
 
-
 class ColorConfig(BaseModel):
     CRED: str = Field(
         description="Start ANSI escape code for red text",
@@ -40,6 +39,22 @@ class ColorConfig(BaseModel):
         description="Start ANSI escape code for blue text",
         default='\033[44m'
     )
+
+
+class ModelicaPyCIConfig(BaseModel):
+    url: str = "https://github.com/RWTH-EBC/ModelicaPyCI.git@2_pydantic_config"
+    OM_python_check_model_module: str = "ModelicaPyCI.unittest.om_check"
+    test_validate_module: str = "ModelicaPyCI.unittest.checkpackages.validatetest"
+    test_reference_module: str = "ModelicaPyCI.unittest.reference_check"
+    google_chart_module: str = "ModelicaPyCI.converter.google_charts"
+    api_github_module: str = "ModelicaPyCI.api_script.api_github"
+    html_tidy_module: str = "ModelicaPyCI.syntax.html_tidy"
+    syntax_test_module: str = "ModelicaPyCI.syntax.style_checking"
+    configuration_module: str = "ModelicaPyCI.config"
+    library_merge_module: str = "ModelicaPyCI.deploy.ibpsa_merge"
+    lock_model_module: str = "ModelicaPyCI.converter.lock_model"
+    config_structure_module: str = "ModelicaPyCI.structure.config_structure"
+    create_whitelist_module: str = "ModelicaPyCI.structure.create_whitelist"
 
 
 class FilesConfig(BaseModel):
@@ -79,6 +94,7 @@ class InteractConfig(BaseModel):
 
 
 class CIConfig(BaseModel):
+    library_root: Path = ""
     dir: Path = "dymola-ci-tests"
     result: ResultConfig = ResultConfig()
     color: ColorConfig = ColorConfig()
@@ -96,11 +112,14 @@ class CIConfig(BaseModel):
         file_name_str = files_type_config.dict()[file_name]
         return dir_path.joinpath(file_name_str)
 
-    def get_dir_path(self, files_type) -> Path:
+    def get_dir_path(self, files_type: str = None) -> Path:
+        dir_path = Path(self.library_root).joinpath(self.dir)
+        if files_type is None:
+            return dir_path
         if files_type not in self.dict():
             raise ValueError(f"'{files_type}' is not a valid key of CI_CONFIG.")
         files_type_config: BaseModel = self.dict()[files_type]
-        return Path().joinpath(self.dir, files_type_config.dir)
+        return dir_path.joinpath(files_type_config.dir)
 
 
 def load_toml_config(path: Union[Path, str]):
@@ -109,7 +128,7 @@ def load_toml_config(path: Union[Path, str]):
     return CIConfig(**config)
 
 
-def save_toml_config(config: BaseModel, path: Path):
+def save_toml_config(config: BaseModel, path: Union[Path, str]):
     with open(path, "w") as file:
         toml.dump(config.model_dump(), file)
 

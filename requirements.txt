@@ -9,6 +9,7 @@ jsons
 regex
 python-time
 DateTime
+pydantic
 pytest-shutil
 pytest
 glob2

@@ -108,7 +108,7 @@ class CheckOpenModelica:
         Returns:
         """
 
-        all_sims_dir = Path(self.working_path, self.result_OM_check_result_dir, "simulate", f'{self.library}.{package}')
+        all_sims_dir = CI_CONFIG.get_file_path("result", "OM_check_result_dir").joinpath("simulate", f'{self.library}.{package}')
         API_log = Path(self.working_path, "DymolaAPI.log")
         config_structure.create_path(all_sims_dir)
         config_structure.delete_files_in_path(all_sims_dir)
@@ -146,7 +146,7 @@ class CheckOpenModelica:
                     error_model[example] = _err_msg
                 config_structure.delete_spec_file(root=os.getcwd(), pattern=example)
             config_structure.prepare_data(source_target_dict={
-                API_log: Path(self.result_OM_check_result_dir, f'{self.library}.{package}')},
+                API_log: CI_CONFIG.get_file_path("result", "OM_check_result_dir").joinpath(f'{self.library}.{package}')},
                 del_flag=True)
             return error_model
         else:
@@ -218,10 +218,10 @@ class CheckOpenModelica:
         """
         if error_dict is not None:
             if pack is not None:
-                ch_log = Path(self.working_path, self.result_OM_check_result_dir, options,
-                              f'{self.library}.{pack}-check_log.txt')
-                error_log = Path(self.working_path, self.result_OM_check_result_dir, options,
-                                 f'{self.library}.{pack}-error_log.txt')
+                ch_log = CI_CONFIG.get_file_path("result", "OM_check_result_dir").joinpath(
+                    options, f'{self.library}.{pack}-check_log.txt')
+                error_log = CI_CONFIG.get_file_path("result", "OM_check_result_dir").joinpath(
+                    options, f'{self.library}.{pack}-error_log.txt')
                 os.makedirs(Path(ch_log).parent, exist_ok=True)
                 check_log = open(ch_log, "w")
                 err_log = open(error_log, "w")
@@ -301,8 +301,11 @@ class CheckOpenModelica:
             var = 0
         error_log.close()
         config_structure.prepare_data(source_target_dict={
-            check_log: Path(self.working_path, self.result_OM_check_result_dir, options, f'{self.library}.{pack}'),
-            err_log: Path(self.working_path, self.result_OM_check_result_dir, options,  f'{self.library}.{pack}')},
+            check_log: CI_CONFIG.get_file_path("result", "OM_check_result_dir").joinpath(
+                options, f'{self.library}.{pack}'
+            ),
+            err_log: CI_CONFIG.get_file_path("result", "OM_check_result_dir").joinpath(
+                options, f'{self.library}.{pack}')},
             del_flag=True)
         return var
 
@@ -360,7 +363,7 @@ class CheckOpenModelica:
         Returns:
             object:
         """
-        all_sims_dir = Path(self.root_library, self.result_OM_check_result_dir, f'{self.library}.{pack}')
+        all_sims_dir = CI_CONFIG.get_file_path("result", "OM_check_result_dir").joinpath(f'{self.library}.{pack}')
         if example_list is not None:
             if self.dym_api is None:
                 lib_path = Path(self.root_library, self.library, "package.mo")
@@ -386,7 +389,7 @@ class CheckOpenModelica:
             self.dym_api.close()
             API_log = Path(self.root_library, "DymolaAPI.log")
             self.prepare_data(source_target_dict={
-                API_log: Path(self.result_OM_check_result_dir, f'{self.library}.{pack}')},
+                API_log: CI_CONFIG.get_file_path("result", "OM_check_result_dir").joinpath(f'{self.library}.{pack}')},
                 del_flag=True)
         else:
             print(f'No examples to check. ')
@@ -417,7 +420,7 @@ class CheckOpenModelica:
                     }
                 }
             errors = {}
-            all_sims_dir = Path(self.root_library, self.result_OM_check_result_dir, f'{self.library}.{pack}')
+            all_sims_dir = CI_CONFIG.get_file_path("result", "OM_check_result_dir").joinpath(f'{self.library}.{pack}')
             om_dir = all_sims_dir
             dym_dir = Path(all_sims_dir, "dym")
             plot_dir = Path(all_sims_dir, "plots", pack)

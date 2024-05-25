@@ -72,10 +72,10 @@ class BuildingspyRegressionCheck():
                 self.ut.setSinglePackage(package)
                 response = self.ut.run()
                 config_structure.prepare_data(
-                    source_target_dict={f'simulator-dymola.log': Path("..", self.result_regression_dir, package),
-                                        "unitTests-dymola.log": Path("..", self.result_regression_dir, package),
-                                        "funnel_comp": Path("..", self.result_regression_dir, package,
-                                                            "funnel_comp")})
+                    source_target_dict={
+                        f'simulator-dymola.log': Path("..", CI_CONFIG.get_file_path("result", "regression_dir"), package),
+                        "unitTests-dymola.log": Path("..", CI_CONFIG.get_file_path("result", "regression_dir"), package),
+                        "funnel_comp": Path("..", CI_CONFIG.get_file_path("result", "regression_dir"), package, "funnel_comp")})
                 if response != 0:
                     err_list.append(package)
                     if self.batch is False:
@@ -186,9 +186,6 @@ class ReferenceModel:
 
     def _get_mos_scripts(self):
         """
-        self.artifacts_dir = f"dymola-ci-tests/templates/artifacts"
-        CI_CONFIG.artifacts.library_ref_results_dir = f"Resources/ReferenceResults/Dymola"
-        CI_CONFIG.artifacts.library_resource_dir = f"Resources/Scripts/Dymola"
         Obtain mos scripts that are feasible for regression testing
         Returns:
             mos_list (): return a list with .mos script that are feasible for regression testing
