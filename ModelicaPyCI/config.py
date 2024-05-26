@@ -97,29 +97,31 @@ class CIConfig(BaseModel):
     library_root: Path = ""
     dir: Path = "dymola-ci-tests"
     result: ResultConfig = ResultConfig()
-    color: ColorConfig = ColorConfig()
     ci_files: FilesConfig = FilesConfig()
     whitelist: WhitelistConfig = WhitelistConfig()
     artifacts: ArtifactsConfig = ArtifactsConfig()
     interact: InteractConfig = InteractConfig()
     plots: PlotConfig = PlotConfig()
 
-    def get_file_path(self, files_type, file_name) -> Path:
-        dir_path = self.get_dir_path(files_type=files_type)
-        files_type_config: BaseModel = self.dict()[files_type]
-        if file_name not in files_type_config.dict():
+    def get_file_path(self, files_type, file_name, with_library_root: bool = True) -> Path:
+        dir_path = self.get_dir_path(files_type=files_type, with_library_root=with_library_root)
+        files_type_config = self.dict()[files_type]
+        if file_name not in files_type_config:
             raise ValueError(f"Given file_name {file_name} is not a valid key of CI_CONFIG.{files_type}.")
-        file_name_str = files_type_config.dict()[file_name]
+        file_name_str = files_type_config[file_name]
         return dir_path.joinpath(file_name_str)
 
-    def get_dir_path(self, files_type: str = None) -> Path:
-        dir_path = Path(self.library_root).joinpath(self.dir)
+    def get_dir_path(self, files_type: str = None, with_library_root: bool = True) -> Path:
+        if with_library_root:
+            dir_path = Path(self.library_root).joinpath(self.dir)
+        else:
+            dir_path = Path().joinpath(self.dir)
         if files_type is None:
             return dir_path
         if files_type not in self.dict():
             raise ValueError(f"'{files_type}' is not a valid key of CI_CONFIG.")
-        files_type_config: BaseModel = self.dict()[files_type]
-        return dir_path.joinpath(files_type_config.dir)
+        files_type_config = self.dict()[files_type]
+        return dir_path.joinpath(files_type_config["dir"])
 
 
 def load_toml_config(path: Union[Path, str]):

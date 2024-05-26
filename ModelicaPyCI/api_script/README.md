@@ -11,7 +11,7 @@ The python script api_githuy.py creates a pull request for the current branch or
 | --correct-branch | Branch to correct your Code                                                |
 | --github-repo | Environment Variable owner/RepositoryName                                  |
 | --working-branch | Your current working Branch.                                               |
-| --base-branch | your base branch (main)                                         |
+| --main-branch | your base branch (main)                                         |
 | --github-token | Your GITHUB Token |
 | --prepare-plot| Plot new models with new created reference files      |
 | --show-plot  | Plot new models with new created reference files                                                           |
@@ -34,9 +34,9 @@ Setup for slack [api](https://sagarsonwane230797.medium.com/automate-slack-notif
 | Parser Arguments | Description                             | 
 |------------------|-----------------------------------------| 
 | --github-token | Set GITHUB Token                        |
-| --base-branch    | Name of your base branch (default:main) |
+| --main-branch    | Name of your base branch (default:main) |
 | --working-branch | Your current working Branch.            |
 | --slack-token    | your base branch (main)                 |
 | --github-repo    | Environment Variable owner/RepositoryName                     |
 #### Example: Execution on gitlab runner (linux)
-    python bin/CITests/04_api_script/api_slack.py --github-token ${{ secrets.GIT_TOKEN }} --slack-token ${{ secrets.SLACK_BOT_TOKEN }} --github-repo "RWTH-EBC/AixLib" --base-branch "development"
+    python bin/CITests/04_api_script/api_slack.py --github-token ${{ secrets.GIT_TOKEN }} --slack-token ${{ secrets.SLACK_BOT_TOKEN }} --github-repo "RWTH-EBC/AixLib" --main-branch "development"

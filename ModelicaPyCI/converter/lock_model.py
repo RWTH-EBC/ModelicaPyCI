@@ -1,41 +1,38 @@
 import argparse
 import os
 from pathlib import Path
-from ModelicaPyCI.config import CI_CONFIG
+from ModelicaPyCI.config import CI_CONFIG, ColorConfig
+
+COLORS = ColorConfig()
 
 
-def _sort_whitelist_model(library, lock_library):
+def _sort_whitelist_model():
     """
     Read whitelist and return a list.
     Sort List of models.
     Returns:
         model_list (): return a list of models to lock
     """
-    try:
-        wh = open(CI_CONFIG.get_file_path("whitelist", "html_file"), "r")
-        whitelist_lines = wh.readlines()
-        wh.close()
-        model_list = []
-        for line in whitelist_lines:
-            if len(line) == 1 or line.find("package.mo") > -1 or line.find("package.order") > -1 or line.find(
-                    "UsersGuide") > -1:
-                continue
-            else:
-                line = line.replace(lock_library, library)
-                mo = line.replace(".", os.sep, line.count(".") - 1).lstrip()
-                mo = mo.strip()
-                model_list.append(mo)
-        return model_list
-    except IOError:
-        print(f'Error: File {CI_CONFIG.get_file_path("whitelist", "html_file")} does not exist.')
-        exit(1)
+    html_file = CI_CONFIG.get_file_path("whitelist", "html_file")
+    with open(html_file, "r") as file:
+        whitelist_lines = file.readlines()
+    model_list = []
+    for line in whitelist_lines:
+        if len(line) == 1 or line.find("package.mo") > -1 or line.find("package.order") > -1 or line.find(
+                "UsersGuide") > -1:
+            continue
+        else:
+            mo = line.replace(".", os.sep, line.count(".") - 1).lstrip()
+            mo = mo.strip()
+            model_list.append(mo)
+    return model_list
 
 
-def call_lock_model(library, lock_library):
+def call_lock_model():
     """
     lock models
     """
-    mo_li = _sort_whitelist_model(library, lock_library)
+    mo_li = _sort_whitelist_model()
     for model in mo_li:
         if Path(model).is_file():
             result = get_last_line(model_file=model)
@@ -121,11 +118,9 @@ def write_lock_model(model, new_content):
 def parse_args():
     parser = argparse.ArgumentParser(description='Lock models.')
     unit_test_group = parser.add_argument_group("arguments to run class LockModel")
-    unit_test_group.add_argument("--library", default="AixLib", help="Library to test")
-    unit_test_group.add_argument("--lock-library", default="IBPSA", help="Library to lock")
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     args = parse_args()
-    call_lock_model(library=args.library, lock_library=args.lock_library)
+    call_lock_model()

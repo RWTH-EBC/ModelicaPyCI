@@ -1,10 +1,8 @@
 import os
 from pathlib import Path
 import argparse
-from ModelicaPyCI.config import CI_CONFIG
-import sys
 
-from ModelicaPyCI.config import CI_CONFIG
+from ModelicaPyCI.config import CI_CONFIG, ColorConfig
 
 
 def return_file_list():

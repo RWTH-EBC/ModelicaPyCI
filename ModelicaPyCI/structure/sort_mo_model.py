@@ -1,8 +1,11 @@
 import os
-from ModelicaPyCI.config import CI_CONFIG
+from ModelicaPyCI.config import CI_CONFIG, ColorConfig
 from ModelicaPyCI.pydyminterface.model_management import ModelManagement
 from pathlib import Path
 from ModelicaPyCI.structure import config_structure
+from ModelicaPyCI import create_changed_files_file
+
+COLORS = ColorConfig()
 
 
 class ModelicaModel:
@@ -23,7 +26,7 @@ class ModelicaModel:
                          extended_ex_flag: bool = False,
                          dymola_version: int = 2022,
                          path_dir: Path = Path.cwd(),
-                         root_library: Path = None,
+                         library_package_mo: Path = None,
                          root_package: Path = None):
         # todo: flag mit einbauen: In zukunft sollen die pfade gegeben werden, nach wunsch auch in modelica form
         """
@@ -39,7 +42,7 @@ class ModelicaModel:
             extended_ex_flag ():
             dymola_version ():
             path_dir ():
-            root_library ():
+            library_package_mo ():
             root_package ():
         Returns:
         """
@@ -51,22 +54,21 @@ class ModelicaModel:
             filter_whitelist_flag=filter_whitelist_flag,
             extended_ex_flag=extended_ex_flag,
         )
-        if root_library is None:
-            root_library = Path(path_dir, library, "package.mo")
-        config_structure.check_file_setting(root_library)
+        if library_package_mo is None:
+            library_package_mo = Path(path_dir, library, "package.mo")
+        config_structure.check_file_setting(library_package_mo)
         if root_package is None:
             if package == ".":
-                root_package = Path(Path(root_library).parent)
+                root_package = Path(Path(library_package_mo).parent)
             else:
-                root_package = Path(Path(root_library).parent, package.replace(".", os.sep))
+                root_package = Path(Path(library_package_mo).parent, package.replace(".", os.sep))
         config_structure.check_path_setting(root_package)
         if dymola is None:
             extended_ex_flag = False
         if changed_flag is True:
-            # todo: ci_changed_file selbst im skript erschaffen, nicht in der gitlab pipeline selbst
-            config_structure.check_path_setting(CI_CONFIG.get_dir_path("ci_files"))
-            config_structure.check_file_setting(CI_CONFIG.get_file_path("ci_files", "changed_file"))
-            result = self.get_changed_models(ch_file=CI_CONFIG.get_file_path("ci_files", "changed_file"),
+            changed_files_file = create_changed_files_file()
+
+            result = self.get_changed_models(changed_files=changed_files_file,
                                              library=library,
                                              single_package=package,
                                              simulate_examples=simulate_flag)
@@ -82,12 +84,9 @@ class ModelicaModel:
         elif filter_whitelist_flag is True:
             if simulate_flag is True:
                 ci_whitelist_file = CI_CONFIG.get_file_path("whitelist", "simulate_file")
-                file_list = CI_CONFIG.get_file_path("whitelist", "simulate_file")
             else:
-                ci_whitelist_file = CI_CONFIG.whitelist.model_file
-                file_list = CI_CONFIG.whitelist.model_file
+                ci_whitelist_file = CI_CONFIG.get_file_path("whitelist", "check_file")
             config_structure.check_path_setting(CI_CONFIG.get_dir_path("whitelist"), create_flag=True)
-            config_structure.check_file_setting(file_list, create_flag=True)
             whitelist_list_models = self.get_whitelist_models(whitelist_file=ci_whitelist_file,
                                                               whitelist_library=whitelist_library,
                                                               library=library,
@@ -133,17 +132,17 @@ class ModelicaModel:
                                       dymola_version: int,
                                       root_package: Path,
                                       library: str,
-                                      ch_file: Path):
+                                      changed_files: Path):
         """
         Returns:
         """
-        changed_models = open(ch_file, "r", encoding='utf8')
+        changed_models = open(changed_files, "r", encoding='utf8')
         changed_lines = changed_models.readlines()
         changed_models.close()
         # List all type of files from changed file
-        mos_script_list = self.get_ch_mos_script(ch_lines=changed_lines)
-        modelica_model_list = self.get_ch_model(ch_lines=changed_lines)
-        reference_list = self.ch_ref_files(ch_lines=changed_lines)
+        mos_script_list = self.get_changed_mos_script(changed_lines=changed_lines)
+        modelica_model_list = self.get_changed_model(changed_lines=changed_lines)
+        reference_list = self.changed_reference_files(changed_lines=changed_lines)
         # get all models from page package
         model_list, no_example_list = self.get_models(path=root_package,
                                                       library=library,
@@ -155,12 +154,12 @@ class ModelicaModel:
                                                 dymola_version=dymola_version,
                                                 library=library)
 
-        ch_model_list = self.get_changed_used_model(ch_lines=changed_lines, extended_list=extended_list)
+        changed_model_list = self.get_changed_used_model(changed_lines=changed_lines, extended_list=extended_list)
 
         changed_list = self.return_type_list(ref_list=reference_list,
                                              mos_list=mos_script_list,
                                              modelica_list=modelica_model_list,
-                                             ch_model_list=ch_model_list)
+                                             changed_model_list=changed_model_list)
         if len(changed_list) == 0:
             print(f'No models to check and cannot start a regression test')
             exit(0)
@@ -199,26 +198,26 @@ class ModelicaModel:
         simulate_list = list(set(simulate_list))
         return simulate_list
 
-    def get_ch_mos_script(self, ch_lines: list):
+    def get_changed_mos_script(self, changed_lines: list):
         _list = []
-        for line in ch_lines:
+        for line in changed_lines:
             if line.rfind(".mos") > -1 and line.rfind("Scripts") > -1 and line.find(
                     ".package") == -1 and line.rfind(self.package) > -1:
                 line = line.replace("Dymola", self.library)
                 _list.append(line[line.rfind(self.library):line.rfind(".mos")])
         return _list
 
-    def get_ch_model(self, ch_lines: list):
+    def get_changed_model(self, changed_lines: list):
         _list = []
-        for line in ch_lines:
+        for line in changed_lines:
             if line.rfind(".mo") > -1 and line.find("package.") == -1 and line.rfind(
                     self.package) > -1 and line.rfind("Scripts") == -1:
                 _list.append(line[line.rfind(self.library):line.rfind(".mo")])
         return _list
 
-    def ch_ref_files(self, ch_lines: list):
+    def changed_reference_files(self, changed_lines: list):
         _list = []
-        for line in ch_lines:
+        for line in changed_lines:
             if line.rfind(".txt") > -1 and line.find("package.") == -1 and line.rfind(
                     self.package) > -1 and line.rfind("Scripts") == -1:
                 _list.append(line[line.rfind(self.library):line.rfind(".txt")])
@@ -332,14 +331,14 @@ class ModelicaModel:
                          ref_list,
                          mos_list,
                          modelica_list,
-                         ch_model_list):
+                         changed_model_list):
         """
         return models, scripts, reference results and used models, that changed
         Args:
             ref_list (): list of reference files
             mos_list (): list of .mos files
             modelica_list (): list of modelica files
-            ch_model_list (): list of changed models
+            changed_model_list (): list of changed models
         Returns:
         """
         changed_list = []
@@ -366,8 +365,8 @@ class ModelicaModel:
                 if model is not None:
                     print(f'Changed model files: {model}')
                     changed_list.append(model[:model.rfind(".")])
-        if ch_model_list is not None:
-            for used_model in ch_model_list:
+        if changed_model_list is not None:
+            for used_model in changed_model_list:
                 model = self._mos_script_to_model_exist(model=used_model)
                 if model is not None:
                     print(f'Changed used model files: {used_model}')
@@ -376,34 +375,35 @@ class ModelicaModel:
         changed_list = list(set(changed_list))
         return changed_list
 
-    def get_changed_used_model(self, ch_lines: list, extended_list: list):
+    def get_changed_used_model(self, changed_lines: list, extended_list: list):
         """
         return all used models, that changed
         Args:
-            ch_lines (): lines from changed models
+            changed_lines (): lines from changed models
             extended_list (): models to check
         Returns:
-            ch_model_list () : return a list of changed models
+            changed_model_list () : return a list of changed models
         """
 
-        ch_model_list = []
-        for line in ch_lines:
+        changed_model_list = []
+        for line in changed_lines:
             for model in extended_list:
                 if line[line.find(self.library):line.rfind(".mo")].strip() == model:
-                    ch_model_list.append(model)
-        return ch_model_list
+                    changed_model_list.append(model)
+        return changed_model_list
 
-    def get_changed_models(self,
-                           ch_file: Path,
-                           library: str,
-                           single_package: str,
-                           simulate_examples: bool = False,
-                           extended_ex_flag: bool = False):
+    def get_changed_models(
+            self,
+            changed_files: Path,
+            library: str,
+            single_package: str,
+            simulate_examples: bool = False,
+            extended_ex_flag: bool = False):
         """
         Returns: return a list with changed models.
         """
         try:
-            file = open(ch_file, "r", encoding='utf8', errors='ignore')
+            file = open(changed_files, "r", encoding='utf8', errors='ignore')
             lines = file.readlines()
             modelica_models = []
             no_example_list = []
@@ -441,7 +441,7 @@ class ModelicaModel:
             file.close()
             return modelica_models, no_example_list
         except IOError:
-            print(f'Error: File {ch_file} does not exist.')
+            print(f'Error: File {changed_files} does not exist.')
             exit(0)
 
     def get_models(self,

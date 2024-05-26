@@ -1,9 +1,11 @@
-from ModelicaPyCI.config import CI_CONFIG
+from ModelicaPyCI.config import ColorConfig
 import platform
 from pathlib import Path
 import time
 import os
 import sys
+
+COLORS = ColorConfig()
 
 
 class PythonDymolaInterface:
@@ -19,12 +21,6 @@ class PythonDymolaInterface:
         # todo exception mit einbauen
         if self.dymola is not None:
             self.dymola.ExecuteCommand("Advanced.TranslationInCommandLog:=true;")
-        # Color
-        CI_CONFIG.color.CRED = f"\033[91m"
-        CI_CONFIG.color.CEND = f"\033[0m"
-        CI_CONFIG.color.green = f"\033[0;32m"
-        CI_CONFIG.color.yellow = f"\033[33m"
-        CI_CONFIG.color.blue = f"\033[44m"
 
     def dym_check_lic(self):
         """
@@ -34,7 +30,7 @@ class PythonDymolaInterface:
         dym_sta_lic_available = self.dymola.ExecuteCommand('RequestOption("Standard");')
         while dym_sta_lic_available is False:
             print(
-                f'{CI_CONFIG.color.CRED} No Dymola License is available {CI_CONFIG.color.CEND} \n Check Dymola license after 180.0 seconds')
+                f'{COLORS.CRED} No Dymola License is available {COLORS.CEND} \n Check Dymola license after 180.0 seconds')
             self.dymola.close()
             time.sleep(180.0)
             dym_sta_lic_available = self.dymola.ExecuteCommand('RequestOption("Standard");')
@@ -45,7 +41,7 @@ class PythonDymolaInterface:
                     self.dymola.close()
                     exit(1)
         print(
-            f'2: Using Dymola port {str(self.dymola._portnumber)} \n {CI_CONFIG.color.green} Dymola License is available {CI_CONFIG.color.CEND}')
+            f'2: Using Dymola port {str(self.dymola._portnumber)} \n {COLORS.green} Dymola License is available {COLORS.CEND}')
 
     def load_library(self, root_library: Path = None, additional_libraries_to_load: dict = None):
         """
@@ -56,10 +52,10 @@ class PythonDymolaInterface:
             pack_check = self.dymola.openModel(str(root_library))
             if pack_check is True:
                 print(
-                    f'{CI_CONFIG.color.green}Found {root_library.parent} Library and start checks. {CI_CONFIG.color.CEND}\n')
+                    f'{COLORS.green}Found {root_library.parent} Library and start checks. {COLORS.CEND}\n')
             elif pack_check is False:
                 print(
-                    f'{CI_CONFIG.color.CRED}Error: {CI_CONFIG.color.CEND} Library path is wrong.Please check the path of {root_library} library path.')
+                    f'{COLORS.CRED}Error: {COLORS.CEND} Library path is wrong.Please check the path of {root_library} library path.')
                 exit(1)
         else:
             print(f'Library path is not set.')
@@ -70,10 +66,10 @@ class PythonDymolaInterface:
             lib_path = Path(additional_libraries_to_load[library], library, "package.mo")
             load_add_bib = self.dymola.openModel(lib_path)
             if load_add_bib is True:
-                print(f'{CI_CONFIG.color.green}Load library {library}:{CI_CONFIG.color.CEND} {lib_path}')
+                print(f'{COLORS.green}Load library {library}:{COLORS.CEND} {lib_path}')
             else:
                 print(
-                    f'{CI_CONFIG.color.CRED}Error:{CI_CONFIG.color.CEND} Load of library {library} with path {lib_path} failed!')
+                    f'{COLORS.CRED}Error:{COLORS.CEND} Load of library {library} with path {lib_path} failed!')
                 exit(1)
 
 def set_environment_path(dymola_version):
@@ -127,6 +123,7 @@ def load_dymola_python_interface(dymola_version: int = 2022):
     else:
         dymola = DymolaInterface(dymolapath="/usr/local/bin/dymola")
         dymola_exception = DymolaException()
+    dymola.cd(os.getcwd())
     return dymola, dymola_exception
 
 

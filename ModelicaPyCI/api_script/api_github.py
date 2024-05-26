@@ -71,12 +71,12 @@ class PullRequestGithub(object):
         owner = self.github_repo.split("/")
         return owner[0]
 
-    def post_pull_request(self, owner, base_branch, pull_request_title, pull_request_message):
+    def post_pull_request(self, owner, main_branch, pull_request_title, pull_request_message):
         url = f'https://api.github.com/repos/{self.github_repo}/pulls'
         title = f'\"title\": \"{pull_request_title}\"'
         body = f'\"body\":\"{pull_request_message}\"'
         head = f'\"head\":\"{owner}:{self.working_branch}\"'
-        base = f'\"base\": \"{base_branch}\"'
+        base = f'\"base\": \"{main_branch}\"'
         message = f'\n	{title},\n	{body},\n	{head},\n	{base}\n'
         payload = "{" + message + "}"
         headers = {
@@ -129,7 +129,7 @@ def parse_args():
         default="$CI_COMMIT_BRANCH"
     )
     check_test_group.add_argument(
-        "--base-branch",
+        "--main-branch",
         help="your base branch (main)"
     )
     check_test_group.add_argument(
@@ -197,7 +197,7 @@ if __name__ == '__main__':
         )
     if args.create_pr_flag is True:
         working_branch = str
-        base_branch = str
+        main_branch = str
         pull_request_title = str
         label_name = str
         if args.correct_html_flag is True:
@@ -209,7 +209,7 @@ if __name__ == '__main__':
                 f'**Delete** the Branch {args.working_branch}'
             )
             label_name = f'Correct HTML'
-            base_branch = f'{args.working_branch.replace("correct_HTML_", "")}'
+            main_branch = f'{args.working_branch.replace("correct_HTML_", "")}'
             working_branch = f'{args.working_branch.replace("correct_HTML_", "")}'
         if args.ibpsa_merge_flag is True:
             pull_request_title = f'IBPSA Merge'
@@ -234,12 +234,12 @@ if __name__ == '__main__':
                 f'to development branch. **Delete** the Branch {args.working_branch}'
             )
             label_name = f'ibpsamerge'
-            base_branch = "development"
+            main_branch = "development"
             working_branch = args.working_branch
 
         assignees_owner = pull_request.get_github_username(branch=working_branch)
         owner = pull_request.return_owner()
-        pr_response = pull_request.post_pull_request(owner=owner, base_branch=base_branch,
+        pr_response = pull_request.post_pull_request(owner=owner, main_branch=main_branch,
                                                      pull_request_title=pull_request_title,
                                                      pull_request_message=message)
         pr_number = pull_request.get_pr_number()

@@ -1,12 +1,16 @@
 import argparse
 import os
 import shutil
-from tidylib import tidy_document
+import sys
+
+from tidylib import Tidy
 from ModelicaPyCI.structure import config_structure
 from ModelicaPyCI.structure.sort_mo_model import ModelicaModel
-from ModelicaPyCI.config import CI_CONFIG
+from ModelicaPyCI.config import CI_CONFIG, ColorConfig
 
 from pathlib import Path
+
+COLORS = ColorConfig()
 
 # ! /usr/bin/env python3.6
 # -*- coding: utf-8 -*-
@@ -48,7 +52,8 @@ In case of trouble just put the dll in your working dir.
 class HtmlTidy:
     """Class to Check Packages and run CheckModel Tests"""
 
-    def __init__(self, package: str,
+    def __init__(self,
+                 package: str,
                  correct_overwrite: bool,
                  correct_backup: bool,
                  log: bool,
@@ -75,10 +80,9 @@ class HtmlTidy:
         self.library = library
         self.whitelist_library = whitelist_library
         self.filter_whitelist = filter_whitelist
-        self.root_dir = self.package.replace(".", os.sep)
-        config_structure.check_arguments_settings(root_dir=self.root_dir)
-        self.html_error_log = Path(self.root_dir, "HTML_error_log.txt")
-        self.html_correct_log = Path(self.root_dir, "HTML_correct_log.txt")
+        config_structure.check_arguments_settings(library_root=CI_CONFIG.library_root)
+        self.html_error_log = Path(CI_CONFIG.library_root, "HTML_error_log.txt")
+        self.html_correct_log = Path(CI_CONFIG.library_root, "HTML_correct_log.txt")
         config_structure.check_file_setting(self.html_error_log, self.html_correct_log, create_flag=True)
 
     def _get_html_model(self):
@@ -87,7 +91,7 @@ class HtmlTidy:
         """
         library_list = _get_library_model(library=self.library, package=self.package)
         if self.filter_whitelist is True:
-            whitelist_library_list = self._get_whitelist_library_model()
+            whitelist_library_list = _get_whitelist_library_model()
         else:
             whitelist_library_list = []
         html_model_list = _remove_whitelist_model(library_list=library_list,
@@ -213,24 +217,26 @@ class HtmlTidy:
         newfile = open(model_file, "w+b")
         newfile.write(document_corr.encode("utf-8"))
 
-    def _get_whitelist_library_model(self):
-        """
-        Returns: models from html whitelist, if whitelist not found return an empty list
-        """
-        whitelist_library_list = []
-        try:
-            file = open(CI_CONFIG.get_file_path("whitelist", "html_file"), "r")
-            lines = file.readlines()
-            file.close()
-            for line in lines:
-                if line.find(".mo") > -1:
-                    line = line.replace(self.whitelist_library, self.library)
-                    line = line.replace("\n", "")
-                    whitelist_library_list.append(line)
-            return whitelist_library_list
-        except IOError:
-            print(f'Error: File {CI_CONFIG.get_file_path("whitelist", "html_file")} does not exist. Check without a whitelist.')
-            return whitelist_library_list
+
+def _get_whitelist_library_model():
+    """
+    Returns: models from html whitelist, if whitelist not found return an empty list
+    """
+    whitelist_library_list = []
+    try:
+        file = open(CI_CONFIG.get_file_path("whitelist", "html_file"), "r")
+        lines = file.readlines()
+        file.close()
+        for line in lines:
+            if line.find(".mo") > -1:
+                line = line.replace("\n", "")
+                whitelist_library_list.append(line)
+        return whitelist_library_list
+    except IOError:
+        print(f'Error: File {CI_CONFIG.get_file_path("whitelist", "html_file")} '
+              f'does not exist. Check without a whitelist.')
+        return whitelist_library_list
+
 
 def _get_library_model(package, library):
     """
@@ -323,16 +329,21 @@ def _htmlCorrection(html_code):
     substitutions_dict: dict = {'"': '\\"', '<br>': '<br/>', '<br/>': '<br/>'}
     html_str = join_body(html_list=html_code)
 
-    html_correct, errors = tidy_document(f"{html_str}",
-                                         options={'doctype': 'html5',
-                                                  'show-body-only': 1,
-                                                  'numeric-entities': 1,
-                                                  'output-html': 1,
-                                                  'wrap': 72,
-                                                  'show-warnings': 1,
-                                                  'alt-text': 1,
-                                                  'indent': 1
-                                                  })
+    if sys.platform == "win32":
+        tidy_document = Tidy(lib_names=[r"C:\Program Files\tidy 5.8.0\bin\tidy.dll"]).tidy_document
+    else:
+        tidy_document = Tidy().tidy_document
+    html_correct, errors = tidy_document(
+        f"{html_str}",
+        options={'doctype': 'html5',
+                 'show-body-only': 1,
+                 'numeric-entities': 1,
+                 'output-html': 1,
+                 'wrap': 72,
+                 'show-warnings': 1,
+                 'alt-text': 1,
+                 'indent': 1
+                 })
     document_corr = _make_string_replacements(the_string=html_correct,
                                               substitutions_dict=substitutions_dict)
     return document_corr, errors
@@ -569,7 +580,8 @@ def call_read_log(html_error_log, html_correct_log):
     config_structure.create_path(CI_CONFIG.get_dir_path("result"), CI_CONFIG.get_file_path("result", "syntax_dir"))
     config_structure.prepare_data(del_flag=True,
                                   source_target_dict={html_error_log: CI_CONFIG.get_file_path("result", "syntax_dir"),
-                                                      html_correct_log: CI_CONFIG.get_file_path("result", "syntax_dir")})
+                                                      html_correct_log: CI_CONFIG.get_file_path("result",
+                                                                                                "syntax_dir")})
     return var
 
 
@@ -583,11 +595,11 @@ def _write_exit(err_list):
     try:
         exit_file = open(CI_CONFIG.get_file_path("ci_files", "exit_file"), "w")
         if len(err_list) > 0:
-            print(f'{CI_CONFIG.color.CRED}Syntax Error:{CI_CONFIG.color.CEND} Check HTML-logfile')
+            print(f'{COLORS.CRED}Syntax Error:{COLORS.CEND} Check HTML-logfile')
             exit_file.write("exit 1")
             var = 1
         else:
-            print(f'{CI_CONFIG.color.green}HTML Check was successful!{CI_CONFIG.color.CEND}')
+            print(f'{COLORS.green}HTML Check was successful!{COLORS.CEND}')
             exit_file.write("exit 0")
             var = 0
         exit_file.close()
@@ -649,7 +661,7 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description='Run HTML correction on files')
     # [Library - settings]
-    parser.add_argument("--packages", metavar="AixLib.Package",
+    parser.add_argument("--packages", metavar="AixLib.Package", nargs="*",
                         help="Package to test for a html test")
     parser.add_argument("--library", default="AixLib", help="Library to test")
     parser.add_argument("--whitelist-library", default="IBPSA", help="Library that is written to a whitelist")
@@ -672,28 +684,28 @@ if __name__ == '__main__':
     config_structure.create_path(CI_CONFIG.get_dir_path("ci_files"))
     config_structure.create_files(CI_CONFIG.get_file_path("ci_files", "exit_file"))
     mo = ModelicaModel()
+    for PACKAGE in args.packages:
+        html_tidy_check = HtmlTidy(package=PACKAGE,
+                                   correct_overwrite=args.correct_overwrite_flag,
+                                   correct_backup=args.correct_backup_flag,
+                                   log=args.log_flag,
+                                   correct_view=args.correct_view_flag,
+                                   library=args.library,
+                                   whitelist_library=args.whitelist_library,
+                                   filter_whitelist=args.filter_whitelist_flag)
 
-    html_tidy_check = HtmlTidy(package=args.packages,
-                               correct_overwrite=args.correct_overwrite_flag,
-                               correct_backup=args.correct_backup_flag,
-                               log=args.log_flag,
-                               correct_view=args.correct_view_flag,
-                               library=args.library,
-                               whitelist_library=args.whitelist_library,
-                               filter_whitelist=args.filter_whitelist_flag)
-
-    html_model = mo.get_option_model(library=args.library,
-                                     package=args.library,
-                                     filter_whitelist_flag=args.filter_whitelist_flag,
-                                     whitelist_library=args.whitelist_library,
-                                     root_package=Path(args.library))
-    html_tidy_check.run_files()
-    html_tidy_check.check_html_files(model_list=html_model)
-    if args.log_flag is True:
-        variable = call_read_log(
-            html_error_log=html_tidy_check.html_error_log,
-            html_correct_log=html_tidy_check.html_correct_log
-        )
-        exit(variable)
-    if args.correct_overwrite_flag is False and args.correct_backup_flag is False and args.log_flag is False and args.correct_view_flag is False:
-        print("please use -h or --help for help")
+        html_model = mo.get_option_model(library=args.library,
+                                         package=PACKAGE,
+                                         filter_whitelist_flag=args.filter_whitelist_flag,
+                                         whitelist_library=args.whitelist_library,
+                                         root_package=Path(args.library))
+        html_tidy_check.run_files()
+        html_tidy_check.check_html_files(model_list=html_model)
+        if args.log_flag is True:
+            variable = call_read_log(
+                html_error_log=html_tidy_check.html_error_log,
+                html_correct_log=html_tidy_check.html_correct_log
+            )
+            exit(variable)
+        if args.correct_overwrite_flag is False and args.correct_backup_flag is False and args.log_flag is False and args.correct_view_flag is False:
+            print("please use -h or --help for help")

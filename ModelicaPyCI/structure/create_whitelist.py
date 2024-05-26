@@ -2,18 +2,15 @@ import argparse
 from ModelicaPyCI.structure import config_structure
 from ModelicaPyCI.api_script.api_github import clone_repository
 from ModelicaPyCI.structure.sort_mo_model import ModelicaModel
-from ModelicaPyCI.config import CI_CONFIG
+from ModelicaPyCI.config import CI_CONFIG, ColorConfig
+
+COLORS = ColorConfig()
 
 
-def write_whitelist(model_list):
-    """
-    write a whitelist with models
-    Args:
-        model_list (): models on the whitelist
-    """
-
+def write_whitelist(model_list, library: str, whitelist_library: str):
     file = open(CI_CONFIG.get_file_path("whitelist", "html_file"), "w")
     for model in model_list:
+        model = model.replace(whitelist_library, library)
         file.write("\n" + model + ".mo" + "\n")
     file.close()
 
@@ -21,6 +18,8 @@ def write_whitelist(model_list):
 def parse_args():
     parser = argparse.ArgumentParser(
         description='Run HTML correction on files')
+    parser.add_argument("--library",
+                        help="Library that is written to a whitelist")
     parser.add_argument("--whitelist-library",
                         default="IBPSA",
                         help="Library that is written to a whitelist")
@@ -45,7 +44,7 @@ if __name__ == '__main__':
                                   path=args.root_whitelist_library,
                                   simulate_flag=False,
                                   extended_ex_flag=False)
-    write_whitelist(model_list=MODEL_LIST)
+    write_whitelist(model_list=MODEL_LIST, library=args.library, whitelist_library=args.whitelist_library)
     config_structure.prepare_data(
         source_target_dict={
             CI_CONFIG.get_file_path("whitelist", "html_file"): CI_CONFIG.get_file_path("result", "whitelist_dir")

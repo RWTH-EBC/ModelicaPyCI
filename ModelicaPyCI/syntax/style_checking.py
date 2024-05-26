@@ -1,11 +1,13 @@
 import argparse
 import codecs
-from ModelicaPyCI.config import CI_CONFIG
+from ModelicaPyCI.config import CI_CONFIG, ColorConfig
 from ModelicaPyCI.pydyminterface.model_management import ModelManagement
 from ModelicaPyCI.pydyminterface import python_dymola_interface
 from ModelicaPyCI.structure.sort_mo_model import ModelicaModel
 from ModelicaPyCI.structure import config_structure
 from pathlib import Path
+
+COLORS = ColorConfig()
 
 
 class StyleCheck:
@@ -16,7 +18,6 @@ class StyleCheck:
                  library: str,
                  dymola_version: int,
                  root_library: Path,
-                 working_path: Path = Path(Path.cwd().parent),
                  additional_libraries_to_load: dict = None,
                  ):
         """
@@ -30,7 +31,6 @@ class StyleCheck:
         """
         self.library = library
         self.dymola_version = dymola_version
-        self.working_path = working_path
         self.additional_libraries_to_load = additional_libraries_to_load
         self.root_library = root_library
         self.dymola = dymola
@@ -40,8 +40,8 @@ class StyleCheck:
     def __call__(self):
         dym_int = python_dymola_interface.PythonDymolaInterface(
             dymola=self.dymola,
-            dymola_exception=self.dymola_exception,
-            dymola_version=self.dymola_version)
+            dymola_exception=self.dymola_exception
+        )
         # dym_int.dym_check_lic()
         dym_int.load_library(root_library=self.root_library, additional_libraries_to_load=self.additional_libraries_to_load)
 
@@ -57,23 +57,21 @@ class StyleCheck:
             if line.find("Check ok") > -1 or line.find("Library style check log") > -1 or len(line) == 0:
                 continue
             else:
-                print(f'{CI_CONFIG.color.CRED}Error in model: {CI_CONFIG.color.CEND}{line.lstrip()}')
+                print(f'{COLORS.CRED}Error in model: {COLORS.CEND}{line.lstrip()}')
                 error_list.append(line)
         log_file.close()
         config_structure.prepare_data(source_target_dict={file: CI_CONFIG.get_file_path("result", "syntax_dir")})
         if len(error_list) == 0:
-            print(f'{CI_CONFIG.color.green}Style check for library {self.library} was successful{CI_CONFIG.color.CEND}')
+            print(f'{COLORS.green}Style check for library {self.library} was successful{COLORS.CEND}')
             return 0
         elif len(error_list) > 0:
-            print(f'{CI_CONFIG.color.CRED}Test failed. Look in {self.library}_StyleErrorLog.html{CI_CONFIG.color.CEND}')
+            print(f'{COLORS.CRED}Test failed. Look in {self.library}_StyleErrorLog.html{COLORS.CEND}')
             return 1
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Check the Style of Packages")
     check_test_group = parser.add_argument_group("Arguments to start style tests")
-    check_test_group.add_argument("--packages", default=["Airflow"], nargs="+",
-                                  help="Library to test (e.g. Airflow.Multizone)")
     check_test_group.add_argument("--root-library", default=Path("AixLib", "package.mo"),
                                   help="root of library",
                                   type=Path)
@@ -81,7 +79,7 @@ def parse_args():
                                   help="Path where top-level package.mo of the library is located")
     check_test_group.add_argument("--dymola-version", default="2022",
                                   help="Version of Dymola(Give the number e.g. 2022")
-    check_test_group.add_argument("--changed-flag", default=False, action="store_true")
+    check_test_group.add_argument("--changed-flag", action="store_true")
     args = parser.parse_args()
     return args
 
@@ -101,7 +99,6 @@ if __name__ == '__main__':
                             library=args.library,
                             dymola_version=args.dymola_version,
                             root_library=args.root_library,
-                            working_path=Path(Path.cwd().parent),
                             additional_libraries_to_load=None)
     CheckStyle()
     mo = ModelicaModel()

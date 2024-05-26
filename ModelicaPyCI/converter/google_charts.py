@@ -3,9 +3,11 @@ import os
 import shutil
 import pandas as pd
 from mako.template import Template
-from ModelicaPyCI.config import CI_CONFIG
+from ModelicaPyCI.config import CI_CONFIG, ColorConfig
 from ModelicaPyCI.structure import config_structure
 from pathlib import Path
+
+COLORS = ColorConfig()
 
 
 class PlotCharts:
@@ -341,9 +343,9 @@ class PlotCharts:
                     var = file[file.find(".mat") + 5:]
                     if os.path.isdir(path_name) is False:
                         print(
-                            f'Cant find folder: {CI_CONFIG.color.CRED}{model}{CI_CONFIG.color.CEND} with variable {CI_CONFIG.color.CRED}{var}{CI_CONFIG.color.CEND}')
+                            f'Cant find folder: {COLORS.CRED}{model}{COLORS.CEND} with variable {COLORS.CRED}{var}{COLORS.CEND}')
                     else:
-                        print(f'Plot model: {CI_CONFIG.color.green}{model}{CI_CONFIG.color.CEND} with variable:{CI_CONFIG.color.green} {var}{CI_CONFIG.color.CEND}')
+                        print(f'Plot model: {COLORS.green}{model}{COLORS.CEND} with variable:{COLORS.green} {var}{COLORS.CEND}')
                         value = self._read_csv_funnel(url=path_name)
                         my_template = Template(filename=CI_CONFIG.plots.templates_chart_file)
                         html_chart = my_template.render(values=value,
@@ -355,9 +357,9 @@ class PlotCharts:
         else:
             path_name = (f'{self.library}{os.sep}funnel_comp{os.sep}{model}.mat_{var}'.strip())
             if os.path.isdir(path_name) is False:
-                print(f'Cant find folder: {CI_CONFIG.color.CRED}{model}{CI_CONFIG.color.CEND} with variable {CI_CONFIG.color.CRED}{var}{CI_CONFIG.color.CEND}')
+                print(f'Cant find folder: {COLORS.CRED}{model}{COLORS.CEND} with variable {COLORS.CRED}{var}{COLORS.CEND}')
             else:
-                print(f'Plot model: {CI_CONFIG.color.green}{model}{CI_CONFIG.color.CEND} with variable:{CI_CONFIG.color.green} {var}{CI_CONFIG.color.CEND}')
+                print(f'Plot model: {COLORS.green}{model}{COLORS.CEND} with variable:{COLORS.green} {var}{COLORS.CEND}')
                 value = self._read_csv_funnel(url=path_name)
                 my_template = Template(filename=CI_CONFIG.plots.templates_chart_file)
                 html_chart = my_template.render(values=value,
@@ -377,10 +379,10 @@ class PlotCharts:
         """
         if os.path.isfile(reference_file) is False:
             print(
-                f'Cant find folder: {CI_CONFIG.color.CRED}{reference_file[reference_file.rfind(os.sep) + 1:]}{CI_CONFIG.color.CEND} with variables: {CI_CONFIG.color.CRED}{legend_list}{CI_CONFIG.color.CEND}')
+                f'Cant find folder: {COLORS.CRED}{reference_file[reference_file.rfind(os.sep) + 1:]}{COLORS.CEND} with variables: {COLORS.CRED}{legend_list}{COLORS.CEND}')
         else:
             print(
-                f'Plot model: {CI_CONFIG.color.green}{reference_file[reference_file.rfind(os.sep) + 1:]}{CI_CONFIG.color.CEND} with variables:\n{CI_CONFIG.color.green}{legend_list}{CI_CONFIG.color.CEND}\n')
+                f'Plot model: {COLORS.green}{reference_file[reference_file.rfind(os.sep) + 1:]}{COLORS.CEND} with variables:\n{COLORS.green}{legend_list}{COLORS.CEND}\n')
             my_template = Template(filename=CI_CONFIG.plots.templates_chart_file)
             html_chart = my_template.render(values=value_list,
                                             var=legend_list,
@@ -399,9 +401,9 @@ class PlotCharts:
         path_name = (f'{self.library}{os.sep}funnel_comp{os.sep}{model}.mat_{var}'.strip())
         folder_name = os.path.isdir(path_name)
         if folder_name is False:
-            print(f'Cant find folder: {CI_CONFIG.color.CRED}{model}{CI_CONFIG.color.CEND} with variable {CI_CONFIG.color.CRED}{var}{CI_CONFIG.color.CEND}')
+            print(f'Cant find folder: {COLORS.CRED}{model}{COLORS.CEND} with variable {COLORS.CRED}{var}{COLORS.CEND}')
         else:
-            print(f'Plot model: {CI_CONFIG.color.green}{model}{CI_CONFIG.color.CEND} with variable:{CI_CONFIG.color.green} {var}{CI_CONFIG.color.CEND}')
+            print(f'Plot model: {COLORS.green}{model}{COLORS.CEND} with variable:{COLORS.green} {var}{COLORS.CEND}')
             value = self._read_csv_funnel(url=path_name)
             my_template = Template(filename=CI_CONFIG.plots.templates_chart_file)
             html_chart = my_template.render(values=value,
@@ -522,7 +524,8 @@ def parse_args():
                                  default=True,
                                  help='Plot only model with errors',
                                  action="store_true")
-    unit_test_group.add_argument("--funnel-comp-flag", default=True,
+    unit_test_group.add_argument("--funnel-comp-flag",
+                                 default=True,
                                  help="Take the datas from funnel_comp",
                                  action="store_true")
     unit_test_group.add_argument("--create-layout-flag",

@@ -6,9 +6,11 @@ import buildingspy.development.regressiontest as regression
 from ModelicaPyCI.structure.sort_mo_model import ModelicaModel
 from ModelicaPyCI.structure import config_structure
 from ModelicaPyCI.pydyminterface import python_dymola_interface
-from ModelicaPyCI.config import CI_CONFIG
+from ModelicaPyCI.config import CI_CONFIG, ColorConfig
 
-COLOR = CI_CONFIG.color
+from ModelicaPyCI import create_changed_files_file
+
+COLORS = ColorConfig()
 
 
 def write_exit_file(var):
@@ -66,39 +68,42 @@ class BuildingspyRegressionCheck():
             for package in package_list:
                 if self.batch is False:
                     new_ref_list.append(package)
-                    print(f'{COLOR.green}Generate new reference results for package: {COLOR.CEND} {package}')
+                    print(f'{COLORS.green}Generate new reference results for package: {COLORS.CEND} {package}')
                 else:
-                    print(f'{COLOR.green}Regression test for package:{COLOR.CEND} {package}')
+                    print(f'{COLORS.green}Regression test for package:{COLORS.CEND} {package}')
                 self.ut.setSinglePackage(package)
                 response = self.ut.run()
                 config_structure.prepare_data(
                     source_target_dict={
-                        f'simulator-dymola.log': Path("..", CI_CONFIG.get_file_path("result", "regression_dir"), package),
-                        "unitTests-dymola.log": Path("..", CI_CONFIG.get_file_path("result", "regression_dir"), package),
-                        "funnel_comp": Path("..", CI_CONFIG.get_file_path("result", "regression_dir"), package, "funnel_comp")})
+                        f'simulator-dymola.log': Path("..", CI_CONFIG.get_file_path("result", "regression_dir"),
+                                                      package),
+                        "unitTests-dymola.log": Path("..", CI_CONFIG.get_file_path("result", "regression_dir"),
+                                                     package),
+                        "funnel_comp": Path("..", CI_CONFIG.get_file_path("result", "regression_dir"), package,
+                                            "funnel_comp")})
                 if response != 0:
                     err_list.append(package)
                     if self.batch is False:
-                        print(f'{COLOR.CRED}Error in package: {COLOR.CEND} {package}')
+                        print(f'{COLORS.CRED}Error in package: {COLORS.CEND} {package}')
                         continue
                     else:
-                        print(f'{COLOR.CRED}Regression test for model {package} was not successfully{COLOR.CEND}')
+                        print(f'{COLORS.CRED}Regression test for model {package} was not successfully{COLORS.CEND}')
                         continue
                 else:
                     if self.batch is False:
-                        print(f'{COLOR.green}New reference results in package: {COLOR.CEND} {package}\n')
+                        print(f'{COLORS.green}New reference results in package: {COLORS.CEND} {package}\n')
                         continue
                     else:
-                        print(f'{COLOR.green}Regression test for model {package} was successful {COLOR.CEND}')
+                        print(f'{COLORS.green}Regression test for model {package} was successful {COLORS.CEND}')
                         continue
         if self.batch is True:
             if len(err_list) > 0:
-                print(f'{COLOR.CRED}The following packages in regression test failed:{COLOR.CEND}')
+                print(f'{COLORS.CRED}The following packages in regression test failed:{COLORS.CEND}')
                 for error in err_list:
-                    print(f'{COLOR.CRED}Error:{COLOR.CEND} {error}')
+                    print(f'{COLORS.CRED}Error:{COLORS.CEND} {error}')
                 return 1
             else:
-                print(f'{COLOR.green}Regression test was successful {COLOR.CEND}')
+                print(f'{COLORS.green}Regression test was successful {COLORS.CEND}')
                 return 0
         else:
             if len(new_ref_list) > 0:
@@ -141,11 +146,11 @@ class ReferenceModel:
                                     reference_list=reference_list)
         whitelist_list = _get_whitelist_package()
         model_list = _compare_whitelist_mos(package_list=mos_list,
-                                     whitelist_list=whitelist_list)
+                                            whitelist_list=whitelist_list)
         model_list = list(set(model_list))
         package_list = []
         for model in model_list:
-            print(f'{COLOR.green}Generate new reference results for model: {COLOR.CEND} {model}')
+            print(f'{COLORS.green}Generate new reference results for model: {COLORS.CEND} {model}')
             package_list.append(model[:model.rfind(".")])
         package_list = list(set(package_list))
         return package_list, model_list
@@ -205,7 +210,7 @@ class ReferenceModel:
                         mos_list.append(mos_script)
                     if lines.find("simulateModel") == -1:
                         print(
-                            f'{COLOR.CRED}This mos script is not suitable for regression testing:{COLOR.CEND} {filepath}')
+                            f'{COLORS.CRED}This mos script is not suitable for regression testing:{COLORS.CEND} {filepath}')
         if len(mos_list) == 0:
             print(f'No feasible mos script for regression test in {CI_CONFIG.artifacts.library_resource_dir}.')
             return mos_list
@@ -226,7 +231,7 @@ def _compare_whitelist_mos(package_list, whitelist_list):
         for whitelist_package in whitelist_list:
             if package[:package.rfind(".")].find(whitelist_package) > -1:
                 print(
-                    f'{COLOR.green}Don´t Create reference results for model{COLOR.CEND} {package} This package is '
+                    f'{COLORS.green}Don´t Create reference results for model{COLORS.CEND} {package} This package is '
                     f'on the whitelist')
                 err_list.append(package)
             else:
@@ -252,7 +257,7 @@ def _get_whitelist_package():
                     whitelist_list.append(line.strip())
         for whitelist_package in whitelist_list:
             print(
-                f'{COLOR.CRED} Don´t create reference results for package{COLOR.CEND} {whitelist_package}: '
+                f'{COLORS.CRED} Don´t create reference results for package{COLORS.CEND} {whitelist_package}: '
                 f'This Package is '
                 f'on the whitelist')
         return whitelist_list
@@ -295,7 +300,7 @@ def _compare_ref_mos(mos_script_list, reference_list):
     for err in err_list:
         mos_script_list.remove(err)
     for package in mos_script_list:
-        print(f'{COLOR.CRED}No Reference result for Model:{COLOR.CEND} {package}')
+        print(f'{COLORS.CRED}No Reference result for Model:{COLORS.CEND} {package}')
     return mos_script_list
 
 
@@ -321,7 +326,8 @@ def get_update_ref():
             exit(0)
         return update_ref_list
     except IOError:
-        print(f'Error: File ..{os.sep}{CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)} does not exist.')
+        print(
+            f'Error: File ..{os.sep}{CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)} does not exist.')
         exit(0)
 
 
@@ -352,7 +358,7 @@ class BuildingspyValidateTest:
         if n_msg == 0:
             return 0
         else:
-            print(f'{COLOR.CRED}html check failed.{COLOR.CEND}')
+            print(f'{COLORS.CRED}html check failed.{COLORS.CEND}')
             return 1
 
     def validate_experiment_setup(self):
@@ -490,31 +496,29 @@ if __name__ == '__main__':
                 package_list = ref_model.get_update_package(ref_list=ref_list)
             else:
                 config_structure.check_path_setting(Path("..", CI_CONFIG.ci_files.folder_name), create_flag=True)
+                config_structure.create_files(Path("..", CI_CONFIG.get_file_path("ci_files", "exit_file")))
                 if args.changed_flag is False:
-                    config_structure.create_files(Path("..", CI_CONFIG.get_file_path("ci_files", "exit_file")))
                     package_list = args.packages
                 if args.changed_flag is True:
-                    config_structure.create_files(Path("..", CI_CONFIG.get_file_path("ci_files", "changed_file")),
-                                                  Path("..", CI_CONFIG.get_file_path("ci_files", "exit_file")))
-                    # package = args.packages[args.packages.rfind(".") + 1:]
-                    package = args.packages[0]  # todo: Schleife ergänzen
-                    mo = ModelicaModel()
+                    changed_files_file = create_changed_files_file()
 
-                    package_list = mo.get_changed_regression_models(dymola=dymola,
-                                                                    dymola_exception=dymola_exception,
-                                                                    dymola_version=args.dymola_version,
-                                                                    root_package=Path(package.replace(".", os.sep)),
-                                                                    library=args.library,
-                                                                    ch_file=Path("..",
-                                                                                 CI_CONFIG.get_file_path("ci_files", "changed_file")))
+                    mo = ModelicaModel()
+                    package_list = mo.get_changed_regression_models(
+                        dymola=dymola,
+                        dymola_exception=dymola_exception,
+                        dymola_version=args.dymola_version,
+                        root_package=Path(package.replace(".", os.sep)),
+                        library=args.library,
+                        changed_files=changed_files_file
+                    )
             # Start regression test
             val = 0
             if package_list is None or len(package_list) == 0:
                 if args.batch is False:
-                    print(f'{COLOR.green}All Reference files exist.{COLOR.CEND}')
+                    print(f'{COLORS.green}All Reference files exist.{COLORS.CEND}')
                     val = 0
                 elif args.changed_flag is False:
-                    print(f'{COLOR.CRED}Error:{COLOR.CEND} Package is missing! (e.g. Airflow)')
+                    print(f'{COLORS.CRED}Error:{COLORS.CEND} Package is missing! (e.g. Airflow)')
                     val = 1
                 elif args.changed_flag is True:
                     print(f'No changed models in Package {args.packages}')

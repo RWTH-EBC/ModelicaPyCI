@@ -1,8 +1,12 @@
 import os
 import platform
-from ModelicaPyCI.config import CI_CONFIG
+from ModelicaPyCI.config import CI_CONFIG, ColorConfig
 from pathlib import Path
 import codecs
+
+
+COLORS = ColorConfig()
+
 
 class ModelManagement:
 

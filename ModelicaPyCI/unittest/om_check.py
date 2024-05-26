@@ -2,17 +2,18 @@ import sys
 from ebcpy import DymolaAPI, TimeSeriesData
 from ebcpy.utils.statistics_analyzer import StatisticsAnalyzer
 from OMPython import OMCSessionZMQ
-from ModelicaPyCI.config import CI_CONFIG
+from ModelicaPyCI.config import CI_CONFIG, ColorConfig
 from ModelicaPyCI.structure.sort_mo_model import ModelicaModel
 from pathlib import Path
 from ModelicaPyCI.structure import config_structure
 import numpy as np
 import matplotlib.pyplot as plt
 import argparse
-import toml
 import os
 import platform
 
+
+COLORS = ColorConfig()
 
 
 class StoreDictKeyPair(argparse.Action):
@@ -87,7 +88,7 @@ class CheckOpenModelica:
 
         else:
             self.omc = OMCSessionZMQ(dockerOpenModelicaPath="/usr/bin/omc_orig")
-        print(f'{CI_CONFIG.color.green}OpenModelica Version number:{CI_CONFIG.color.CEND} {self.omc.sendExpression("getVersion()")}')
+        print(f'{COLORS.green}OpenModelica Version number:{COLORS.CEND} {self.omc.sendExpression("getVersion()")}')
         # [start dymola api]
         self.dym_api = None
 
@@ -113,14 +114,14 @@ class CheckOpenModelica:
         config_structure.create_path(all_sims_dir)
         config_structure.delete_files_in_path(all_sims_dir)
         if example_list is not None:
-            print(f'{CI_CONFIG.color.green}Simulate examples and validations{CI_CONFIG.color.CEND}')
+            print(f'{COLORS.green}Simulate examples and validations{COLORS.CEND}')
             error_model = {}
             for example in example_list:
                 err_list = []
-                print(f'Simulate example {CI_CONFIG.color.blue}{example}{CI_CONFIG.color.CEND}')
+                print(f'Simulate example {COLORS.blue}{example}{COLORS.CEND}')
                 result = self.omc.sendExpression(f"simulate({example})")
                 if "The simulation finished successfully" in result["messages"]:
-                    print(f'\n {CI_CONFIG.color.green}Successful:{CI_CONFIG.color.CEND} {example}\n')
+                    print(f'\n {COLORS.green}Successful:{COLORS.CEND} {example}\n')
                     config_structure.prepare_data(source_target_dict={result["resultFile"]: all_sims_dir})
                 else:
                     _err_msg = result["messages"]
@@ -138,10 +139,10 @@ class CheckOpenModelica:
                         else:
                             err_list.append(line)
                     if len(err_list) > 0:
-                        print(f'{CI_CONFIG.color.CRED}  Error:   {CI_CONFIG.color.CEND}  {example}')
+                        print(f'{COLORS.CRED}  Error:   {COLORS.CEND}  {example}')
                         print(f'{_err_msg}')
                     else:
-                        print(f'{CI_CONFIG.color.yellow}  Warning:   {CI_CONFIG.color.CEND}  {example}')
+                        print(f'{COLORS.yellow}  Warning:   {COLORS.CEND}  {example}')
                         print(f'{_err_msg}')
                     error_model[example] = _err_msg
                 config_structure.delete_spec_file(root=os.getcwd(), pattern=example)
@@ -162,15 +163,15 @@ class CheckOpenModelica:
             exception_list ():
         Returns:
         """
-        print(f'{CI_CONFIG.color.green}Check models with OpenModelica{CI_CONFIG.color.CEND}')
+        print(f'{COLORS.green}Check models with OpenModelica{COLORS.CEND}')
         error_model = {}
         if check_model_list is not None:
             for m in check_model_list:
                 err_list = []
-                print(f'Check model {CI_CONFIG.color.blue}{m}{CI_CONFIG.color.CEND}')
+                print(f'Check model {COLORS.blue}{m}{COLORS.CEND}')
                 result = self.omc.sendExpression(f"checkModel({m})")
                 if "completed successfully" in result:
-                    print(f'{CI_CONFIG.color.green} Successful: {CI_CONFIG.color.CEND} {m}')
+                    print(f'{COLORS.green} Successful: {COLORS.CEND} {m}')
                 else:
                     _err_msg = self.omc.sendExpression("getErrorString()")
                     for line in _err_msg.split("\n"):
@@ -186,10 +187,10 @@ class CheckOpenModelica:
                         else:
                             err_list.append(line)
                     if len(err_list) > 0:
-                        print(f'{CI_CONFIG.color.CRED}  Error:   {CI_CONFIG.color.CEND}  {m}')
+                        print(f'{COLORS.CRED}  Error:   {COLORS.CEND}  {m}')
                         print(f'{_err_msg}')
                     else:
-                        print(f'{CI_CONFIG.color.yellow}  Warning:   {CI_CONFIG.color.CEND}  {m}')
+                        print(f'{COLORS.yellow}  Warning:   {COLORS.CEND}  {m}')
                         print(f'{_err_msg}')
                     error_model[m] = _err_msg
             return error_model
@@ -270,7 +271,7 @@ class CheckOpenModelica:
                 print(f'Package is not set.')
                 exit(1)
         else:
-            print(f"{CI_CONFIG.color.green}Check was successful.{CI_CONFIG.color.CEND}")
+            print(f"{COLORS.green}Check was successful.{COLORS.CEND}")
             exit(0)
 
     def _read_error_log(self, pack: str, err_log, check_log, options: str = None):
@@ -292,12 +293,12 @@ class CheckOpenModelica:
             if "Error in model" in line:
                 error_log_list.append(line)
                 line = line.strip("\n")
-                print(f'{CI_CONFIG.color.CRED}{line}{CI_CONFIG.color.CEND}')
+                print(f'{COLORS.CRED}{line}{COLORS.CEND}')
         if len(error_log_list) > 0:
-            print(f'{CI_CONFIG.color.CRED}Open Modelica for package {pack}check failed{CI_CONFIG.color.CEND}')
+            print(f'{COLORS.CRED}Open Modelica for package {pack}check failed{COLORS.CEND}')
             var = 1
         else:
-            print(f'{CI_CONFIG.color.green}Open Modelica check was successful{CI_CONFIG.color.CEND}')
+            print(f'{COLORS.green}Open Modelica check was successful{COLORS.CEND}')
             var = 0
         error_log.close()
         config_structure.prepare_data(source_target_dict={
@@ -317,7 +318,7 @@ class CheckOpenModelica:
         """
         load_modelica = self.omc.sendExpression(f'installPackage(Modelica, "4.0.0+maint.om", exactMatch=true)')
         if load_modelica is True:
-            print(f'{CI_CONFIG.color.green}Load library modelica in Openmodelica.{CI_CONFIG.color.CEND}')
+            print(f'{COLORS.green}Load library modelica in Openmodelica.{COLORS.CEND}')
         else:
             print(f'Load of modelica has failed.')
             exit(1)
@@ -329,9 +330,9 @@ class CheckOpenModelica:
                 install_string = f'{lib_name}, "{version}", {exact_match} '
                 inst_lib = self.omc.sendExpression(f'installPackage({install_string})')
                 if inst_lib is True:
-                    print(f'{CI_CONFIG.color.green}Install library "{lib_name}" with version "{version}"{CI_CONFIG.color.CEND} ')
+                    print(f'{COLORS.green}Install library "{lib_name}" with version "{version}"{COLORS.CEND} ')
                 else:
-                    print(f'{CI_CONFIG.color.CRED}Error:{CI_CONFIG.color.CEND} Load of "{lib_name}" with version "{version}" failed!')
+                    print(f'{COLORS.CRED}Error:{COLORS.CEND} Load of "{lib_name}" with version "{version}" failed!')
                     exit(1)
         print(self.omc.sendExpression("getErrorString()"))
 
@@ -339,9 +340,9 @@ class CheckOpenModelica:
         if root_library is not None:
             load_bib = self.omc.sendExpression(f'loadFile("{root_library}")')
             if load_bib is True:
-                print(f'{CI_CONFIG.color.green}Load library {library}:{CI_CONFIG.color.CEND} {root_library}')
+                print(f'{COLORS.green}Load library {library}:{COLORS.CEND} {root_library}')
             else:
-                print(f'{CI_CONFIG.color.CRED}Error:{CI_CONFIG.color.CEND} Load of {root_library} failed!')
+                print(f'{COLORS.CRED}Error:{COLORS.CEND} Load of {root_library} failed!')
                 exit(1)
         else:
             print(f'Library path is not set.')
@@ -351,9 +352,9 @@ class CheckOpenModelica:
                 lib_path = Path(additional_libraries_to_load[lib], lib, "package.mo")
                 load_add_bib = self.omc.sendExpression(f'loadFile("{lib_path}")')
                 if load_add_bib is True:
-                    print(f'{CI_CONFIG.color.green}Load library {lib}:{CI_CONFIG.color.CEND} {lib_path}')
+                    print(f'{COLORS.green}Load library {lib}:{COLORS.CEND} {lib_path}')
                 else:
-                    print(f'{CI_CONFIG.color.CRED}Error:{CI_CONFIG.color.CEND} Load of library {lib} with path {lib_path} failed!')
+                    print(f'{COLORS.CRED}Error:{COLORS.CEND} Load of library {lib} with path {lib_path} failed!')
                     exit(1)
         print(self.omc.sendExpression("getErrorString()"))
 
@@ -384,7 +385,7 @@ class CheckOpenModelica:
                 except Exception as err:
                     print("Simulation failed: " + str(err))
                     continue
-                print(f'\n {CI_CONFIG.color.green}Successful:{CI_CONFIG.color.CEND} {example}\n')
+                print(f'\n {COLORS.green}Successful:{COLORS.CEND} {example}\n')
                 self.prepare_data(source_target_dict={result: Path(all_sims_dir, "dym")})
             self.dym_api.close()
             API_log = Path(self.root_library, "DymolaAPI.log")
@@ -522,8 +523,6 @@ def parse_args():
                                   metavar="Library1=Package1,Package2 Library2=Package3,Package4")"""
     check_test_group.add_argument("--library", default="AixLib", help="Library to test (e.g. AixLib")
     check_test_group.add_argument("--packages", default=["Airflow"], nargs="+", help="Library to test (e.g. Airflow.Multizone)")
-    check_test_group.add_argument("--root-library", default=Path("AixLib", "package.mo"), help="root of library",
-                                  type=Path)
     check_test_group.add_argument("--whitelist-library",
                                   default="IBPSA",
                                   help="Library on whitelist")
@@ -561,8 +560,10 @@ if __name__ == '__main__':
             add_lib_path = Path(additional_libraries_to_load[lib], lib, "package.mo")
             check.check_file_setting(add_lib_path)
 
+    LIBRARY_PACKAGE_MO = CI_CONFIG.library_root.joinpath(ARGS.library, "package.mo")
+
     OM = CheckOpenModelica(library=args.library,
-                           root_library=args.root_library,
+                           root_library=LIBRARY_PACKAGE_MO,
                            additional_libraries_to_load=additional_libraries_to_load)
     OM()
     model = ModelicaModel()
@@ -576,7 +577,7 @@ if __name__ == '__main__':
                                                     changed_flag=args.changed_flag,
                                                     simulate_flag=False,
                                                     filter_whitelist_flag=args.filter_whitelist_flag,
-                                                    root_library=args.root_library)
+                                                    library_package_mo=LIBRARY_PACKAGE_MO)
                 error_model_dict = OM.OM_check_model(check_model_list=model_list,
                                                      exception_list=except_list)
                 exit_var = OM.write_errorlog(pack=package,
@@ -590,7 +591,7 @@ if __name__ == '__main__':
                                                     changed_flag=args.changed_flag,
                                                     simulate_flag=True,
                                                     filter_whitelist_flag=args.filter_whitelist_flag,
-                                                    root_library=args.root_library)
+                                                    library_package_mo=LIBRARY_PACKAGE_MO)
                 error_model_dict = OM.simulate_examples(example_list=model_list,
                                                         exception_list=except_list)
                 exit_var = OM.write_errorlog(pack=package,
@@ -605,7 +606,7 @@ if __name__ == '__main__':
                                                     changed_flag=args.changed_flag,
                                                     simulate_flag=True,
                                                     filter_whitelist_flag=args.filter_whitelist_flag,
-                                                    root_library=args.root_library)
+                                                    library_package_mo=LIBRARY_PACKAGE_MO)
                 OM.sim_with_dymola(example_list=model_list, pack=package)
             if args.om_options == "COMPARE":
                 ERROR_DATA = {}
@@ -616,7 +617,7 @@ if __name__ == '__main__':
                                                     changed_flag=args.changed_flag,
                                                     simulate_flag=True,
                                                     filter_whitelist_flag=args.filter_whitelist_flag,
-                                                    root_library=args.root_library)
+                                                    library_package_mo=LIBRARY_PACKAGE_MO)
                 STATS = OM.compare_dym_to_om(pack=package,
                                              example_list=model_list,
                                              stats=STATS)

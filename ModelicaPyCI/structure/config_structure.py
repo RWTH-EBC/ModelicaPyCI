@@ -6,8 +6,8 @@ import glob
 from pathlib import Path
 import distutils.dir_util
 
-from ModelicaPyCI.config import CI_CONFIG
-COLOR = CI_CONFIG.color
+from ModelicaPyCI.config import CI_CONFIG, ColorConfig
+COLORS = ColorConfig()
 
 
 def check_arguments_settings(**kwargs):
@@ -15,14 +15,14 @@ def check_arguments_settings(**kwargs):
     for var, val in kwargs.items():
         if val is None:
             print(
-                f'{COLOR.CRED}Error:{COLOR.CEND} {COLOR.blue}Variable "{var.strip()}"{COLOR.CEND} has value '
-                f'{COLOR.CRED}"{val}". "{var}"{COLOR.CEND} is not set!'
+                f'{COLORS.CRED}Error:{COLORS.CEND} {COLORS.blue}Variable "{var.strip()}"{COLORS.CEND} has value '
+                f'{COLORS.CRED}"{val}". "{var}"{COLORS.CEND} is not set!'
             )
             exit(1)
         else:
             print(
-                f'{COLOR.green}Setting:{COLOR.CEND} {COLOR.blue}Variable "{var.strip()}" {COLOR.CEND} is set as: '
-                f'{COLOR.blue}"{val}"{COLOR.CEND}'
+                f'{COLORS.green}Setting:{COLORS.CEND} {COLORS.blue}Variable "{var.strip()}" {COLORS.CEND} is set as: '
+                f'{COLORS.blue}"{val}"{COLORS.CEND}'
             )
 
 
@@ -35,12 +35,13 @@ def check_path_setting(*args: Path, create_flag: bool = False):
     for i, (var, path) in enumerate(zip(var_names, args)):
         if os.path.isdir(path) is True:
             print(
-                f'{COLOR.green}Setting:{COLOR.CEND} {COLOR.blue}Path variable "{var}"{COLOR.CEND} is set as: '
-                f'{COLOR.blue}"{path}"{COLOR.CEND} and exists.')
+                f'{COLORS.green}Setting:{COLORS.CEND} {COLORS.blue}Path variable "{var}"{COLORS.CEND} is set as: '
+                f'{COLORS.blue}"{path}"{COLORS.CEND} and exists.')
         else:
             print(
-                f'{COLOR.CRED}Error:{COLOR.CEND} {COLOR.blue}Path variable "{var}"{COLOR.CEND} in {COLOR.blue}"{path}"'
-                f'{COLOR.CEND} does not exist in path {Path().absolute()} with content {os.listdir(os.getcwd())}.')
+                f'{COLORS.CRED}Error:{COLORS.CEND} {COLORS.blue}Path variable '
+                f'"{var}"{COLORS.CEND} in {COLORS.blue}"{path}"'
+                f'{COLORS.CEND} does not exist in path {Path().absolute()} with content {os.listdir(os.getcwd())}.')
             if create_flag is True:
                 create_path(path)
             else:
@@ -56,12 +57,12 @@ def check_file_setting(*args, create_flag: bool = False):
     for i, (var, file) in enumerate(zip(var_names, args)):
         if os.path.isfile(file) is True:
             print(
-                f'{COLOR.green}Setting:{COLOR.CEND} {COLOR.blue}File "{var}"{COLOR.CEND} is set as: '
-                f'{COLOR.blue}"{file}"{COLOR.CEND} and exists.')
+                f'{COLORS.green}Setting:{COLORS.CEND} {COLORS.blue}File "{var}"{COLORS.CEND} is set as: '
+                f'{COLORS.blue}"{file}"{COLORS.CEND} and exists.')
         else:
             print(
-                f'{COLOR.CRED}Error:{COLOR.CEND} {COLOR.blue}File_variable "{var}"{COLOR.CEND} in {COLOR.blue}"{file}"'
-                f'{COLOR.CEND} does not exist in path {Path().absolute()} with content {os.listdir(os.getcwd())}.')
+                f'{COLORS.CRED}Error:{COLORS.CEND} {COLORS.blue}File_variable "{var}"{COLORS.CEND} in {COLORS.blue}"{file}"'
+                f'{COLORS.CEND} does not exist in path {Path().absolute()} with content {os.listdir(os.getcwd())}.')
             if create_flag is True:
                 create_files(file)
             else:
@@ -69,20 +70,20 @@ def check_file_setting(*args, create_flag: bool = False):
 
 
 def create_path(*args):
-    print(f'\n**** Create folder ****')
     for arg in args:
-        print(f'{COLOR.green}Create Folder:{COLOR.CEND} {arg}')
-        os.makedirs(arg, exist_ok=True)
+        if not os.path.exists(arg):
+            print(f'{COLORS.green}Create Folder:{COLORS.CEND} {arg}')
+            os.makedirs(arg, exist_ok=True)
 
 
 def create_files(*args):
     for file in args:
         if os.path.exists(file):
-            print(f'{COLOR.green}File:{COLOR.CEND} {file} does exist.')
+            print(f'{COLORS.green}File:{COLORS.CEND} {file} does exist.')
         else:
             print(
-                f'{COLOR.CRED}File: {COLOR.CEND}  {file} does not exist. '
-                f'Create a new one under {COLOR.green}{file}{COLOR.CEND}')
+                f'{COLORS.CRED}File: {COLORS.CEND}  {file} does not exist. '
+                f'Create a new one under {COLORS.green}{file}{COLORS.CEND}')
             with open(file, 'w') as write_file:
                 if os.path.basename(file) == os.path.basename(CI_CONFIG.get_file_path("ci_files", "eof_file")):
                     write_file.write(f'y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n')
@@ -96,7 +97,7 @@ def delete_files_in_path(*args: Path):
     """
     print(f'\n**** Delete folder ****\n')
     for arg in args:
-        print(f'{COLOR.green}Delete files:{COLOR.CEND} {arg}')
+        print(f'{COLORS.green}Delete files:{COLORS.CEND} {arg}')
         for filename in os.listdir(arg):
             file_path = os.path.join(arg, filename)
             try:
@@ -154,7 +155,7 @@ def remove_path(path_list: list = None):
                 print(f'Path {path} does not exist.')
 
 
-def prepare_data(source_target_dict: dict = None,
+def prepare_data(source_target_dict: dict,
                  del_flag: bool = False):
     """
     Prepare Result:
@@ -162,28 +163,26 @@ def prepare_data(source_target_dict: dict = None,
         file_path_dict (): {dst:src}
         del_flag (): True: delete files if True, dont delete files if False
     """
-    print(f'\n{COLOR.blue}**** Prepare Data ****{COLOR.CEND}')
-    if source_target_dict is not None:
-        for source in source_target_dict:
-            target_path = source_target_dict[source]
-            if not os.path.exists(target_path):
-                print(f'Create path: {target_path}')
-                os.makedirs(target_path)
-            if os.path.isfile(source) is True:
-                path, file_name = os.path.split(source)
-                target = os.path.join(target_path, file_name)
-                print(
-                    f'Result file {COLOR.blue}{source}{COLOR.CEND} '
-                    f'was moved to {COLOR.blue}{target}{COLOR.CEND}'
-                )
-                shutil.copyfile(source, target)
-                if del_flag is True:
-                    remove_files([source])
-            if os.path.isdir(source) is True:
-                print(
-                    f'Result Folder {COLOR.blue}{source}{COLOR.CEND} '
-                    f'was moved to {COLOR.blue}{target_path}{COLOR.CEND}'
-                )
-                distutils.dir_util.copy_tree(source, str(target_path))
-                if del_flag is True:
-                    remove_path([source])
+    print(f'\n{COLORS.blue}**** Prepare Data ****{COLORS.CEND}')
+    for source, target_path in source_target_dict.items():
+        if not os.path.exists(target_path):
+            print(f'Create path: {target_path}')
+            os.makedirs(target_path)
+        if os.path.isfile(source) is True:
+            path, file_name = os.path.split(source)
+            target = os.path.join(target_path, file_name)
+            shutil.copyfile(source, target)
+            print(
+                f'Result file {COLORS.blue}{source}{COLORS.CEND} '
+                f'was copied to {COLORS.blue}{target}{COLORS.CEND}'
+            )
+            if del_flag is True:
+                remove_files([source])
+        if os.path.isdir(source) is True:
+            distutils.dir_util.copy_tree(source, str(target_path))
+            print(
+                f'Result Folder {COLORS.blue}{source}{COLORS.CEND} '
+                f'was copied to {COLORS.blue}{target_path}{COLORS.CEND}'
+            )
+            if del_flag is True:
+                remove_path([source])

@@ -9,19 +9,19 @@ import sys
 
 class SlackNotification(object):
 
-    def __init__(self, github_token, slack_token, github_repo, base_branch):
+    def __init__(self, github_token, slack_token, github_repo, main_branch):
         """
 
         Args:
             github_token (): github token
             slack_token (): slack token
             github_repo (): github repository
-            base_branch (): Branch to be merged into
+            main_branch (): Branch to be merged into
         """
         self.slack_token = slack_token
         self.github_token = github_token
         self.github_repo = github_repo
-        self.base_branch = base_branch
+        self.main_branch = main_branch
         self.url = f'https://api.github.com/repos/{github_repo}/branches'
 
     def _get_data(self, branch):
@@ -242,7 +242,7 @@ class SlackNotification(object):
         title = f'\"title\": \"The branch {branch} is closed because of too long inactivity.\"'
         body = f'\"body\":\"The Branch {branch} has been inactive for more than {time_dif} days. A pull request is created and the branch is then deleted. If you want to restore the branch, go to the closed pull requests and restore your branch.\"'
         head = f'\"head\":\"{owner}:{branch}\"'
-        base = f'\"base\": \"{self.base_branch}\"'
+        base = f'\"base\": \"{self.main_branch}\"'
         message = f'\n	{title},\n	{body},\n	{head},\n	{base}\n'
         payload = "{" + message + "}"
         headers = {
@@ -337,7 +337,7 @@ def parse_args():
         description="Set Github Environment Variables")  # Configure the argument parser
     check_test_group = parser.add_argument_group("Arguments to set Environment Variables")
     check_test_group.add_argument('-GT', "--github-token", default="${GITHUB_API_TOKEN}", help="Set GITHUB Token")
-    check_test_group.add_argument('-BB', "--base-branch", default="development", help="your base branch")
+    check_test_group.add_argument('-BB', "--main-branch", default="development", help="your base branch")
     check_test_group.add_argument('-ST', "--slack-token", default="${secrets.SLACK_BOT_TOKEN}",
                                   help="Your Set Slack Token")
     check_test_group.add_argument("-GR", "--github-repository", default="RWTH-EBC/AixLib",
@@ -349,7 +349,7 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    slack = SlackNotification(github_token=args.github_token, slack_token=args.slack_token, github_repo=args.github_repository, base_branch=args.base_branch)
+    slack = SlackNotification(github_token=args.github_token, slack_token=args.slack_token, github_repo=args.github_repository, main_branch=args.main_branch)
     slack_user_list = slack._get_user_list()  # Get a list with all slack users
     slack_mail_id = slack._get_slack_mail(slack_user_list)  # Write dictionary with slack_mail: Slack_id
     local_time = slack._local_time()  # get the local time
@@ -387,9 +387,9 @@ if __name__ == '__main__':
                     print(f'Cannot create Pull Request: {reponse}')
                     artifacts_list.append(
                         f'\n******************************\nName: {name}\nBranch: {branch}\nGitHub E-Mail: {github_mail}\nSlack_channel_ID: {channel_id}\nCannot create Pull Request: {reponse}\nThe branch {branch} has been inactive for more than {time_dif} days. ')
-                    if str(reponse).find(f"'message': 'No commits between {args.base_branch} and {branch}'") > -1:
+                    if str(reponse).find(f"'message': 'No commits between {args.main_branch} and {branch}'") > -1:
                         message_text = f'The branch {branch} has been inactive for more than {time_dif} days. ' \
-                                       f'Cannot create a pull request, because there are no commits between {args.base_branch} and {branch}' \
+                                       f'Cannot create a pull request, because there are no commits between {args.main_branch} and {branch}' \
                                        f'\nUser name: {name}'
                         print(f'\nName: {name}\nBranch: {branch}\nGitHub E-Mail: {github_mail}\nSlack_channel_ID: {channel_id}\n{message_text}')
                         slack._post_message(channel_id, message_text)  # post message to slack user

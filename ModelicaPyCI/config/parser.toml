@@ -2,7 +2,7 @@
 correct_branch = "${Newbranch}"
 github_repo = "RWTH-EBC/AixLib"
 working_branch = "${TARGET_BRANCH}"
-base_branch = "main"
+main_branch = "main"
 github_token = "${GITHUB_API_TOKEN}"
 prepare_plot = "False"
 show_plot = "False"
@@ -15,7 +15,7 @@ gitlab_page = "${GITLAB_Page}"
 
 [api_slack.Parser]
 github_token = "${GITHUB_API_TOKEN}"
-base_branch = "development"
+main_branch = "development"
 slack_token = "${secrets.SLACK_BOT_TOKEN}"
 github_repo = "RWTH-EBC/AixLib"
 
