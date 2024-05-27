@@ -6,7 +6,7 @@ from ModelicaPyCI.structure import config_structure
 
 
 def create_changed_files_file():
-    changed_files_file = CI_CONFIG.get_file_path("ci_files", "changed_file", with_library_root=False)
+    changed_files_file = CI_CONFIG.get_file_path("ci_files", "changed_file")
     config_structure.check_path_setting(CI_CONFIG.get_dir_path("ci_files"), create_flag=True)
 
     path = f"temp_file_{uuid.uuid4()}"
