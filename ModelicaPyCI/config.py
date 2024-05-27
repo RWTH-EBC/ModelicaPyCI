@@ -71,6 +71,7 @@ class WhitelistConfig(BaseModel):
     check_file: str = 'ci_check_whitelist.txt'
     simulate_file: str = 'ci_simulate_whitelist.txt'
     html_file: str = 'rci_html_whitelist.txt'
+    ref_file: str = "ci_reference_whitelist.txt"
 
 
 class PlotConfig(BaseModel):

@@ -248,7 +248,7 @@ def _get_whitelist_package():
     """
     whitelist_list = []
     try:
-        with open(CI_CONFIG.whitelist_scripts.ref_file, "r") as ref_wh:
+        with open(CI_CONFIG.get_file_path("whitelist", "ref_file"), "r") as ref_wh:
             lines = ref_wh.readlines()
             for line in lines:
                 if len(line.strip()) == 0:
