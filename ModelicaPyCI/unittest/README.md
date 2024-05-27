@@ -47,7 +47,7 @@ For further information on how to use the UnitTest, please refer to the followin
     cd AixLib && xvfb-run -n 77 python ../modelicapyci_tests/CITests/UnitTests/reference_check.py -n 4 --tool dymola --single-package AixLib.Airflow --library AixLib --batch -DS 2022
     cd AixLib && xvfb-run -n 77 python ../modelicapyci_tests/CITests/UnitTests/reference_check.py --coverage-only
     cd AixLib && xvfb-run -n 77 python ../modelicapyci_tests/CITests/UnitTests/reference_check.py -n 4 --tool dymola --single-package  AixLib.Airflow  --library AixLib --batch -DS 2022 -n 2 --modified-model
-    cd AixLib && xvfb-run -n 77 python ../Dymola_python_tests/CITests/UnitTests/reference_check.py --create-ref -n 4 < ../dymola-ci-tests/Configfiles/EOF.sh
+    cd AixLib && xvfb-run -n 77 python ../Dymola_python_tests/CITests/UnitTests/reference_check.py --create-ref -n 4
 
 For the implementation in gitlab-yaml go to the following [link](https://git.rwth-aachen.de/EBC/EBC_all/gitlab_ci/templates/-/tree/AixLib/dymola-ci-tests/ci_templates).
 

@@ -60,15 +60,14 @@ class FilesConfig(BaseModel):
     new_create_ref_file: str = 'ci_new_created_reference.txt'
     changed_file: str = 'ci_changed_model_list.txt'
     ref_file: str = 'ci_reference_list.txt'
-    eof_file: str = 'EOF.sh'
 
 
 class WhitelistConfig(BaseModel):
     dir: str = "ci_whitelist"
-    check_file: str = 'ci_check_whitelist.txt'
-    simulate_file: str = 'ci_simulate_whitelist.txt'
-    html_file: str = 'rci_html_whitelist.txt'
-    ref_file: str = "ci_reference_whitelist.txt"
+    check_file: str = 'check_whitelist.txt'
+    simulate_file: str = 'simulate_whitelist.txt'
+    ibpsa_file: str = 'ibpsa_whitelist.txt'
+    ref_file: str = "reference_whitelist.txt"
 
 
 class PlotConfig(BaseModel):

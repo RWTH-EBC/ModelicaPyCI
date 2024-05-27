@@ -22,7 +22,6 @@ class ModelicaModel:
                          changed_flag: bool = False,
                          simulate_flag: bool = False,
                          filter_whitelist_flag: bool = False,
-                         whitelist_library: str = "IBPSA",
                          extended_ex_flag: bool = False,
                          dymola_version: int = 2022,
                          path_dir: Path = Path.cwd(),
@@ -38,7 +37,6 @@ class ModelicaModel:
             changed_flag ():
             simulate_flag ():
             filter_whitelist_flag ():
-            whitelist_library ():
             extended_ex_flag ():
             dymola_version ():
             path_dir ():
@@ -81,16 +79,30 @@ class ModelicaModel:
                                                         dymola_version=dymola_version)
                 model_list.extend(simulate_list)
                 model_list = list(set(model_list))
-        elif filter_whitelist_flag is True:
-            if simulate_flag is True:
-                ci_whitelist_file = CI_CONFIG.get_file_path("whitelist", "simulate_file")
-            else:
-                ci_whitelist_file = CI_CONFIG.get_file_path("whitelist", "check_file")
+        else:
+            whitelist_list_models = []
             config_structure.check_path_setting(whitelist=CI_CONFIG.get_dir_path("whitelist"), create_flag=True)
-            whitelist_list_models = self.get_whitelist_models(whitelist_file=ci_whitelist_file,
-                                                              whitelist_library=whitelist_library,
-                                                              library=library,
-                                                              single_package=package)
+
+            ci_whitelist_ibpsa_file = CI_CONFIG.get_file_path("whitelist", "ibpsa_file")
+            if os.path.exists(ci_whitelist_ibpsa_file):
+                whitelist_list_models.extend(
+                    self.get_whitelist_models(
+                        whitelist_file=ci_whitelist_ibpsa_file, library=library, single_package=package
+                    )
+                )
+            if filter_whitelist_flag is True:
+                if simulate_flag is True:
+                    ci_whitelist_file = CI_CONFIG.get_file_path("whitelist", "simulate_file")
+                else:
+                    ci_whitelist_file = CI_CONFIG.get_file_path("whitelist", "check_file")
+
+                whitelist_list_models.extend(
+                    self.get_whitelist_models(
+                        whitelist_file=ci_whitelist_file, library=library, single_package=package
+                    )
+                )
+            whitelist_list_models = list(set(whitelist_list_models))  # Remove possible duplicates
+
             result = self.get_models(path=root_package,
                                      library=library,
                                      simulate_flag=simulate_flag,
@@ -106,20 +118,6 @@ class ModelicaModel:
                 model_list = list(set(model_list))
             model_list = self.filter_whitelist_models(models=model_list,
                                                       whitelist_list=whitelist_list_models)
-        else:
-            result = self.get_models(path=root_package,
-                                     library=library,
-                                     simulate_flag=simulate_flag,
-                                     extended_ex_flag=extended_ex_flag)
-            model_list = result[0]
-            if extended_ex_flag is True:
-                simulate_list = self.get_extended_model(dymola=dymola,
-                                                        dymola_exception=dymola_exception,
-                                                        model_list=result[1],
-                                                        library=library,
-                                                        dymola_version=dymola_version)
-                model_list.extend(simulate_list)
-                model_list = list(set(model_list))
         if len(model_list) == 0 or model_list is None:
             print(f'Find no models in package {package}')
             exit(0)
@@ -225,7 +223,6 @@ class ModelicaModel:
 
     @staticmethod
     def get_whitelist_models(whitelist_file: str,
-                             whitelist_library: str,
                              library: str,
                              single_package: str):
         """
@@ -238,10 +235,7 @@ class ModelicaModel:
             for line in lines:
                 model = line.lstrip()
                 model = model.strip().replace("\n", "")
-                if model.find(f'{whitelist_library}.{single_package}') > -1:
-                    print(f'Dont test {whitelist_library} model: {model}. Model is on the whitelist.')
-                    whitelist_list_models.append(model.replace(whitelist_library, library))
-                elif model.find(f'{library}.{single_package}') > -1:
+                if model.find(f'{library}.{single_package}') > -1:
                     print(f'Dont test {library} model: {model}. Model is on the whitelist.')
                     whitelist_list_models.append(model)
             whitelist_file.close()

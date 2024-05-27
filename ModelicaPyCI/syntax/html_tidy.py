@@ -227,7 +227,7 @@ def _get_whitelist_library_model():
     """
     whitelist_library_list = []
     try:
-        file = open(CI_CONFIG.get_file_path("whitelist", "html_file"), "r")
+        file = open(CI_CONFIG.get_file_path("whitelist", "ibpsa_file"), "r")
         lines = file.readlines()
         file.close()
         for line in lines:
@@ -236,7 +236,7 @@ def _get_whitelist_library_model():
                 whitelist_library_list.append(line)
         return whitelist_library_list
     except IOError:
-        print(f'Error: File {CI_CONFIG.get_file_path("whitelist", "html_file")} '
+        print(f'Error: File {CI_CONFIG.get_file_path("whitelist", "ibpsa_file")} '
               f'does not exist. Check without a whitelist.')
         return whitelist_library_list
 

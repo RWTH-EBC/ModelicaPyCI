@@ -80,11 +80,11 @@ class BuildingspyRegressionCheck():
                 response = self.ut.run()
                 config_structure.prepare_data(
                     source_target_dict={
-                        f'simulator-dymola.log': Path( CI_CONFIG.get_file_path("result", "regression_dir"),
+                        f'simulator-dymola.log': Path(CI_CONFIG.get_file_path("result", "regression_dir"),
                                                       package),
-                        "unitTests-dymola.log": Path( CI_CONFIG.get_file_path("result", "regression_dir"),
+                        "unitTests-dymola.log": Path(CI_CONFIG.get_file_path("result", "regression_dir"),
                                                      package),
-                        "funnel_comp": Path( CI_CONFIG.get_file_path("result", "regression_dir"), package,
+                        "funnel_comp": Path(CI_CONFIG.get_file_path("result", "regression_dir"), package,
                                             "funnel_comp")})
                 if response != 0:
                     err_list.append(package)
@@ -396,53 +396,79 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Run the unit tests or the html validation only.')
     unit_test_group = parser.add_argument_group("arguments to run unit tests")
     # [Library - settings]
-    unit_test_group.add_argument("--library", default="AixLib", help="Library to test (e.g. AixLib")
-    unit_test_group.add_argument("--packages", default=["Airflow"], nargs="+",
-                                 help="Library to test (e.g. Airflow.Multizone)")
-    unit_test_group.add_argument("--library-root", help="Library to test (e.g. AixLib")
+    unit_test_group.add_argument(
+        "--library",
+        help="Library to test (e.g. AixLib")
+    unit_test_group.add_argument(
+        "--packages",
+        nargs="+",
+        help="Library to test (e.g. Airflow.Multizone)")
+    unit_test_group.add_argument(
+        "--library-root",
+        help="Library to test (e.g. AixLib")
 
-    unit_test_group.add_argument("-p", "--path",
-                                 default=".",
-                                 help="Path where top-level package.mo of the library is located")
+    unit_test_group.add_argument(
+        "-p", "--path",
+        default=".",
+        help="Path where top-level package.mo of the library is located")
     # [Dymola - settings]
-    unit_test_group.add_argument("--show-gui",
-                                 help='Show the GUI of the simulator',
-                                 action="store_true",
-                                 default=False)
-    unit_test_group.add_argument("-n", "--number-of-processors", type=int, default=4,
-                                 help='Maximum number of processors to be used')
-    unit_test_group.add_argument('-t', "--tool", metavar="dymola", default="dymola",
-                                 help="Tool for the regression tests. Set to dymola or jmodelica")
-    unit_test_group.add_argument("--dymola-version", default="2022",
-                                 help="Version of Dymola(Give the number e.g. 2022")
+    unit_test_group.add_argument(
+        "--show-gui",
+        help='Show the GUI of the simulator',
+        action="store_true",
+        default=False)
+    unit_test_group.add_argument(
+        "-n",
+        "--number-of-processors",
+        type=int,
+        default=4,
+        help='Maximum number of processors to be used')
+    unit_test_group.add_argument(
+        '-t',
+        "--tool",
+        metavar="dymola", default="dymola",
+        help="Tool for the regression tests. Set to dymola or jmodelica")
+    unit_test_group.add_argument(
+        "--dymola-version",
+        default="2022",
+        help="Version of Dymola(Give the number e.g. 2022")
     # [ bool - flag]
-    unit_test_group.add_argument("-b", "--batch",
-                                 action="store_true",
-                                 default=False,
-                                 help="Run in batch mode without user interaction")
-    unit_test_group.add_argument("--coverage-only",
-                                 help='Only run the coverage test',
-                                 default=False,
-                                 action="store_true")
-    unit_test_group.add_argument("--create-ref",
-                                 help='checks if all reference files exist',
-                                 default=False,
-                                 action="store_true")
-    unit_test_group.add_argument("--ref-list",
-                                 help='checks if all reference files exist',
-                                 default=False,
-                                 action="store_true")
-    unit_test_group.add_argument("--update-ref",
-                                 default=False,
-                                 help='update all reference files',
-                                 action="store_true")
-    unit_test_group.add_argument("--changed-flag",
-                                 help='Regression test only for modified models',
-                                 default=False,
-                                 action="store_true")
-    unit_test_group.add_argument("--validate-html-only", default=False, action="store_true")
-    unit_test_group.add_argument("--validate-experiment-setup", default=False, action="store_true")
-    unit_test_group.add_argument("--report", default=False, action="store_true")
+    unit_test_group.add_argument(
+        "-b", "--batch",
+        action="store_true",
+        default=False,
+        help="Run in batch mode without user interaction")
+    unit_test_group.add_argument(
+        "--coverage-only",
+        help='Only run the coverage test',
+        default=False,
+        action="store_true")
+    unit_test_group.add_argument(
+        "--create-ref",
+        help='checks if all reference files exist',
+        default=False,
+        action="store_true")
+    unit_test_group.add_argument(
+        "--ref-list",
+        help='checks if all reference files exist',
+        default=False,
+        action="store_true")
+    unit_test_group.add_argument(
+        "--update-ref",
+        default=False,
+        help='update all reference files',
+        action="store_true")
+    unit_test_group.add_argument(
+        "--changed-flag",
+        help='Regression test only for modified models',
+        default=False,
+        action="store_true")
+    unit_test_group.add_argument(
+        "--validate-html-only", default=False, action="store_true")
+    unit_test_group.add_argument(
+        "--validate-experiment-setup", default=False, action="store_true")
+    unit_test_group.add_argument(
+        "--report", default=False, action="store_true")
     args = parser.parse_args()
     return args
 

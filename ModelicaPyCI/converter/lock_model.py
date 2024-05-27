@@ -13,7 +13,7 @@ def _sort_whitelist_model():
     Returns:
         model_list (): return a list of models to lock
     """
-    html_file = CI_CONFIG.get_file_path("whitelist", "html_file")
+    html_file = CI_CONFIG.get_file_path("whitelist", "ibpsa_file")
     with open(html_file, "r") as file:
         whitelist_lines = file.readlines()
     model_list = []

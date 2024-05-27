@@ -18,7 +18,6 @@ class PythonDymolaInterface:
         super().__init__()
         self.dymola = dymola
         self.dymola_exception = dymola_exception
-        # todo exception mit einbauen
         if self.dymola is not None:
             self.dymola.ExecuteCommand("Advanced.TranslationInCommandLog:=true;")
 

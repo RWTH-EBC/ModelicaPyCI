@@ -7,7 +7,6 @@ from ModelicaPyCI.config import CI_CONFIG, ColorConfig
 from ModelicaPyCI.structure.sort_mo_model import ModelicaModel
 from ModelicaPyCI.structure import config_structure
 from ModelicaPyCI.pydyminterface import python_dymola_interface
-from ModelicaPyCI.api_script.api_github import clone_repository
 
 COLORS = ColorConfig()
 
@@ -20,13 +19,11 @@ class CheckPythonDymola:
                  library: str,
                  library_package_mo: Path,
                  additional_libraries_to_load: list,
-                 working_path: Path = Path(Path.cwd()),
                  ):
         """
         The class check or simulate models. Return an error-log. Can filter models from a whitelist
         Args:
             library_package_mo: root path of library (e.g. ../AixLib/package.mo)
-            working_path:
             additional_libraries_to_load:
             dym (): python_dymola_interface class.
             dym_exp (): python_dymola_exception class.
@@ -36,7 +33,6 @@ class CheckPythonDymola:
         self.library_package_mo = library_package_mo
         self.additional_libraries_to_load = additional_libraries_to_load
         self.library = library
-        self.working_path = working_path
         # [Start Dymola]
         self.dymola = dym
         self.dymola_exception = dym_exp
@@ -117,9 +113,9 @@ class CheckPythonDymola:
         """
         if error_dict is not None:
             if pack is not None:
-                ch_log = Path(self.working_path, CI_CONFIG.get_file_path("result", "check_result_dir"),
+                ch_log = Path(CI_CONFIG.get_file_path("result", "check_result_dir"),
                               f'{self.library}.{pack}-check_log.txt')
-                error_log = Path(self.working_path, CI_CONFIG.get_file_path("result", "check_result_dir"),
+                error_log = Path(CI_CONFIG.get_file_path("result", "check_result_dir"),
                                  f'{self.library}.{pack}-error_log.txt')
                 os.makedirs(Path(ch_log).parent, exist_ok=True)
                 with open(ch_log, 'w') as check_log, open(error_log, "w") as err_log:
@@ -177,30 +173,23 @@ class CheckPythonDymola:
 class CreateWhitelist:
 
     def __init__(self,
+                 library: str,
                  dym,
                  dymola_ex,
-                 whitelist_library: str,
-                 working_path: Path = Path(Path.cwd()),
+                 library_package_mo: str,
                  dymola_version: int = 2022,
-                 additional_libraries_to_load: dict = None,
-                 git_url: str = None,
-                 root_whitelist_library: Path = None):
+                 additional_libraries_to_load: dict = None
+                 ):
         """
-        The class creates a whitelist of faulty models based on whitelist_library.
+        The class creates a whitelist of faulty models based on library.
         Args:
-            working_path:
             dymola_version:
             additional_libraries_to_load:
-            root_whitelist_library:
             dym (): python_dymola_interface class.
             dymola_ex (): python_dymola_exception class.
-            whitelist_library ():  Library and its models that can be on the whitelist.
-            git_url (): Git url of the cloned project.
         """
-        self.whitelist_library = whitelist_library
-        self.git_url = git_url
-        self.working_path = working_path
-        self.library_package_mo = root_whitelist_library
+        self.library = library
+        self.library_package_mo = library_package_mo
         # [libraries]
         self.additional_libraries_to_load = additional_libraries_to_load
         # [dymola version]
@@ -220,7 +209,7 @@ class CreateWhitelist:
 
     def check_whitelist_model(self, model_list: list, whitelist_files: Path, version: float, simulate_examples: bool):
         """
-        Check whitelist_library models for creating whitelist and create a whitelist with failed models.
+        Check library models for creating whitelist and create a whitelist with failed models.
         Write an error log with all models, that don´t pass the check.
         Args:
             model_list (): List of models that are being tested
@@ -229,15 +218,15 @@ class CreateWhitelist:
             simulate_examples() : bool simulate or not
         """
         error_model_message_dic = {}
-        err_log = Path(Path(self.library_package_mo).parent, f'{self.whitelist_library}-error_log.txt')
-        dymola_log = Path(Path(self.library_package_mo).parent, f'{self.whitelist_library}-log.txt')
+        err_log = Path(Path(self.library_package_mo).parent, f'{self.library}-error_log.txt')
+        dymola_log = Path(Path(self.library_package_mo).parent, f'{self.library}-log.txt')
         if model_list is None or len(model_list) == 0:
             print(f'{COLORS.CRED}Error:{COLORS.CEND} Found no models')
             exit(0)
         try:
             with open(whitelist_files, "w") as whitelist_file, open(err_log, "w") as error_log:
                 print(
-                    f'Write new whitelist for {self.whitelist_library} library\n'
+                    f'Write new whitelist for {self.library} library\n'
                     f'New whitelist was created with the version {version}'
                 )
                 whitelist_file.write(f'\n{version} \n \n')
@@ -255,10 +244,10 @@ class CreateWhitelist:
                 self.dymola.close()
             print(f'{COLORS.green}Whitelist check finished.{COLORS.CEND}')
             config_structure.prepare_data(source_target_dict={
-                err_log: Path(CI_CONFIG.get_file_path("result", "whitelist_dir")).joinpath(self.whitelist_library),
-                dymola_log: Path(CI_CONFIG.get_file_path("result", "whitelist_dir")).joinpath(self.whitelist_library),
+                err_log: Path(CI_CONFIG.get_file_path("result", "whitelist_dir")).joinpath(self.library),
+                dymola_log: Path(CI_CONFIG.get_file_path("result", "whitelist_dir")).joinpath(self.library),
                 whitelist_files: Path(CI_CONFIG.get_file_path("result", "whitelist_dir")).joinpath(
-                    self.whitelist_library)
+                    self.library)
             })
             return error_model_message_dic
         except IOError:
@@ -309,20 +298,6 @@ def return_exit_var(package_results: dict):
         exit(var)
 
 
-def get_root_whitelist_library(whitelist_library, git_url, root_whitelist_library):
-    """
-
-    Args:
-        whitelist_library (): Library on the whitelist
-        git_url (): git url of the whitelist library
-        root_whitelist_library (): root of the whitelist library
-    Returns:
-        root_whitelist_library: Return the full Path of root of the whitelist library
-    """
-    clone_repository(clone_into_folder=root_whitelist_library, git_url=git_url)
-    return Path().joinpath(root_whitelist_library, whitelist_library, "package.mo")
-
-
 def write_exit_log(vers_check: bool):
     """
     Write entry in exit file. Necessary for CI templates.
@@ -359,36 +334,7 @@ def read_script_version(library_package_mo):
         return vers
 
 
-def check_whitelist_version(version, whitelist_file):
-    """
-    Check the latest whitelist version with the latest version of conversion script.
-    Read the last version of whitelist-
-    Args:
-        version (): Latest version number of conversion script.
-    Returns:
-        version_check (): Boolean - return true, if the whitelist version is equal to Aixlib conversion script version
-        @param version:
-        @param whitelist_file:
-        @return:
-    """
-    try:
-        version_file = open(whitelist_file, "r")
-        lines = version_file.readlines()
-        vers_check = False
-        for line in lines:
-            line = line.strip()
-            if line.strip("\n") == version.strip("\n"):
-                print(f'Whitelist is on version {version}. The whitelist is already up to date')
-                vers_check = True
-        version_file.close()
-        return vers_check
-    except IOError:
-        print(f'Error: File {whitelist_file} does not exist.')
-        exit(1)
-
-
 def create_whitelist(args, dymola, dymola_exception, library_package_mo):
-    config_structure.check_arguments_settings(whitelist_library=args.whitelist_library)
     mo = ModelicaModel()
     config_structure.create_path(CI_CONFIG.get_dir_path("ci_files"), CI_CONFIG.get_dir_path("whitelist"))
     version = read_script_version(library_package_mo=library_package_mo)
@@ -400,35 +346,19 @@ def create_whitelist(args, dymola, dymola_exception, library_package_mo):
             ci_file = CI_CONFIG.get_file_path("whitelist", "check_file")
 
         config_structure.create_files(ci_file, CI_CONFIG.get_file_path("ci_files", "exit_file"))
-        version_check_update_to_date = check_whitelist_version(
-            version=version,
-            whitelist_file=ci_file
-        )
-        write_exit_log(vers_check=version_check_update_to_date)
-        if version_check_update_to_date is True:
-            print("Versions are up to date, no need to re-create whitelist")
-            return
-        root_whitelist_library = get_root_whitelist_library(
-            whitelist_library=args.whitelist_library,
-            git_url=args.git_url,
-            root_whitelist_library=args.root_whitelist_library
-        )
-        config_structure.check_file_setting(root_whitelist_library=root_whitelist_library)
 
         wh = CreateWhitelist(
             dym=dymola,
             dymola_ex=dymola_exception,
-            whitelist_library=args.whitelist_library,
-            git_url=args.git_url,
+            library=args.library,
             dymola_version=args.dymola_version,
             additional_libraries_to_load=args.additional_libraries_to_load,
-            root_whitelist_library=root_whitelist_library
+            library_package_mo=library_package_mo
         )
-        wh.start_dummy_dymola_instance()
+        # wh.start_dummy_dymola_instance()
         model_list = mo.get_option_model(
-            library=args.whitelist_library,
+            library=args.library,
             package=".",
-            whitelist_library=args.whitelist_library,
             changed_flag=False,
             simulate_flag=simulate_flag,
             filter_whitelist_flag=False,
@@ -459,7 +389,6 @@ def validate_only(args, dymola, dymola_exception, library_package_mo):
             model_list = mm.get_option_model(
                 library=args.library,
                 package=package,
-                whitelist_library=args.whitelist_library,
                 changed_flag=args.changed_flag,
                 simulate_flag=simulate_flag,
                 filter_whitelist_flag=args.filter_whitelist_flag,
@@ -512,15 +441,6 @@ def parse_args():
     check_test_group.add_argument("--dym-options",
                                   nargs="+",
                                   help="Chose between openmodelica check, compare or simulate")
-    # [repository - setting ]
-    check_test_group.add_argument("--git-url", default="https://github.com/ibpsa/modelica-ibpsa.git",
-                                  help="url repository of whitelist library")
-    check_test_group.add_argument("--whitelist-library",
-                                  default="IBPSA",
-                                  help="library on a whitelist")
-    check_test_group.add_argument("--root-whitelist-library",
-                                  help="library on a whitelist")
-
     return parser.parse_args()
 
 
