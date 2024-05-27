@@ -12,7 +12,7 @@ COLORS = ColorConfig()
 
 class PlotCharts:
 
-    def __init__(self,  package, library):
+    def __init__(self, package, library):
         """
         Args:
             package (): package to plot
@@ -258,7 +258,7 @@ class PlotCharts:
                         model_variable_list.append(f'{model}:{var}')
                     if line.find(
                             "*** Warning: Failed to interpret experiment annotation in 'RunScript") > -1 and line.find(
-                            ".mos") > -1:
+                        ".mos") > -1:
                         model = line[line.rfind(os.sep) + 1:line.find(".mos")].lstrip()
                         var = ""
                         model_variable_list.append(f'{model}:{var}')
@@ -345,7 +345,8 @@ class PlotCharts:
                         print(
                             f'Cant find folder: {COLORS.CRED}{model}{COLORS.CEND} with variable {COLORS.CRED}{var}{COLORS.CEND}')
                     else:
-                        print(f'Plot model: {COLORS.green}{model}{COLORS.CEND} with variable:{COLORS.green} {var}{COLORS.CEND}')
+                        print(
+                            f'Plot model: {COLORS.green}{model}{COLORS.CEND} with variable:{COLORS.green} {var}{COLORS.CEND}')
                         value = self._read_csv_funnel(url=path_name)
                         my_template = Template(filename=CI_CONFIG.plots.templates_chart_file)
                         html_chart = my_template.render(values=value,
@@ -357,7 +358,8 @@ class PlotCharts:
         else:
             path_name = (f'{self.library}{os.sep}funnel_comp{os.sep}{model}.mat_{var}'.strip())
             if os.path.isdir(path_name) is False:
-                print(f'Cant find folder: {COLORS.CRED}{model}{COLORS.CEND} with variable {COLORS.CRED}{var}{COLORS.CEND}')
+                print(
+                    f'Cant find folder: {COLORS.CRED}{model}{COLORS.CEND} with variable {COLORS.CRED}{var}{COLORS.CEND}')
             else:
                 print(f'Plot model: {COLORS.green}{model}{COLORS.CEND} with variable:{COLORS.green} {var}{COLORS.CEND}')
                 value = self._read_csv_funnel(url=path_name)
@@ -388,7 +390,9 @@ class PlotCharts:
                                             var=legend_list,
                                             model=reference_file,
                                             title=reference_file)
-            with open(f'{self.temp_chart_path}{os.sep}{reference_file[reference_file.rfind(os.sep):].replace(".txt", ".html")}', "w") as file_tmp:
+            with open(
+                    f'{self.temp_chart_path}{os.sep}{reference_file[reference_file.rfind(os.sep):].replace(".txt", ".html")}',
+                    "w") as file_tmp:
                 file_tmp.write(html_chart)
 
     def mako_line_ref_chart(self, model, var):
@@ -514,7 +518,14 @@ def parse_args():
                                  nargs="*",
                                  metavar="Modelica.Package",
                                  help="Test only the Modelica package Modelica.Package")
-    unit_test_group.add_argument("--library", default="AixLib", help="Library to test")
+    unit_test_group.add_argument(
+        "--library",
+        help="Library to test"
+    )
+    unit_test_group.add_argument(
+        "--templates-url",
+        help="URL to MoCITempGen repository"
+    )
     # [ bool - flag]
     unit_test_group.add_argument("--line-html-flag",
                                  help='plot a google html chart in line form',
@@ -562,7 +573,13 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    check = config_structure
+    from ModelicaPyCI.api_script.api_github import clone_repository
+
+    clone_repository(
+        clone_into_folder=CI_CONFIG.plots.templates_chart_file.split("/")[0],
+        git_url=args.templates_url
+    )
+
     config_structure.create_path(CI_CONFIG.plots.chart_dir)
     config_structure.check_path_setting(
         chart_dir=CI_CONFIG.plots.chart_dir,
