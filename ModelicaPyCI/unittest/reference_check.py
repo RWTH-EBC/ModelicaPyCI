@@ -75,11 +75,11 @@ class BuildingspyRegressionCheck():
                 response = self.ut.run()
                 config_structure.prepare_data(
                     source_target_dict={
-                        f'simulator-dymola.log': Path("..", CI_CONFIG.get_file_path("result", "regression_dir"),
+                        f'simulator-dymola.log': Path( CI_CONFIG.get_file_path("result", "regression_dir"),
                                                       package),
-                        "unitTests-dymola.log": Path("..", CI_CONFIG.get_file_path("result", "regression_dir"),
+                        "unitTests-dymola.log": Path( CI_CONFIG.get_file_path("result", "regression_dir"),
                                                      package),
-                        "funnel_comp": Path("..", CI_CONFIG.get_file_path("result", "regression_dir"), package,
+                        "funnel_comp": Path( CI_CONFIG.get_file_path("result", "regression_dir"), package,
                                             "funnel_comp")})
                 if response != 0:
                     err_list.append(package)
@@ -125,11 +125,11 @@ class ReferenceModel:
         Args:
             ref_list (): list of reference_result files
         """
-        ref_dir = Path(self.library, CI_CONFIG.artifacts.library_ref_results_dir)
+        ref_dir = Path(CI_CONFIG.library_root, self.library, CI_CONFIG.artifacts.library_ref_results_dir)
         for ref in ref_list:
             print(f'Update reference file: {Path(ref_dir, ref)} \n')
-            if os.path.exists(Path("..", ref_dir, ref)) is True:
-                os.remove(Path("..", ref_dir, ref))
+            if os.path.exists(Path(ref_dir, ref)) is True:
+                os.remove(Path(ref_dir, ref))
             else:
                 print(f'File {Path(ref_dir, ref)} does not exist\n')
 
@@ -497,8 +497,8 @@ if __name__ == '__main__':
                 ref_model.delete_ref_file(ref_list=ref_list)
                 package_list = ref_model.get_update_package(ref_list=ref_list)
             else:
-                config_structure.check_path_setting(Path("..", CI_CONFIG.ci_files.folder_name), create_flag=True)
-                config_structure.create_files(Path("..", CI_CONFIG.get_file_path("ci_files", "exit_file")))
+                config_structure.check_path_setting(CI_CONFIG.get_dir_path("ci_files"), create_flag=True)
+                config_structure.create_files(CI_CONFIG.get_file_path("ci_files", "exit_file"))
                 if args.changed_flag is False:
                     package_list = args.packages
                 if args.changed_flag is True:
@@ -533,7 +533,7 @@ if __name__ == '__main__':
                         config_structure.prepare_data(
                             source_target_dict={
                                 f'{CI_CONFIG.artifacts.library_ref_results_dir}{os.sep}{ref.replace(".", "_")}.txt':
-                                    Path("..", CI_CONFIG.get_file_path("result", "regression_dir"), "referencefiles")})
+                                    CI_CONFIG.get_file_path("result", "regression_dir").joinpath("referencefiles")})
                 write_exit_file(var=1)
 
             else:
