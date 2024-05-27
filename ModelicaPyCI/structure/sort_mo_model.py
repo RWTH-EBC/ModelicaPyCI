@@ -56,13 +56,13 @@ class ModelicaModel:
         )
         if library_package_mo is None:
             library_package_mo = Path(path_dir, library, "package.mo")
-        config_structure.check_file_setting(library_package_mo)
+        config_structure.check_file_setting(library_package_mo=library_package_mo)
         if root_package is None:
             if package == ".":
                 root_package = Path(Path(library_package_mo).parent)
             else:
                 root_package = Path(Path(library_package_mo).parent, package.replace(".", os.sep))
-        config_structure.check_path_setting(root_package)
+        config_structure.check_path_setting(root_package=root_package)
         if dymola is None:
             extended_ex_flag = False
         if changed_flag is True:
@@ -86,7 +86,7 @@ class ModelicaModel:
                 ci_whitelist_file = CI_CONFIG.get_file_path("whitelist", "simulate_file")
             else:
                 ci_whitelist_file = CI_CONFIG.get_file_path("whitelist", "check_file")
-            config_structure.check_path_setting(CI_CONFIG.get_dir_path("whitelist"), create_flag=True)
+            config_structure.check_path_setting(whitelist=CI_CONFIG.get_dir_path("whitelist"), create_flag=True)
             whitelist_list_models = self.get_whitelist_models(whitelist_file=ci_whitelist_file,
                                                               whitelist_library=whitelist_library,
                                                               library=library,

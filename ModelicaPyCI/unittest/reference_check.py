@@ -497,7 +497,7 @@ if __name__ == '__main__':
                 ref_model.delete_ref_file(ref_list=ref_list)
                 package_list = ref_model.get_update_package(ref_list=ref_list)
             else:
-                config_structure.check_path_setting(CI_CONFIG.get_dir_path("ci_files"), create_flag=True)
+                config_structure.check_path_setting(ci_files=CI_CONFIG.get_dir_path("ci_files"), create_flag=True)
                 config_structure.create_files(CI_CONFIG.get_file_path("ci_files", "exit_file"))
                 if args.changed_flag is False:
                     package_list = args.packages

@@ -1,12 +1,11 @@
-import inspect
-import re
+import distutils.dir_util
+import glob
 import os
 import shutil
-import glob
 from pathlib import Path
-import distutils.dir_util
 
 from ModelicaPyCI.config import CI_CONFIG, ColorConfig
+
 COLORS = ColorConfig()
 
 
@@ -26,13 +25,9 @@ def check_arguments_settings(**kwargs):
             )
 
 
-def check_path_setting(*args: Path, create_flag: bool = False):
-    frame = inspect.currentframe().f_back
-    s = inspect.getframeinfo(frame).code_context[0]
-    r = re.search(r"\((.*)\)", s).group(1)
-    var_names = r.split(", ")
+def check_path_setting(create_flag: bool = False, **kwargs):
     print(f'*** --- Check path setting --- ****')
-    for i, (var, path) in enumerate(zip(var_names, args)):
+    for var, path in kwargs.items():
         if os.path.isdir(path) is True:
             print(
                 f'{COLORS.green}Setting:{COLORS.CEND} {COLORS.blue}Path variable "{var}"{COLORS.CEND} is set as: '
@@ -48,13 +43,9 @@ def check_path_setting(*args: Path, create_flag: bool = False):
                 exit(1)
 
 
-def check_file_setting(*args, create_flag: bool = False):
-    frame = inspect.currentframe().f_back
-    s = inspect.getframeinfo(frame).code_context[0]
-    r = re.search(r"\((.*)\)", s).group(1)
-    var_names = r.split(", ")
+def check_file_setting(create_flag: bool = False, **kwargs):
     print(f'*** --- Check file setting --- ****')
-    for i, (var, file) in enumerate(zip(var_names, args)):
+    for var, file in kwargs.items():
         if os.path.isfile(file) is True:
             print(
                 f'{COLORS.green}Setting:{COLORS.CEND} {COLORS.blue}File "{var}"{COLORS.CEND} is set as: '
@@ -110,12 +101,6 @@ def delete_files_in_path(*args: Path):
 
 
 def delete_spec_file(root: str = None, pattern: str = None):
-    """
-
-    Args:
-        root ():
-        pattern ():
-    """
     if root is not None and pattern is not None:
         for filename in os.listdir(root):
             file = os.path.join(root, filename)

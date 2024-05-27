@@ -413,7 +413,7 @@ def create_whitelist(args, dymola, dymola_exception, library_package_mo):
             git_url=args.git_url,
             root_whitelist_library=args.root_whitelist_library
         )
-        config_structure.check_file_setting(root_whitelist_library)
+        config_structure.check_file_setting(root_whitelist_library=root_whitelist_library)
 
         wh = CreateWhitelist(
             dym=dymola,
@@ -530,10 +530,10 @@ if __name__ == '__main__':
     # [Check arguments, files, path]
     LIBRARY_PACKAGE_MO = Path(CI_CONFIG.library_root).joinpath(ARGS.library, "package.mo")
     config_structure.check_arguments_settings(library=ARGS.library, packages=ARGS.packages)
-    config_structure.check_file_setting(LIBRARY_PACKAGE_MO)
+    config_structure.check_file_setting(LIBRARY_PACKAGE_MO=LIBRARY_PACKAGE_MO)
     for lib in ARGS.additional_libraries_to_load:
         add_lib_path = Path(ARGS.additional_libraries_to_load[lib], lib, "package.mo")
-        config_structure.check_file_setting(add_lib_path)
+        config_structure.check_file_setting(add_lib_path=add_lib_path)
     DYMOLA, DYMOLA_EXCEPTION = python_dymola_interface.load_dymola_python_interface(dymola_version=ARGS.dymola_version)
 
     if ARGS.create_whitelist_flag is False:

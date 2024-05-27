@@ -565,13 +565,13 @@ if __name__ == '__main__':
     check = config_structure
     config_structure.create_path(CI_CONFIG.plots.chart_dir)
     config_structure.check_path_setting(
-        CI_CONFIG.plots.chart_dir,
-        CI_CONFIG.plots.templates_chart_dir
+        chart_dir=CI_CONFIG.plots.chart_dir,
+        templates_chart_dir=CI_CONFIG.plots.templates_chart_dir
     )
     config_structure.check_file_setting(
-        CI_CONFIG.plots.templates_chart_file,
-        CI_CONFIG.plots.templates_index_file,
-        CI_CONFIG.plots.templates_layout_file,
+        templates_chart_file=CI_CONFIG.plots.templates_chart_file,
+        templates_index_file=CI_CONFIG.plots.templates_index_file,
+        templates_layout_file=CI_CONFIG.plots.templates_layout_file,
     )
     charts = PlotCharts(package=args.packages,
                         library=args.library)

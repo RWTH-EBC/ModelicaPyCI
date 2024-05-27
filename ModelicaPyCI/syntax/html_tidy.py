@@ -83,7 +83,10 @@ class HtmlTidy:
         config_structure.check_arguments_settings(library_root=CI_CONFIG.library_root)
         self.html_error_log = Path(CI_CONFIG.library_root, "HTML_error_log.txt")
         self.html_correct_log = Path(CI_CONFIG.library_root, "HTML_correct_log.txt")
-        config_structure.check_file_setting(self.html_error_log, self.html_correct_log, create_flag=True)
+        config_structure.check_file_setting(
+            html_error_log=self.html_error_log, html_correct_log=self.html_correct_log,
+            create_flag=True
+        )
 
     def _get_html_model(self):
         """
