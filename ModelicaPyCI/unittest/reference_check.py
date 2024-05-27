@@ -394,6 +394,8 @@ def parse_args():
     unit_test_group.add_argument("--library", default="AixLib", help="Library to test (e.g. AixLib")
     unit_test_group.add_argument("--packages", default=["Airflow"], nargs="+",
                                  help="Library to test (e.g. Airflow.Multizone)")
+    unit_test_group.add_argument("--library-root", help="Library to test (e.g. AixLib")
+
     unit_test_group.add_argument("-p", "--path",
                                  default=".",
                                  help="Path where top-level package.mo of the library is located")
@@ -445,6 +447,7 @@ if __name__ == '__main__':
     # todo: /bin/sh: 1: xdg-settings: not found
     # todo: Template für push hat changed:flag drin, ist falsch
     args = parse_args()
+    CI_CONFIG.library_root = args.library_root
     LIBRARY_PACKAGE_MO = Path(CI_CONFIG.library_root).joinpath(args.library, "package.mo")
 
     dymola, dymola_exception = python_dymola_interface.load_dymola_python_interface(dymola_version=args.dymola_version)
