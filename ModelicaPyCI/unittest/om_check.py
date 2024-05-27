@@ -561,8 +561,6 @@ if __name__ == '__main__':
             add_lib_path = Path(additional_libraries_to_load[lib], lib, "package.mo")
             check.check_file_setting(add_lib_path)
 
-    LIBRARY_PACKAGE_MO = Path(CI_CONFIG.library_root).joinpath(args.library, "package.mo")
-
     OM = CheckOpenModelica(library=args.library,
                            library_package_mo=LIBRARY_PACKAGE_MO,
                            additional_libraries_to_load=additional_libraries_to_load)
