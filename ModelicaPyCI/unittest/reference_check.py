@@ -71,7 +71,12 @@ class BuildingspyRegressionCheck():
                     print(f'{COLORS.green}Generate new reference results for package: {COLORS.CEND} {package}')
                 else:
                     print(f'{COLORS.green}Regression test for package:{COLORS.CEND} {package}')
-                self.ut.setSinglePackage(package)
+                try:
+                    self.ut.setSinglePackage(package)
+                except ValueError as err:
+                    print(f"{COLORS.CRED}Can't perform regression test for package '{package}', "
+                          f"no valid scripts are available{COLORS.CEND}: {err}")
+                    continue
                 response = self.ut.run()
                 config_structure.prepare_data(
                     source_target_dict={
