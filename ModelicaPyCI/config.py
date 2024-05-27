@@ -140,6 +140,7 @@ def load_config():
     if "CI_CONFIG" not in locals():
         if env_var in os.environ:
             config_file = Path(os.environ["CI_PYTHON_CONFIG_FILE"])
+            print(f"Using CI_PYTHON_CONFIG_FILE located at {config_file}")
             return load_toml_config(path=config_file)
         print("No variable CI_PYTHON_CONFIG_FILE defined, using default config.")
         return CIConfig()  # Use default
