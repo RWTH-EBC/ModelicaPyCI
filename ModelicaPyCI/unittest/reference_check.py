@@ -262,7 +262,7 @@ def _get_whitelist_package():
                 f'on the whitelist')
         return whitelist_list
     except IOError:
-        print(f'Error: File {CI_CONFIG.whitelist_scripts.ref_file} does not exist.')
+        print(f'Error: File {CI_CONFIG.get_file_path("whitelist", "ref_file")} does not exist.')
         return whitelist_list
 
 
