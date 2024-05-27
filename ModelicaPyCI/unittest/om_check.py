@@ -571,7 +571,6 @@ if __name__ == '__main__':
             if options == "OM_CHECK":
                 model_list = model.get_option_model(library=args.library,
                                                     package=package,
-                                                    whitelist_library=args.whitelist_library,
                                                     changed_flag=args.changed_flag,
                                                     simulate_flag=False,
                                                     filter_whitelist_flag=args.filter_whitelist_flag,
@@ -585,7 +584,6 @@ if __name__ == '__main__':
             if options == "OM_SIM":
                 model_list = model.get_option_model(library=args.library,
                                                     package=package,
-                                                    whitelist_library=args.whitelist_library,
                                                     changed_flag=args.changed_flag,
                                                     simulate_flag=True,
                                                     filter_whitelist_flag=args.filter_whitelist_flag,
@@ -600,7 +598,6 @@ if __name__ == '__main__':
             if options == "DYMOLA_SIM":
                 model_list = model.get_option_model(library=args.library,
                                                     package=package,
-                                                    whitelist_library=args.whitelist_library,
                                                     changed_flag=args.changed_flag,
                                                     simulate_flag=True,
                                                     filter_whitelist_flag=args.filter_whitelist_flag,
@@ -611,7 +608,6 @@ if __name__ == '__main__':
                 STATS = None
                 model_list = model.get_option_model(library=args.library,
                                                     package=package,
-                                                    whitelist_library=args.whitelist_library,
                                                     changed_flag=args.changed_flag,
                                                     simulate_flag=True,
                                                     filter_whitelist_flag=args.filter_whitelist_flag,

@@ -700,7 +700,6 @@ if __name__ == '__main__':
         html_model = mo.get_option_model(library=args.library,
                                          package=PACKAGE,
                                          filter_whitelist_flag=args.filter_whitelist_flag,
-                                         whitelist_library=args.whitelist_library,
                                          root_package=Path(args.library))
         html_tidy_check.run_files()
         html_tidy_check.check_html_files(model_list=html_model)
