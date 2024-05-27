@@ -6,18 +6,6 @@ import toml
 from pydantic import BaseModel, Field
 
 
-class ResultConfig(BaseModel):
-    dir: str = Field(
-        title="Result directory to be used for XYZ",
-        default='result'
-    )
-    whitelist_dir: str = 'ci_whitelist'
-    plot_dir: str = 'charts'
-    syntax_dir: str = 'syntax'
-    regression_dir: str = 'regression'
-    check_result_dir: str = 'Dymola_check'
-
-
 class ColorConfig(BaseModel):
     CRED: str = Field(
         description="Start ANSI escape code for red text",
@@ -55,6 +43,15 @@ class ModelicaPyCIConfig(BaseModel):
     lock_model_module: str = "ModelicaPyCI.converter.lock_model"
     config_structure_module: str = "ModelicaPyCI.structure.config_structure"
     create_whitelist_module: str = "ModelicaPyCI.structure.create_whitelist"
+
+
+class ResultConfig(BaseModel):
+    dir: str = 'result'
+    whitelist_dir: str = 'ci_whitelist'
+    plot_dir: str = 'charts'
+    syntax_dir: str = 'syntax'
+    regression_dir: str = 'regression'
+    check_result_dir: str = 'Dymola_check'
 
 
 class FilesConfig(BaseModel):
@@ -141,13 +138,10 @@ def load_config():
 
     env_var = "CI_PYTHON_CONFIG_FILE"
     if "CI_CONFIG" not in locals():
-        if env_var not in os.environ:
-            print("No variable CI_PYTHON_CONFIG_FILE defined, using default config.")
-            config_file = Path(__file__).parent.joinpath("config", "ci_test_config.toml")
-        else:
+        if env_var in os.environ:
             config_file = Path(os.environ["CI_PYTHON_CONFIG_FILE"])
-        if config_file.suffix == ".toml" and os.path.exists(config_file):
             return load_toml_config(path=config_file)
+        print("No variable CI_PYTHON_CONFIG_FILE defined, using default config.")
         return CIConfig()  # Use default
     return CI_CONFIG
 
