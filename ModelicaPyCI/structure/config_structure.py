@@ -76,8 +76,7 @@ def create_files(*args):
                 f'{COLORS.CRED}File: {COLORS.CEND}  {file} does not exist. '
                 f'Create a new one under {COLORS.green}{file}{COLORS.CEND}')
             with open(file, 'w') as write_file:
-                if os.path.basename(file) == os.path.basename(CI_CONFIG.get_file_path("ci_files", "eof_file")):
-                    write_file.write(f'y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n')
+                pass
 
 
 def delete_files_in_path(*args: Path):

@@ -6,6 +6,8 @@ import shutil
 from natsort import natsorted
 from buildingspy.development import merger
 
+from ModelicaPyCI.config import CIConfig
+
 
 def merge_workflow(
         library: str,
@@ -261,18 +263,10 @@ def parse_args():
 
 
 if __name__ == '__main__':
-    # merge_workflow(
-    #     library_dir=r"D:\04_git\AixLib",
-    #     merge_library_dir=r"D:\04_git\modelica-ibpsa",
-    #     temporary_mos_path="TempMOSPATH",
-    #     merge_library_mos_scripts="Resources\\Scripts\\Conversion",
-    #     library_mos_scripts="Resources\\Scripts",
-    #     library="AixLib",
-    #     merge_library="IBPSA"
-    # )
-    # raise Exception
-
     ARGS = parse_args()
+
+    CIConfig.library_root = ARGS.library_dir
+
     merge_workflow(
         library=ARGS.library,
         library_dir=ARGS.library_dir,
