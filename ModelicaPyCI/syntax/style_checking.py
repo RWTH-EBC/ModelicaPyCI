@@ -17,7 +17,7 @@ class StyleCheck:
                  dymola_exception,
                  library: str,
                  dymola_version: int,
-                 root_library: Path,
+                 library_package_mo: Path,
                  additional_libraries_to_load: dict = None,
                  ):
         """
@@ -32,7 +32,7 @@ class StyleCheck:
         self.library = library
         self.dymola_version = dymola_version
         self.additional_libraries_to_load = additional_libraries_to_load
-        self.root_library = root_library
+        self.library_package_mo = library_package_mo
         self.dymola = dymola
         self.dymola_exception = dymola_exception
         self.dymola.ExecuteCommand("Advanced.TranslationInCommandLog:=true;")
@@ -43,7 +43,10 @@ class StyleCheck:
             dymola_exception=self.dymola_exception
         )
         # dym_int.dym_check_lic()
-        dym_int.load_library(root_library=self.root_library, additional_libraries_to_load=self.additional_libraries_to_load)
+        dym_int.load_library(
+            library_package_mo=self.library_package_mo,
+            additional_libraries_to_load=self.additional_libraries_to_load
+        )
 
     def read_log(self, file):
         """
@@ -72,9 +75,6 @@ class StyleCheck:
 def parse_args():
     parser = argparse.ArgumentParser(description="Check the Style of Packages")
     check_test_group = parser.add_argument_group("Arguments to start style tests")
-    check_test_group.add_argument("--root-library", default=Path("AixLib", "package.mo"),
-                                  help="root of library",
-                                  type=Path)
     check_test_group.add_argument("--library", default="AixLib",
                                   help="Path where top-level package.mo of the library is located")
     check_test_group.add_argument("--dymola-version", default="2022",
@@ -89,6 +89,7 @@ if __name__ == '__main__':
     dym = python_dymola_interface.load_dymola_python_interface(dymola_version=args.dymola_version)
     dymola = dym[0]
     dymola_exception = dym[1]
+    LIBRARY_PACKAGE_MO = Path(CI_CONFIG.library_root).joinpath(args.library, "package.mo")
 
     mm = ModelManagement(dymola=dymola,
                          dymola_exception=dymola_exception,
@@ -98,7 +99,7 @@ if __name__ == '__main__':
                             dymola_exception=dymola_exception,
                             library=args.library,
                             dymola_version=args.dymola_version,
-                            root_library=args.root_library,
+                            library_package_mo=LIBRARY_PACKAGE_MO,
                             additional_libraries_to_load=None)
     CheckStyle()
     mo = ModelicaModel()

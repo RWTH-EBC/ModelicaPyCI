@@ -66,7 +66,7 @@ class CheckOpenModelica:
 
     def __init__(self,
                  library: str,
-                 root_library: Path,
+                 library_package_mo: Path,
                  additional_libraries_to_load: dict = None,
                  working_path: Path = Path(Path.cwd())):
         """
@@ -74,9 +74,9 @@ class CheckOpenModelica:
             working_path:
             additional_libraries_to_load ():
             library ():
-            root_library ():
+            library_package_mo ():
         """
-        self.root_library = root_library
+        self.library_package_mo = library_package_mo
         self.additional_libraries_to_load = additional_libraries_to_load
         self.working_path = working_path
 
@@ -96,7 +96,7 @@ class CheckOpenModelica:
         """
 
         """
-        self.load_library(root_library=self.root_library,
+        self.load_library(library_package_mo=self.library_package_mo,
                           library=self.library,
                           additional_libraries_to_load=self.additional_libraries_to_load)
 
@@ -336,13 +336,13 @@ class CheckOpenModelica:
                     exit(1)
         print(self.omc.sendExpression("getErrorString()"))
 
-    def load_library(self, root_library: Path = None, library:str = None, additional_libraries_to_load: dict = None):
-        if root_library is not None:
-            load_bib = self.omc.sendExpression(f'loadFile("{root_library}")')
+    def load_library(self, library_package_mo: Path = None, library: str = None, additional_libraries_to_load: dict = None):
+        if library_package_mo is not None:
+            load_bib = self.omc.sendExpression(f'loadFile("{library_package_mo}")')
             if load_bib is True:
-                print(f'{COLORS.green}Load library {library}:{COLORS.CEND} {root_library}')
+                print(f'{COLORS.green}Load library {library}:{COLORS.CEND} {library_package_mo}')
             else:
-                print(f'{COLORS.CRED}Error:{COLORS.CEND} Load of {root_library} failed!')
+                print(f'{COLORS.CRED}Error:{COLORS.CEND} Load of {library_package_mo} failed!')
                 exit(1)
         else:
             print(f'Library path is not set.')
@@ -367,7 +367,7 @@ class CheckOpenModelica:
         all_sims_dir = CI_CONFIG.get_file_path("result", "OM_check_result_dir").joinpath(f'{self.library}.{pack}')
         if example_list is not None:
             if self.dym_api is None:
-                lib_path = Path(self.root_library, self.library, "package.mo")
+                lib_path = Path(self.library_package_mo, self.library, "package.mo")
                 self.dym_api = DymolaAPI(
                     cd=os.getcwd(),
                     model_name=example_list[0],
@@ -388,7 +388,7 @@ class CheckOpenModelica:
                 print(f'\n {COLORS.green}Successful:{COLORS.CEND} {example}\n')
                 self.prepare_data(source_target_dict={result: Path(all_sims_dir, "dym")})
             self.dym_api.close()
-            API_log = Path(self.root_library, "DymolaAPI.log")
+            API_log = Path(self.library_package_mo, "DymolaAPI.log")
             self.prepare_data(source_target_dict={
                 API_log: CI_CONFIG.get_file_path("result", "OM_check_result_dir").joinpath(f'{self.library}.{pack}')},
                 del_flag=True)
@@ -545,16 +545,17 @@ def parse_args():
     return args
 
 
-
 if __name__ == '__main__':
     args = parse_args()
     # [Settings]
     except_list = None
     additional_libraries_to_load = None
     # [Check arguments, files, path]
+    LIBRARY_PACKAGE_MO = Path(CI_CONFIG.library_root).joinpath(args.library, "package.mo")
+
     check = config_structure
     check.check_arguments_settings(library=args.library, packages=args.packages)
-    check.check_file_setting(args.root_library)
+    check.check_file_setting(LIBRARY_PACKAGE_MO)
     if additional_libraries_to_load is not None:
         for lib in additional_libraries_to_load:
             add_lib_path = Path(additional_libraries_to_load[lib], lib, "package.mo")
@@ -563,7 +564,7 @@ if __name__ == '__main__':
     LIBRARY_PACKAGE_MO = CI_CONFIG.library_root.joinpath(ARGS.library, "package.mo")
 
     OM = CheckOpenModelica(library=args.library,
-                           root_library=LIBRARY_PACKAGE_MO,
+                           library_package_mo=LIBRARY_PACKAGE_MO,
                            additional_libraries_to_load=additional_libraries_to_load)
     OM()
     model = ModelicaModel()

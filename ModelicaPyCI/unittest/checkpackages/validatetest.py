@@ -54,7 +54,7 @@ class CheckPythonDymola:
             dymola_exception=self.dymola_exception
         )
         dym_int.dym_check_lic()
-        dym_int.load_library(root_library=self.library_package_mo,
+        dym_int.load_library(library_package_mo=self.library_package_mo,
                              additional_libraries_to_load=self.additional_libraries_to_load)
 
     def check_dymola_model(self,
@@ -215,7 +215,7 @@ class CreateWhitelist:
             dymola=self.dymola, dymola_exception=self.dymola_exception
         )
         dym_int.dym_check_lic()
-        dym_int.load_library(root_library=self.library_package_mo,
+        dym_int.load_library(library_package_mo=self.library_package_mo,
                              additional_libraries_to_load=self.additional_libraries_to_load)
 
     def check_whitelist_model(self, model_list: list, whitelist_files: Path, version: float, simulate_examples: bool):

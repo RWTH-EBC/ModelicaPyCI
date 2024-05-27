@@ -43,19 +43,19 @@ class PythonDymolaInterface:
         print(
             f'2: Using Dymola port {str(self.dymola._portnumber)} \n {COLORS.green} Dymola License is available {COLORS.CEND}')
 
-    def load_library(self, root_library: Path = None, additional_libraries_to_load: dict = None):
+    def load_library(self, library_package_mo: Path = None, additional_libraries_to_load: dict = None):
         """
         Open library in dymola and  checks if the library was opened correctly.
         """
-        if root_library is not None:
-            print(f'Library path: {root_library}')
-            pack_check = self.dymola.openModel(str(root_library))
+        if library_package_mo is not None:
+            print(f'Library path: {library_package_mo}')
+            pack_check = self.dymola.openModel(str(library_package_mo))
             if pack_check is True:
                 print(
-                    f'{COLORS.green}Found {root_library.parent} Library and start checks. {COLORS.CEND}\n')
+                    f'{COLORS.green}Found {library_package_mo.parent} Library and start checks. {COLORS.CEND}\n')
             elif pack_check is False:
                 print(
-                    f'{COLORS.CRED}Error: {COLORS.CEND} Library path is wrong.Please check the path of {root_library} library path.')
+                    f'{COLORS.CRED}Error: {COLORS.CEND} Library path is wrong.Please check the path of {library_package_mo} library path.')
                 exit(1)
         else:
             print(f'Library path is not set.')
