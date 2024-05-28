@@ -3,7 +3,7 @@ from ModelicaPyCI.config import CI_CONFIG, ColorConfig
 from ModelicaPyCI.pydyminterface.model_management import ModelManagement
 from pathlib import Path
 from ModelicaPyCI.structure import config_structure
-from ModelicaPyCI import create_changed_files_file
+from ModelicaPyCI.utils import create_changed_files_file
 
 COLORS = ColorConfig()
 
@@ -14,19 +14,20 @@ class ModelicaModel:
         self.library = library
         self.package = package
 
-    def get_option_model(self,
-                         library: str,
-                         package: str,
-                         dymola=None,
-                         dymola_exception=None,
-                         changed_flag: bool = False,
-                         simulate_flag: bool = False,
-                         filter_whitelist_flag: bool = False,
-                         extended_ex_flag: bool = False,
-                         dymola_version: int = 2022,
-                         path_dir: Path = Path.cwd(),
-                         library_package_mo: Path = None,
-                         root_package: Path = None):
+    def get_option_model(
+            self,
+            library: str,
+            package: str,
+            dymola=None,
+            dymola_exception=None,
+            changed_flag: bool = False,
+            simulate_flag: bool = False,
+            filter_whitelist_flag: bool = False,
+            extended_ex_flag: bool = False,
+            dymola_version: int = 2022,
+            path_dir: Path = Path.cwd(),
+            library_package_mo: Path = None,
+            root_package: Path = None):
         # todo: flag mit einbauen: In zukunft sollen die pfade gegeben werden, nach wunsch auch in modelica form
         """
         Args:
@@ -101,7 +102,8 @@ class ModelicaModel:
                         whitelist_file=ci_whitelist_file, library=library, single_package=package
                     )
                 )
-            whitelist_list_models = list(set(whitelist_list_models))  # Remove possible duplicates
+            # Remove possible duplicates
+            whitelist_list_models = list(set(whitelist_list_models))
 
             result = self.get_models(path=root_package,
                                      library=library,

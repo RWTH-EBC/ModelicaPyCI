@@ -12,7 +12,6 @@ import argparse
 import os
 import platform
 
-
 COLORS = ColorConfig()
 
 
@@ -100,23 +99,24 @@ class CheckOpenModelica:
                           library=self.library,
                           additional_libraries_to_load=self.additional_libraries_to_load)
 
-    def simulate_examples(self, example_list: list = None, exception_list: list = None):
+    def simulate_models(self, model_list: list = None, exception_list: list = None):
         """
         Simulate examples or validations
         Args:
-            example_list:
+            model_list:
             exception_list:
         Returns:
         """
 
-        all_sims_dir = CI_CONFIG.get_file_path("result", "OM_check_result_dir").joinpath("simulate", f'{self.library}.{package}')
+        all_sims_dir = CI_CONFIG.get_file_path("result", "OM_check_result_dir").joinpath("simulate",
+                                                                                         f'{self.library}.{package}')
         API_log = Path(self.working_path, "DymolaAPI.log")
         config_structure.create_path(all_sims_dir)
         config_structure.delete_files_in_path(all_sims_dir)
-        if example_list is not None:
+        if model_list is not None:
             print(f'{COLORS.green}Simulate examples and validations{COLORS.CEND}')
             error_model = {}
-            for example in example_list:
+            for example in model_list:
                 err_list = []
                 print(f'Simulate example {COLORS.blue}{example}{COLORS.CEND}')
                 result = self.omc.sendExpression(f"simulate({example})")
@@ -147,26 +147,27 @@ class CheckOpenModelica:
                     error_model[example] = _err_msg
                 config_structure.delete_spec_file(root=os.getcwd(), pattern=example)
             config_structure.prepare_data(source_target_dict={
-                API_log: CI_CONFIG.get_file_path("result", "OM_check_result_dir").joinpath(f'{self.library}.{package}')},
+                API_log: CI_CONFIG.get_file_path("result", "OM_check_result_dir").joinpath(
+                    f'{self.library}.{package}')},
                 del_flag=True)
             return error_model
         else:
             print(f'No examples to check. ')
             exit(0)
 
-    def OM_check_model(self,
-                       check_model_list: list = None,
-                       exception_list: list = None):
+    def check_models(self,
+                     model_list: list = None,
+                     exception_list: list = None):
         """
         Args:
-            check_model_list ():
+            model_list ():
             exception_list ():
         Returns:
         """
         print(f'{COLORS.green}Check models with OpenModelica{COLORS.CEND}')
         error_model = {}
-        if check_model_list is not None:
-            for m in check_model_list:
+        if model_list is not None:
+            for m in model_list:
                 err_list = []
                 print(f'Check model {COLORS.blue}{m}{COLORS.CEND}')
                 result = self.omc.sendExpression(f"checkModel({m})")
@@ -311,11 +312,6 @@ class CheckOpenModelica:
         return var
 
     def install_library(self, libraries: list = None):
-        """
-
-        Args:
-            libraries:
-        """
         load_modelica = self.omc.sendExpression(f'installPackage(Modelica, "4.0.0+maint.om", exactMatch=true)')
         if load_modelica is True:
             print(f'{COLORS.green}Load library modelica in Openmodelica.{COLORS.CEND}')
@@ -336,7 +332,8 @@ class CheckOpenModelica:
                     exit(1)
         print(self.omc.sendExpression("getErrorString()"))
 
-    def load_library(self, library_package_mo: Path = None, library: str = None, additional_libraries_to_load: dict = None):
+    def load_library(self, library_package_mo: Path = None, library: str = None,
+                     additional_libraries_to_load: dict = None):
         if library_package_mo is not None:
             load_bib = self.omc.sendExpression(f'loadFile("{library_package_mo}")')
             if load_bib is True:
@@ -359,11 +356,6 @@ class CheckOpenModelica:
         print(self.omc.sendExpression("getErrorString()"))
 
     def sim_with_dymola(self, pack: str = None, example_list: list = None):
-        """
-
-        Returns:
-            object:
-        """
         all_sims_dir = CI_CONFIG.get_file_path("result", "OM_check_result_dir").joinpath(f'{self.library}.{pack}')
         if example_list is not None:
             if self.dym_api is None:
@@ -401,11 +393,6 @@ class CheckOpenModelica:
                           stats: dict = None,
                           with_plot: bool = True,
                           pack: str = None):
-        """
-
-        Returns:
-            object:
-        """
         if example_list is not None:
             if stats is None:
                 stats = {
@@ -513,6 +500,7 @@ class CheckOpenModelica:
             print(f'No Models to compare.')
             exit(0)
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Check and validate single packages")
     check_test_group = parser.add_argument_group("Arguments to run check tests")
@@ -522,7 +510,8 @@ def parse_args():
     check_test_group.add_argument("--package", dest="packages", action=StoreDictKeyPairList, nargs="*",
                                   metavar="Library1=Package1,Package2 Library2=Package3,Package4")"""
     check_test_group.add_argument("--library", default="AixLib", help="Library to test (e.g. AixLib")
-    check_test_group.add_argument("--packages", default=["Airflow"], nargs="+", help="Library to test (e.g. Airflow.Multizone)")
+    check_test_group.add_argument("--packages", default=["Airflow"], nargs="+",
+                                  help="Library to test (e.g. Airflow.Multizone)")
     check_test_group.add_argument("--whitelist-library",
                                   default="IBPSA",
                                   help="Library on whitelist")
@@ -569,31 +558,28 @@ if __name__ == '__main__':
     for package in args.packages:
         for options in args.om_options:
             if options == "OM_CHECK":
-                model_list = model.get_option_model(library=args.library,
-                                                    package=package,
-                                                    changed_flag=args.changed_flag,
-                                                    simulate_flag=False,
-                                                    filter_whitelist_flag=args.filter_whitelist_flag,
-                                                    library_package_mo=LIBRARY_PACKAGE_MO)
-                error_model_dict = OM.OM_check_model(check_model_list=model_list,
-                                                     exception_list=except_list)
-                exit_var = OM.write_errorlog(pack=package,
-                                             error_dict=error_model_dict,
-                                             exception_list=except_list,
-                                             options="check")
-            if options == "OM_SIM":
-                model_list = model.get_option_model(library=args.library,
-                                                    package=package,
-                                                    changed_flag=args.changed_flag,
-                                                    simulate_flag=True,
-                                                    filter_whitelist_flag=args.filter_whitelist_flag,
-                                                    library_package_mo=LIBRARY_PACKAGE_MO)
-                error_model_dict = OM.simulate_examples(example_list=model_list,
-                                                        exception_list=except_list)
-                exit_var = OM.write_errorlog(pack=package,
-                                             error_dict=error_model_dict,
-                                             exception_list=except_list,
-                                             options="simulate")
+                simulate_flag = False
+                options = "check"
+                func = OM.check_models
+            else:
+                simulate_flag = True
+                options = "simulate"
+                func = OM.simulate_models
+            model_list = model.get_option_model(
+                library=args.library,
+                package=package,
+                changed_flag=args.changed_flag,
+                simulate_flag=simulate_flag,
+                filter_whitelist_flag=args.filter_whitelist_flag,
+                library_package_mo=LIBRARY_PACKAGE_MO)
+            error_model_dict = func(
+                model_list=model_list,
+                exception_list=except_list)
+            exit_var = OM.write_errorlog(
+                pack=package,
+                error_dict=error_model_dict,
+                exception_list=except_list,
+                options=options)
 
             if options == "DYMOLA_SIM":
                 model_list = model.get_option_model(library=args.library,

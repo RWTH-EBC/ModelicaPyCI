@@ -8,7 +8,7 @@ from ModelicaPyCI.structure import config_structure
 from ModelicaPyCI.pydyminterface import python_dymola_interface
 from ModelicaPyCI.config import CI_CONFIG, ColorConfig
 
-from ModelicaPyCI import create_changed_files_file
+from ModelicaPyCI.utils import create_changed_files_file
 
 COLORS = ColorConfig()
 

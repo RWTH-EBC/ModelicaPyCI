@@ -17,8 +17,13 @@ def clone_repository(clone_into_folder: Path, git_url: str):
     """
     if os.path.exists(clone_into_folder):
         print(f'{clone_into_folder} folder already exists.')
+        return
+    print(f'Clone {clone_into_folder} Repo')
+    if "@" in git_url:
+        url, branch = git_url.split("@")
+        print(f"Converted {git_url=} to {url=} with {branch=}")
+        Repo.clone_from(url, clone_into_folder, branch=branch)
     else:
-        print(f'Clone {clone_into_folder} Repo')
         Repo.clone_from(git_url, clone_into_folder)
 
 

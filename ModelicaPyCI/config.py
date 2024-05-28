@@ -3,10 +3,14 @@ from typing import Union
 from pathlib import Path
 import toml
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
-class ColorConfig(BaseModel):
+class BaseModelNoExtra(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
+
+class ColorConfig(BaseModelNoExtra):
     CRED: str = Field(
         description="Start ANSI escape code for red text",
         default='\033[91m'
@@ -29,7 +33,7 @@ class ColorConfig(BaseModel):
     )
 
 
-class ModelicaPyCIConfig(BaseModel):
+class ModelicaPyCIConfig(BaseModelNoExtra):
     url: str = "https://github.com/RWTH-EBC/ModelicaPyCI.git@2_pydantic_config"
     OM_python_check_model_module: str = "ModelicaPyCI.unittest.om_check"
     test_validate_module: str = "ModelicaPyCI.unittest.checkpackages.validatetest"
@@ -45,7 +49,7 @@ class ModelicaPyCIConfig(BaseModel):
     create_whitelist_module: str = "ModelicaPyCI.structure.create_whitelist"
 
 
-class ResultConfig(BaseModel):
+class ResultConfig(BaseModelNoExtra):
     dir: str = 'result'
     whitelist_dir: str = 'ci_whitelist'
     plot_dir: str = 'charts'
@@ -54,7 +58,7 @@ class ResultConfig(BaseModel):
     check_result_dir: str = 'Dymola_check'
 
 
-class FilesConfig(BaseModel):
+class FilesConfig(BaseModelNoExtra):
     dir: str = 'Configfiles'
     exit_file: str = 'exit.sh'
     new_create_ref_file: str = 'ci_new_created_reference.txt'
@@ -62,7 +66,7 @@ class FilesConfig(BaseModel):
     ref_file: str = 'ci_reference_list.txt'
 
 
-class WhitelistConfig(BaseModel):
+class WhitelistConfig(BaseModelNoExtra):
     dir: str = "ci_whitelist"
     check_file: str = 'check_whitelist.txt'
     simulate_file: str = 'simulate_whitelist.txt'
@@ -70,7 +74,7 @@ class WhitelistConfig(BaseModel):
     ref_file: str = "reference_whitelist.txt"
 
 
-class PlotConfig(BaseModel):
+class PlotConfig(BaseModelNoExtra):
     chart_dir: str = 'charts'
     templates_chart_dir: str = 'MoCITempGen/templates/google_templates'
     templates_chart_file: str = 'MoCITempGen/templates/google_templates/google_chart.txt'
@@ -78,19 +82,19 @@ class PlotConfig(BaseModel):
     templates_layout_file: str = 'MoCITempGen/templates/google_templates/layout_index.txt'
 
 
-class ArtifactsConfig(BaseModel):
+class ArtifactsConfig(BaseModelNoExtra):
     dir: str = 'artifacts'
     library_ref_results_dir: str = 'Resources/ReferenceResults/Dymola'
     library_resource_dir: str = 'Resources/Scripts/Dymola'
 
 
-class InteractConfig(BaseModel):
+class InteractConfig(BaseModelNoExtra):
     dir: str = 'interact_CI'
     show_ref_file: str = 'show_ref.txt'
     update_ref_file: str = 'update_ref.txt'
 
 
-class CIConfig(BaseModel):
+class CIConfig(BaseModelNoExtra):
     library_root: Path = ""
     dir: Path = "dymola-ci-tests"
     result: ResultConfig = ResultConfig()
