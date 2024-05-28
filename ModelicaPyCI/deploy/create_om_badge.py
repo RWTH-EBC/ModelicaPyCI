@@ -66,7 +66,6 @@ def parse_args():
                                   help="Path where top-level package.mo of the library is located")
     check_test_group.add_argument("--om-badge-name", default="2022",
                                   help="Version of Dymola(Give the number e.g. 2022")
-    check_test_group.add_argument("--badge-folder", action="store_true")
     check_test_group.add_argument(
         "--main-branch",
         help="your base branch (main)"
@@ -76,13 +75,8 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    os.makedirs(args.badge_folder, exist_ok=True)
     om_badge_file = create_badge(
         badge_name=args.om_badge_name,
         library=args.library,
         main_branch=args.main_branch
-    )
-    shutil.copy(
-        om_badge_file,
-        Path(args.badge_folder).joinpath(args.om_badge_name)
     )

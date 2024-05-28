@@ -229,7 +229,6 @@ def changed_reference_files(changed_lines: list, library: str, package: str):
     return _list
 
 
-@staticmethod
 def get_whitelist_models(whitelist_file: str,
                          library: str,
                          single_package: str):
@@ -253,7 +252,6 @@ def get_whitelist_models(whitelist_file: str,
         return whitelist_list_models
 
 
-@staticmethod
 def filter_whitelist_models(models, whitelist_list):
     """
     Args:
@@ -276,7 +274,6 @@ def filter_whitelist_models(models, whitelist_list):
         return models
 
 
-@staticmethod
 def _get_icon_example(filepath, library):
     """
     Args:
