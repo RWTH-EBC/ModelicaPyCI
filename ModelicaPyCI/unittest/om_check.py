@@ -3,7 +3,7 @@ from ebcpy import DymolaAPI, TimeSeriesData
 from ebcpy.utils.statistics_analyzer import StatisticsAnalyzer
 from OMPython import OMCSessionZMQ
 from ModelicaPyCI.config import CI_CONFIG, ColorConfig
-from ModelicaPyCI.structure.sort_mo_model import ModelicaModel
+from ModelicaPyCI.structure import sort_mo_model as mo
 from pathlib import Path
 from ModelicaPyCI.structure import config_structure
 import numpy as np
@@ -552,7 +552,6 @@ if __name__ == '__main__':
                            library_package_mo=LIBRARY_PACKAGE_MO,
                            additional_libraries_to_load=additional_libraries_to_load)
     OM()
-    model = ModelicaModel()
 
     for package in args.packages:
         for options in args.om_options:
@@ -564,7 +563,7 @@ if __name__ == '__main__':
                 simulate_flag = True
                 options = "simulate"
                 func = OM.simulate_models
-            model_list = model.get_option_model(
+            model_list = mo.get_option_model(
                 library=args.library,
                 package=package,
                 changed_flag=args.changed_flag,
@@ -581,22 +580,22 @@ if __name__ == '__main__':
                 options=options)
 
             if options == "DYMOLA_SIM":
-                model_list = model.get_option_model(library=args.library,
-                                                    package=package,
-                                                    changed_flag=args.changed_flag,
-                                                    simulate_flag=True,
-                                                    filter_whitelist_flag=args.filter_whitelist_flag,
-                                                    library_package_mo=LIBRARY_PACKAGE_MO)
+                model_list = mo.get_option_model(library=args.library,
+                                                 package=package,
+                                                 changed_flag=args.changed_flag,
+                                                 simulate_flag=True,
+                                                 filter_whitelist_flag=args.filter_whitelist_flag,
+                                                 library_package_mo=LIBRARY_PACKAGE_MO)
                 OM.sim_with_dymola(example_list=model_list, pack=package)
             if args.om_options == "COMPARE":
                 ERROR_DATA = {}
                 STATS = None
-                model_list = model.get_option_model(library=args.library,
-                                                    package=package,
-                                                    changed_flag=args.changed_flag,
-                                                    simulate_flag=True,
-                                                    filter_whitelist_flag=args.filter_whitelist_flag,
-                                                    library_package_mo=LIBRARY_PACKAGE_MO)
+                model_list = mo.get_option_model(library=args.library,
+                                                 package=package,
+                                                 changed_flag=args.changed_flag,
+                                                 simulate_flag=True,
+                                                 filter_whitelist_flag=args.filter_whitelist_flag,
+                                                 library_package_mo=LIBRARY_PACKAGE_MO)
                 STATS = OM.compare_dym_to_om(pack=package,
                                              example_list=model_list,
                                              stats=STATS)

@@ -3,7 +3,7 @@ from pathlib import Path
 import os
 import buildingspy.development.validator as validate
 import buildingspy.development.regressiontest as regression
-from ModelicaPyCI.structure.sort_mo_model import ModelicaModel
+from ModelicaPyCI.structure import sort_mo_model as mo
 from ModelicaPyCI.structure import config_structure
 from ModelicaPyCI.pydyminterface import python_dymola_interface
 from ModelicaPyCI.config import CI_CONFIG, ColorConfig
@@ -534,7 +534,6 @@ if __name__ == '__main__':
                 if args.changed_flag is True:
                     changed_files_file = create_changed_files_file()
 
-                    mo = ModelicaModel()
                     package_list = mo.get_changed_regression_models(
                         dymola=dymola,
                         dymola_exception=dymola_exception,

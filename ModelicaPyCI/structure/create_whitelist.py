@@ -1,7 +1,7 @@
 import argparse
 from ModelicaPyCI.structure import config_structure
 from ModelicaPyCI.api_script.api_github import clone_repository
-from ModelicaPyCI.structure.sort_mo_model import ModelicaModel
+from ModelicaPyCI.structure import sort_mo_model as mo
 from ModelicaPyCI.config import CI_CONFIG, ColorConfig
 
 COLORS = ColorConfig()
@@ -36,7 +36,6 @@ if __name__ == '__main__':
 
     config_structure.create_path(CI_CONFIG.get_dir_path("ci_files"))
     config_structure.create_files(CI_CONFIG.get_file_path("ci_files", "exit_file"))
-    mo = ModelicaModel()
     config_structure.create_path(CI_CONFIG.get_dir_path("whitelist"))
     config_structure.create_files(CI_CONFIG.get_file_path("whitelist", "ibpsa_file"))
     clone_repository(clone_into_folder=args.root_whitelist_library, git_url=args.git_url)

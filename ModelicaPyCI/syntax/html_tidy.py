@@ -5,7 +5,7 @@ import sys
 
 from tidylib import Tidy
 from ModelicaPyCI.structure import config_structure
-from ModelicaPyCI.structure.sort_mo_model import ModelicaModel
+from ModelicaPyCI.structure import sort_mo_model as mo
 from ModelicaPyCI.config import CI_CONFIG, ColorConfig
 
 from pathlib import Path
@@ -686,7 +686,6 @@ if __name__ == '__main__':
 
     config_structure.create_path(CI_CONFIG.get_dir_path("ci_files"))
     config_structure.create_files(CI_CONFIG.get_file_path("ci_files", "exit_file"))
-    mo = ModelicaModel()
     for PACKAGE in args.packages:
         html_tidy_check = HtmlTidy(package=PACKAGE,
                                    correct_overwrite=args.correct_overwrite_flag,

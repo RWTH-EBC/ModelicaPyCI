@@ -3,7 +3,7 @@ import codecs
 from ModelicaPyCI.config import CI_CONFIG, ColorConfig
 from ModelicaPyCI.pydyminterface.model_management import ModelManagement
 from ModelicaPyCI.pydyminterface import python_dymola_interface
-from ModelicaPyCI.structure.sort_mo_model import ModelicaModel
+from ModelicaPyCI.structure import sort_mo_model as mo
 from ModelicaPyCI.structure import config_structure
 from pathlib import Path
 
@@ -101,7 +101,6 @@ if __name__ == '__main__':
                             library_package_mo=LIBRARY_PACKAGE_MO,
                             additional_libraries_to_load=None)
     CheckStyle()
-    mo = ModelicaModel()
     model_list = mo.get_option_model(library=args.library,
                                      package="",
                                      changed_flag=args.changed_flag)

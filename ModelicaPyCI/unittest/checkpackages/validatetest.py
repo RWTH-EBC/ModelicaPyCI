@@ -4,7 +4,7 @@ import os
 from natsort import natsorted
 from pathlib import Path
 from ModelicaPyCI.config import CI_CONFIG, ColorConfig
-from ModelicaPyCI.structure.sort_mo_model import ModelicaModel
+from ModelicaPyCI.structure import sort_mo_model as mo
 from ModelicaPyCI.structure import config_structure
 from ModelicaPyCI.pydyminterface import python_dymola_interface
 
@@ -335,7 +335,6 @@ def read_script_version(library_package_mo):
 
 
 def create_whitelist(args, dymola, dymola_exception, library_package_mo):
-    mo = ModelicaModel()
     config_structure.create_path(CI_CONFIG.get_dir_path("ci_files"), CI_CONFIG.get_dir_path("whitelist"))
     version = read_script_version(library_package_mo=library_package_mo)
     for options in args.dym_options:
@@ -380,7 +379,6 @@ def validate_only(args, dymola, dymola_exception, library_package_mo):
                             library_package_mo=library_package_mo,
                             additional_libraries_to_load=args.additional_libraries_to_load)
     dym.start_dummy_dymola_instance()
-    mm = ModelicaModel()
     package_results = {}
     for package in args.packages:
         option_check_dictionary = {}

@@ -10,7 +10,7 @@ from ModelicaPyCI.structure import config_structure
 COLORS = ColorConfig()
 
 
-def create_changed_files_file():
+def create_changed_files_file(to_branch: str = None):
     if not os.path.isdir(Path().joinpath(".git")):
         print(
             f"{COLORS.CRED}Error: {COLORS.CEND} Current path is not a "
@@ -21,11 +21,26 @@ def create_changed_files_file():
     changed_files_file = CI_CONFIG.get_file_path("ci_files", "changed_file")
     config_structure.check_path_setting(ci_files=CI_CONFIG.get_dir_path("ci_files"), create_flag=True)
 
-    path = f"temp_file_{uuid.uuid4()}"
+    if to_branch is None:
+        compare_to = "HEAD^^"
+    else:
+        compare_to = os_system_with_return(f"git rev-parse origin/{to_branch}")
 
-    os.system(f"git diff --raw --diff-filter=AMT HEAD^^ > {path}")
-    shutil.copy(path, changed_files_file)
-    os.remove(path)
+    return_value = os_system_with_return(f"git diff --raw --diff-filter=AMT {compare_to}")
+
+    with open(changed_files_file, "w") as file:
+        file.write(return_value)
     config_structure.check_file_setting(changed_files_file=changed_files_file)
 
     return changed_files_file
+
+
+def os_system_with_return(command):
+    file_name = f"{uuid.uuid4()}.txt"
+    os.system(f"{command} > {file_name}")
+    with open(file_name, "r") as file:
+        return_value = file.read()
+    os.remove(file_name)
+    if return_value.endswith("\n"):
+        return return_value[:-1]
+    return return_value
