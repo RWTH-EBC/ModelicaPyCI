@@ -80,8 +80,7 @@ def parse_args():
     check_test_group.add_argument("--dymola-version", default="2022",
                                   help="Version of Dymola(Give the number e.g. 2022")
     check_test_group.add_argument("--changed-flag", action="store_true")
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
 if __name__ == '__main__':

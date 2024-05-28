@@ -469,8 +469,7 @@ def parse_args():
         "--validate-experiment-setup", default=False, action="store_true")
     unit_test_group.add_argument(
         "--report", default=False, action="store_true")
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
 if __name__ == '__main__':

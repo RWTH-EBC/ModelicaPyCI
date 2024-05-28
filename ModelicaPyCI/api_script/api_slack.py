@@ -342,8 +342,7 @@ def parse_args():
                                   help="Your Set Slack Token")
     check_test_group.add_argument("-GR", "--github-repository", default="RWTH-EBC/AixLib",
                                   help="Environment Variable owner/RepositoryName")
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
 

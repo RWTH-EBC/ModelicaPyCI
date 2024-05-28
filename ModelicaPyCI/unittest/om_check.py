@@ -530,8 +530,7 @@ def parse_args():
                                   nargs="+",
                                   default=["OM_CHECK"],
                                   help="Chose between openmodelica check, compare or simulate")
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
 if __name__ == '__main__':

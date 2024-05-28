@@ -567,8 +567,7 @@ def parse_args():
                                  help="Take the datas from reference datas",
                                  default=False,
                                  action="store_true")
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
 if __name__ == '__main__':

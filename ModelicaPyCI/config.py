@@ -47,6 +47,7 @@ class ModelicaPyCIConfig(BaseModelNoExtra):
     lock_model_module: str = "ModelicaPyCI.converter.lock_model"
     config_structure_module: str = "ModelicaPyCI.structure.config_structure"
     create_whitelist_module: str = "ModelicaPyCI.structure.create_whitelist"
+    om_badge_module: str = "ModelicaPyCI.deploy.create_om_badge"
 
 
 class ResultConfig(BaseModelNoExtra):
