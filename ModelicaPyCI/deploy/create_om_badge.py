@@ -1,8 +1,6 @@
 import argparse
-import shutil
-import os
-from pathlib import Path
 import urllib.request
+from pathlib import Path
 
 
 def create_badge(badge_name: str, library: str, main_branch: str):
