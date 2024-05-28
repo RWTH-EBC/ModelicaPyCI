@@ -6,7 +6,7 @@ import shutil
 from natsort import natsorted
 from buildingspy.development import merger
 
-from ModelicaPyCI.config import CIConfig
+from ModelicaPyCI.config import CI_CONFIG
 
 
 def merge_workflow(
@@ -265,7 +265,7 @@ def parse_args():
 if __name__ == '__main__':
     ARGS = parse_args()
 
-    CIConfig.library_root = ARGS.library_dir
+    CI_CONFIG.library_root = ARGS.library_dir
 
     merge_workflow(
         library=ARGS.library,

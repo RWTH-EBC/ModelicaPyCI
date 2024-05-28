@@ -1,10 +1,13 @@
-import requests
 import argparse
-import sys
-from pathlib import Path
 import os
+from pathlib import Path
+
+import requests
 from git import Repo
-import git
+
+from ModelicaPyCI.config import ColorConfig
+
+COLORS = ColorConfig()
 
 
 def clone_repository(clone_into_folder: Path, git_url: str):
@@ -89,6 +92,10 @@ class PullRequestGithub(object):
             'Content-Type': 'application/json'
         }
         response = requests.request("POST", url, headers=headers, data=payload)
+        if not response.ok:
+            print(f'{COLORS.CRED}  Error:   {COLORS.CEND}  {response.text}')
+        else:
+            print(f'{COLORS.green}  Success:   {COLORS.CEND}  {response.text}')
         return response
 
     def update_pull_request_assignees(self, pull_request_number, assignees_owner, label_name):
