@@ -384,7 +384,7 @@ def validate_only(args, dymola, dymola_exception, library_package_mo):
         option_check_dictionary = {}
         for options in args.dym_options:
             simulate_flag = options == "DYM_SIM"
-            model_list = mm.get_option_model(
+            model_list = mo.get_option_model(
                 library=args.library,
                 package=package,
                 changed_flag=args.changed_flag,
