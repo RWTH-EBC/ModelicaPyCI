@@ -94,6 +94,7 @@ class PullRequestGithub(object):
         response = requests.request("POST", url, headers=headers, data=payload)
         if not response.ok:
             print(f'{COLORS.CRED}  Error:   {COLORS.CEND}  {response.text}')
+            exit(1)
         else:
             print(f'{COLORS.green}  Success:   {COLORS.CEND}  {response.text}')
         return response
