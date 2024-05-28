@@ -18,7 +18,6 @@ def get_option_model(
         filter_whitelist_flag: bool = False,
         extended_ex_flag: bool = False,
         dymola_version: int = 2022,
-        path_dir: Path = Path.cwd(),
         library_package_mo: Path = None,
         root_package: Path = None,
         changed_to_branch: str = None):
@@ -34,7 +33,6 @@ def get_option_model(
         filter_whitelist_flag ():
         extended_ex_flag ():
         dymola_version ():
-        path_dir ():
         library_package_mo ():
         root_package ():
     Returns:
@@ -48,7 +46,7 @@ def get_option_model(
         extended_ex_flag=extended_ex_flag,
     )
     if library_package_mo is None:
-        library_package_mo = Path(path_dir, library, "package.mo")
+        library_package_mo = Path().joinpath(library, "package.mo")
     config_structure.check_file_setting(library_package_mo=library_package_mo)
     if root_package is None:
         if package == ".":

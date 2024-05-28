@@ -3,13 +3,14 @@ import logging
 import math
 import os
 import re
+import sys
 from pathlib import Path
 from typing import List, Union, Dict
 
 import toml
 from pydantic import BaseModel
 
-from ModelicaPyCI.config import ColorConfig, CIConfig
+from ModelicaPyCI.config import ColorConfig, CI_CONFIG
 from ModelicaPyCI.structure import sort_mo_model as mo
 
 COLORS = ColorConfig()
@@ -199,10 +200,10 @@ def remove_annotation(line, naming_config: NamingGuidelineConfig):
 def get_possibly_wrong_code_sections(files: list, library: str, naming_config: NamingGuidelineConfig):
     output = ""
     dict_problematic_expressions = {}
-    for file in files:
-        file = Path(file)
-        if not file.suffix == ".mo":
-            continue
+    for model_name in files:
+        parts = model_name.split(".")
+        parts[-1] += ".mo"
+        file = Path(CI_CONFIG.library_root).joinpath(*parts)
         if file.name == "package.mo":
             continue
         try:
@@ -513,11 +514,15 @@ def convert_csv_to_excel(csv_file, excel_file):
 
 if __name__ == '__main__':
     logging.basicConfig(level="INFO")
+    import sys
+    os.chdir(r"D:\04_git\AixLib")
+    sys.argv = "file --library AixLib --main-branch master --changed-flag --config bin/ci-tests/naming_guideline.config".split(" ")
     ARGS = parse_args()
 
     with open(ARGS.config, "r") as file:
         NAMING_CONFIG = NamingGuidelineConfig(**toml.load(file))
 
+    print(os.getcwd())
     FILES_TO_CHECK = mo.get_option_model(
         library=ARGS.library,
         package=".",
