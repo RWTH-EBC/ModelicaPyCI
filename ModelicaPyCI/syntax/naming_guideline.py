@@ -547,8 +547,8 @@ def move_output_to_artifacts_and_post_comment(file, args):
     print(f'Setting gitlab page url: {page_url}')
     pr_number = pull_request.get_pr_number()
     message = (f'Naming convention is possibly violated or documentation is missing in changed files. '
-               f'Check the output here and either correct the issues or discuss with your reviewer if'
-               f'the \\n {page_url}')
+               f'Check the output here and either correct the issues or discuss with your reviewer if '
+               f'an exception should be added to the naming-guideline. File: \\n {page_url}')
     pull_request.post_pull_request_comment(
         pull_request_number=pr_number,
         post_message=message
@@ -576,6 +576,7 @@ if __name__ == '__main__':
         library=ARGS.library,
         naming_config=NAMING_CONFIG
     )
-    move_output_to_artifacts_and_post_comment(
-        file=FILENAME, args=ARGS
-    )
+    if PROBLEMATIC_EXPRESSIONS:
+        move_output_to_artifacts_and_post_comment(
+            file=FILENAME, args=ARGS
+        )

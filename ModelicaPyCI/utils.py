@@ -1,5 +1,5 @@
 import os
-import shutil
+from typing import Union
 import uuid
 from pathlib import Path
 
@@ -10,7 +10,10 @@ from ModelicaPyCI.structure import config_structure
 COLORS = ColorConfig()
 
 
-def create_changed_files_file(to_branch: str = None):
+def create_changed_files_file(repo_root: Union[str, Path] = None, to_branch: str = None):
+    old_cwd = os.getcwd()
+    if repo_root is not None:
+        os.chdir(repo_root)
     if not os.path.isdir(Path().joinpath(".git")):
         print(
             f"{COLORS.CRED}Error: {COLORS.CEND} Current path is not a "
@@ -27,6 +30,8 @@ def create_changed_files_file(to_branch: str = None):
         compare_to = os_system_with_return(f"git rev-parse origin/{to_branch}")
 
     return_value = os_system_with_return(f"git diff --raw --diff-filter=AMT --name-only {compare_to}")
+
+    os.chdir(old_cwd)
 
     with open(changed_files_file, "w") as file:
         file.write(return_value)
