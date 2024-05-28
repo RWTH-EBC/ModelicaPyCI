@@ -42,6 +42,7 @@ class ModelicaPyCIConfig(BaseModelNoExtra):
     api_github_module: str = "ModelicaPyCI.api_script.api_github"
     html_tidy_module: str = "ModelicaPyCI.syntax.html_tidy"
     syntax_test_module: str = "ModelicaPyCI.syntax.style_checking"
+    naming_guideline_module: str = "ModelicaPyCI.syntax.naming_guideline"
     configuration_module: str = "ModelicaPyCI.config"
     library_merge_module: str = "ModelicaPyCI.deploy.ibpsa_merge"
     lock_model_module: str = "ModelicaPyCI.converter.lock_model"
@@ -104,6 +105,7 @@ class CIConfig(BaseModelNoExtra):
     artifacts: ArtifactsConfig = ArtifactsConfig()
     interact: InteractConfig = InteractConfig()
     plots: PlotConfig = PlotConfig()
+    naming_guideline_file: str = "naming_guideline.config"
 
     def get_file_path(self, files_type, file_name, different_library_root: Path = None) -> Path:
         dir_path = self.get_dir_path(files_type=files_type, different_library_root=different_library_root)

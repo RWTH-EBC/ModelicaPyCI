@@ -26,7 +26,7 @@ def create_changed_files_file(to_branch: str = None):
     else:
         compare_to = os_system_with_return(f"git rev-parse origin/{to_branch}")
 
-    return_value = os_system_with_return(f"git diff --raw --diff-filter=AMT {compare_to}")
+    return_value = os_system_with_return(f"git diff --raw --diff-filter=AMT --name-only {compare_to}")
 
     with open(changed_files_file, "w") as file:
         file.write(return_value)

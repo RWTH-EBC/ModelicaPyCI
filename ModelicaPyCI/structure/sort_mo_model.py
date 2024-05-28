@@ -422,7 +422,10 @@ def get_changed_models(
             line = line.lstrip()
             line = line.strip().replace("\n", "")
             if line.rfind(".mo") > -1 and line.find("package") == -1:
-                if line.find(f'{library}{os.sep}{single_package}') > -1 and line.find("ReferenceResults") == -1:
+                if (
+                        line.find(Path(library).joinpath(single_package).as_posix()) > -1 and
+                        not line.startswith(Path(library).joinpath("Resources").as_posix())
+                ):
                     if simulate_examples is True:
                         model_name = line[line.rfind(library):line.rfind('.mo') + 3]
                         example_test = _get_icon_example(filepath=model_name,

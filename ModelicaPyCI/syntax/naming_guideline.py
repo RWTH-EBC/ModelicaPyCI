@@ -514,15 +514,11 @@ def convert_csv_to_excel(csv_file, excel_file):
 
 if __name__ == '__main__':
     logging.basicConfig(level="INFO")
-    import sys
-    os.chdir(r"D:\04_git\AixLib")
-    sys.argv = "file --library AixLib --main-branch master --changed-flag --config bin/ci-tests/naming_guideline.config".split(" ")
     ARGS = parse_args()
 
     with open(ARGS.config, "r") as file:
         NAMING_CONFIG = NamingGuidelineConfig(**toml.load(file))
 
-    print(os.getcwd())
     FILES_TO_CHECK = mo.get_option_model(
         library=ARGS.library,
         package=".",
@@ -531,6 +527,7 @@ if __name__ == '__main__':
         changed_flag=ARGS.changed_flag,
         changed_to_branch=ARGS.main_branch
     )
+    print(f"Checking {len(FILES_TO_CHECK)} files")
     PROBLEMATIC_EXPRESSIONS = get_possibly_wrong_code_sections(
         files=FILES_TO_CHECK,
         library=ARGS.library,
