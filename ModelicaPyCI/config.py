@@ -58,6 +58,7 @@ class ResultConfig(BaseModelNoExtra):
     syntax_dir: str = 'syntax'
     regression_dir: str = 'regression'
     check_result_dir: str = 'Dymola_check'
+    naming_violation_file: str = "naming_violations.txt"
 
 
 class FilesConfig(BaseModelNoExtra):

@@ -3,6 +3,7 @@ import logging
 import math
 import os
 import re
+import shutil
 import sys
 from pathlib import Path
 from typing import List, Union, Dict
@@ -12,7 +13,7 @@ from pydantic import BaseModel
 
 from ModelicaPyCI.config import ColorConfig, CI_CONFIG
 from ModelicaPyCI.structure import sort_mo_model as mo
-
+from ModelicaPyCI.api_script.api_github import PullRequestGithub
 COLORS = ColorConfig()
 
 
@@ -197,7 +198,9 @@ def remove_annotation(line, naming_config: NamingGuidelineConfig):
     return "annotation".join(line.split("annotation")[:-1])
 
 
-def get_possibly_wrong_code_sections(files: list, library: str, naming_config: NamingGuidelineConfig):
+def get_possibly_wrong_code_sections(
+        files: list, library: str, naming_config: NamingGuidelineConfig
+):
     output = ""
     dict_problematic_expressions = {}
     for model_name in files:
@@ -260,11 +263,11 @@ def get_possibly_wrong_code_sections(files: list, library: str, naming_config: N
     # with open("wrong_code_parts_buildings.txt", "w+", encoding="utf-8") as file:
     #     file.write(output)
     # print dictionary of problematic expressions as csv
-    with open('problematic_expressions.csv', 'w', encoding="utf-8") as f:
-        for key in dict_problematic_expressions.keys():
-            f.write("%s,%s\n" % (key, dict_problematic_expressions[key]))
+    # with open('problematic_expressions.csv', 'w', encoding="utf-8") as f:
+    #     for key in dict_problematic_expressions.keys():
+    #         f.write("%s,%s\n" % (key, dict_problematic_expressions[key]))
 
-    return dict_problematic_expressions
+    return dict_problematic_expressions, filename
 
 
 def get_expressions(filepath_model: str, naming_config: NamingGuidelineConfig):
@@ -488,7 +491,28 @@ def parse_args():
         "--main-branch",
         help="your base branch (main)"
     )
+    check_test_group.add_argument(
+        "--github-repository",
+        help="Environment Variable owner/RepositoryName"
+    )
+    check_test_group.add_argument(
+        "--working-branch",
+        help="Your current working Branch",
+        default="$CI_COMMIT_BRANCH"
+    )
+    check_test_group.add_argument(
+        "--github-token",
+        default="${GITHUB_API_TOKEN}",
+        help="Your Set GITHUB Token"
+    )
+    check_test_group.add_argument(
+        "--gitlab-page",
+        default="${GITLAB_Page}",
+        help="Set your gitlab page url"
+    )
     check_test_group.add_argument("--changed-flag", action="store_true")
+
+
     return parser.parse_args()
 
 
@@ -512,12 +536,31 @@ def convert_csv_to_excel(csv_file, excel_file):
         df.to_excel(writer, index=False)
 
 
+def move_output_to_artifacts_and_post_comment(file, args):
+    pull_request = PullRequestGithub(
+        github_repo=args.github_repository,
+        working_branch=args.working_branch,
+        github_token=args.github_token
+    )
+    shutil.copy(file, CI_CONFIG.get_file_path("result", "naming_violation_file"))
+    page_url = f'{args.gitlab_page}/{CI_CONFIG.get_dir_path("result").as_posix()}'
+    print(f'Setting gitlab page url: {page_url}')
+    pr_number = pull_request.get_pr_number()
+    message = (f'Naming convention is possibly violated or documentation is missing in changed files. '
+               f'Check the output here and either correct the issues or discuss with your reviewer if'
+               f'the \\n {page_url}')
+    pull_request.post_pull_request_comment(
+        pull_request_number=pr_number,
+        post_message=message
+    )
+
+
 if __name__ == '__main__':
     logging.basicConfig(level="INFO")
     ARGS = parse_args()
 
-    with open(ARGS.config, "r") as file:
-        NAMING_CONFIG = NamingGuidelineConfig(**toml.load(file))
+    with open(ARGS.config, "r") as FILE:
+        NAMING_CONFIG = NamingGuidelineConfig(**toml.load(FILE))
 
     FILES_TO_CHECK = mo.get_option_model(
         library=ARGS.library,
@@ -528,8 +571,11 @@ if __name__ == '__main__':
         changed_to_branch=ARGS.main_branch
     )
     print(f"Checking {len(FILES_TO_CHECK)} files")
-    PROBLEMATIC_EXPRESSIONS = get_possibly_wrong_code_sections(
+    PROBLEMATIC_EXPRESSIONS, FILENAME = get_possibly_wrong_code_sections(
         files=FILES_TO_CHECK,
         library=ARGS.library,
         naming_config=NAMING_CONFIG
+    )
+    move_output_to_artifacts_and_post_comment(
+        file=FILENAME, args=ARGS
     )
