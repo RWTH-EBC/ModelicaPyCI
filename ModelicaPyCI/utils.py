@@ -16,8 +16,8 @@ def create_changed_files_file(repo_root: Union[str, Path] = None, to_branch: str
         os.chdir(repo_root)
     if not os.path.isdir(Path().joinpath(".git")):
         print(
-            f"{COLORS.CRED}Error: {COLORS.CEND} Current path is not a "
-            f"git-directory, can't check changed models."
+            f"{COLORS.CRED}Error: {COLORS.CEND} Current path {os.getcwd()} is not a "
+            f"git-directory, can't check changed models: {os.listdir()}"
         )
         exit(1)
 

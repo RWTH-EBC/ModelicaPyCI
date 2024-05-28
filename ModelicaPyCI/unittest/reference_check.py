@@ -532,7 +532,7 @@ if __name__ == '__main__':
                 if args.changed_flag is False:
                     package_list = args.packages
                 if args.changed_flag is True:
-                    changed_files_file = create_changed_files_file(repo_root="..")
+                    changed_files_file = create_changed_files_file(repo_root=args.library_root)
 
                     package_list = mo.get_changed_regression_models(
                         dymola=dymola,
