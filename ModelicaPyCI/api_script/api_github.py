@@ -239,7 +239,7 @@ if __name__ == '__main__':
                 f'to development branch. **Delete** the Branch {args.working_branch}'
             )
             label_name = f'ibpsamerge'
-            main_branch = "development"
+            main_branch = args.main_branch
             working_branch = args.working_branch
 
         assignees_owner = pull_request.get_github_username(branch=working_branch)

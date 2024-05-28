@@ -337,7 +337,7 @@ def parse_args():
         description="Set Github Environment Variables")  # Configure the argument parser
     check_test_group = parser.add_argument_group("Arguments to set Environment Variables")
     check_test_group.add_argument('-GT', "--github-token", default="${GITHUB_API_TOKEN}", help="Set GITHUB Token")
-    check_test_group.add_argument('-BB', "--main-branch", default="development", help="your base branch")
+    check_test_group.add_argument('-BB', "--main-branch", help="your base branch")
     check_test_group.add_argument('-ST', "--slack-token", default="${secrets.SLACK_BOT_TOKEN}",
                                   help="Your Set Slack Token")
     check_test_group.add_argument("-GR", "--github-repository", default="RWTH-EBC/AixLib",
@@ -356,7 +356,7 @@ if __name__ == '__main__':
     issue_number_list = slack._get_issues()  # get a list with number of issues
     artifacts_list = []  # List for github action artifacts
     for branch in branch_list:
-        if branch == "development" or branch == "master":
+        if branch == args.main_branch:
             continue
         data_branch = slack._get_data(branch)  # get Information of branch: {'name': '****', 'email': '****', 'date': '****'}
         branch_information = data_branch[0]
