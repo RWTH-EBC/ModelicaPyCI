@@ -4,6 +4,7 @@ import urllib.request
 from pathlib import Path
 
 from ModelicaPyCI.config import CI_CONFIG
+from ModelicaPyCI.structure import config_structure
 
 
 def create_badge(badge_name: str, library: str, main_branch: str):
@@ -81,4 +82,5 @@ if __name__ == '__main__':
         library=args.library,
         main_branch=args.main_branch
     )
+    config_structure.create_path(CI_CONFIG.get_dir_path("result"))
     shutil.copy(om_badge_file, CI_CONFIG.get_dir_path("result").joinpath(args.om_badge_name))
