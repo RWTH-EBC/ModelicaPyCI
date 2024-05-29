@@ -4,7 +4,7 @@ import os
 import shutil
 from pathlib import Path
 
-from ModelicaPyCI.config import CI_CONFIG, ColorConfig
+from ModelicaPyCI.config import ColorConfig
 
 COLORS = ColorConfig()
 

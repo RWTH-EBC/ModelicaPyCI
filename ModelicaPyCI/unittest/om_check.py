@@ -1,16 +1,17 @@
-import sys
-from ebcpy import DymolaAPI, TimeSeriesData
-from ebcpy.utils.statistics_analyzer import StatisticsAnalyzer
-from OMPython import OMCSessionZMQ
-from ModelicaPyCI.config import CI_CONFIG, ColorConfig
-from ModelicaPyCI.structure import sort_mo_model as mo
-from pathlib import Path
-from ModelicaPyCI.structure import config_structure
-import numpy as np
-import matplotlib.pyplot as plt
 import argparse
 import os
 import platform
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+from OMPython import OMCSessionZMQ
+from ebcpy import DymolaAPI, TimeSeriesData
+from ebcpy.utils.statistics_analyzer import StatisticsAnalyzer
+
+from ModelicaPyCI.config import CI_CONFIG, ColorConfig
+from ModelicaPyCI.structure import config_structure
+from ModelicaPyCI.structure import sort_mo_model as mo
 
 COLORS = ColorConfig()
 
@@ -361,7 +362,7 @@ class CheckOpenModelica:
             if self.dym_api is None:
                 lib_path = Path(self.library_package_mo, self.library, "package.mo")
                 self.dym_api = DymolaAPI(
-                    cd=os.getcwd(),
+                    working_directory=os.getcwd(),
                     model_name=example_list[0],
                     packages=[lib_path],
                     extract_variables=True,
@@ -378,10 +379,10 @@ class CheckOpenModelica:
                     print("Simulation failed: " + str(err))
                     continue
                 print(f'\n {COLORS.green}Successful:{COLORS.CEND} {example}\n')
-                self.prepare_data(source_target_dict={result: Path(all_sims_dir, "dym")})
+                config_structure.prepare_data(source_target_dict={result: Path(all_sims_dir, "dym")})
             self.dym_api.close()
             API_log = Path(self.library_package_mo, "DymolaAPI.log")
-            self.prepare_data(source_target_dict={
+            config_structure.prepare_data(source_target_dict={
                 API_log: CI_CONFIG.get_file_path("result", "OM_check_result_dir").joinpath(f'{self.library}.{pack}')},
                 del_flag=True)
         else:
@@ -537,7 +538,7 @@ if __name__ == '__main__':
     args = parse_args()
     # [Settings]
     except_list = None
-    additional_libraries_to_load = None
+    additional_libraries_to_load = []
     # [Check arguments, files, path]
     LIBRARY_PACKAGE_MO = Path(CI_CONFIG.library_root).joinpath(args.library, "package.mo")
 

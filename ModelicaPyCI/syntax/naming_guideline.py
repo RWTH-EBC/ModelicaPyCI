@@ -4,16 +4,16 @@ import math
 import os
 import re
 import shutil
-import sys
 from pathlib import Path
 from typing import List, Union, Dict
 
 import toml
 from pydantic import BaseModel
 
+from ModelicaPyCI.api_script.api_github import PullRequestGithub
 from ModelicaPyCI.config import ColorConfig, CI_CONFIG
 from ModelicaPyCI.structure import sort_mo_model as mo
-from ModelicaPyCI.api_script.api_github import PullRequestGithub
+
 COLORS = ColorConfig()
 
 

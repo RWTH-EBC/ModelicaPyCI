@@ -94,6 +94,9 @@ class PullRequestGithub(object):
         response = requests.request("POST", url, headers=headers, data=payload)
         if not response.ok:
             print(f'{COLORS.CRED}  Error:   {COLORS.CEND}  {response.text}')
+            if "A pull request already exists" in str(response.text):
+                print("The pull-request seems to already exist, won't update it.")
+                exit(0)
             exit(1)
         else:
             print(f'{COLORS.green}  Success:   {COLORS.CEND}  {response.text}')
@@ -193,7 +196,8 @@ if __name__ == '__main__':
         working_branch=args.working_branch,
         github_token=args.github_token
     )
-
+    if not args.post_pr_comment_flag and not args.create_pr_flag:
+        raise TypeError("Can't do anything, neither comment nor pr flag is set.")
     if args.post_pr_comment_flag is True:
         page_url = f'{args.gitlab_page}/{args.working_branch}/charts'
         print(f'Setting gitlab page url: {page_url}')
@@ -201,9 +205,12 @@ if __name__ == '__main__':
         if args.prepare_plot_flag is True:
             message = (f'Errors in regression test. '
                        f'Compare the results on the following page\\n {page_url}')
-        if args.show_plot_flag is True:
+        elif args.show_plot_flag is True:
             message = (f'Reference results have been displayed graphically '
                        f'and are created under the following page {page_url}')
+        else:
+            raise TypeError("No message option requested, either show_plot_flag "
+                            "or prepare_plot_flag is required.")
         pull_request.post_pull_request_comment(
             pull_request_number=pr_number,
             post_message=message
@@ -224,7 +231,7 @@ if __name__ == '__main__':
             label_name = f'Correct HTML'
             main_branch = f'{args.working_branch.replace("correct_HTML_", "")}'
             working_branch = f'{args.working_branch.replace("correct_HTML_", "")}'
-        if args.ibpsa_merge_flag is True:
+        elif args.ibpsa_merge_flag is True:
             pull_request_title = f'IBPSA Merge'
             message = (
                 f'**Following you will find the instructions for the IBPSA merge:**\\n  '
@@ -249,6 +256,9 @@ if __name__ == '__main__':
             label_name = f'ibpsamerge'
             main_branch = args.main_branch
             working_branch = args.working_branch
+        else:
+            raise TypeError("No message option requested, either correct_html_flag "
+                            "or ibpsa_merge_flag is required.")
 
         assignees_owner = pull_request.get_github_username(branch=working_branch)
         owner = pull_request.return_owner()
@@ -258,4 +268,3 @@ if __name__ == '__main__':
         pr_number = pull_request.get_pr_number()
         pull_request.update_pull_request_assignees(pull_request_number=pr_number, assignees_owner=assignees_owner,
                                                    label_name=label_name)
-        exit(0)

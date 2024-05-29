@@ -1,11 +1,12 @@
 import argparse
 import json
 import re
-import requests
 import time
 from datetime import date
 from datetime import datetime
-import sys
+
+import requests
+
 
 class SlackNotification(object):
 

@@ -525,7 +525,7 @@ if __name__ == '__main__':
             elif args.update_ref:
                 ref_list = get_update_ref()
                 ref_model.delete_ref_file(ref_list=ref_list)
-                package_list = ref_model.get_update_package(ref_list=ref_list)
+                package_list = get_update_package(ref_list=ref_list)
             else:
                 config_structure.check_path_setting(ci_files=CI_CONFIG.get_dir_path("ci_files"), create_flag=True)
                 config_structure.create_files(CI_CONFIG.get_file_path("ci_files", "exit_file"))
@@ -540,7 +540,8 @@ if __name__ == '__main__':
                         dymola_version=args.dymola_version,
                         root_package=Path(package.replace(".", os.sep)),
                         library=args.library,
-                        changed_files=changed_files_file
+                        changed_files=changed_files_file,
+                        package=package
                     )
             # Start regression test
             val = 0
