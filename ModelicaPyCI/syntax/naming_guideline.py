@@ -4,6 +4,7 @@ import math
 import os
 import re
 import shutil
+import sys
 from pathlib import Path
 from typing import List, Union, Dict
 
@@ -202,7 +203,6 @@ def get_possibly_wrong_code_sections(
         files: list, library: str, naming_config: NamingGuidelineConfig
 ):
     output = ""
-    dict_problematic_expressions = {}
     for model_name in files:
         parts = model_name.split(".")
         parts[-1] += ".mo"
@@ -228,33 +228,24 @@ def get_possibly_wrong_code_sections(
             if expression.startswith("end "):
                 continue
             expression_without_annotation = remove_annotation(expression, naming_config=naming_config)
-            is_ok, data, list_parts_not_okay = line_is_ok(expression_without_annotation, naming_config=naming_config)
+            name_is_ok, doc_is_ok, reason_name, reason_doc, list_parts_not_okay = line_is_ok(
+                expression_without_annotation, naming_config=naming_config
+            )
 
-            if not is_ok:  # afu so hole ich nur die Zeile, die nicht okay sind
-
-                # ### afu ###
-                # check if that expression is already in dictionary
-                # check if that expression is an exception and used for the right unit
-
-                # add to dict of problematic expressions
-                for problematic_expression in list_parts_not_okay:
-                    if problematic_expression in naming_config.special_parts.keys():
-                        value = naming_config.special_parts[problematic_expression]
-                        if isinstance(value, list) and any(val.lower() in expression.lower() for val in value):
-                            continue
-                    elif problematic_expression in dict_problematic_expressions.keys():
-                        # count to see how often the expression is used
-                        dict_problematic_expressions[problematic_expression] += 1
-                    # check if the problematic expression is in exceptions AND uses the right Unit
-                    else:
-                        # add problematic expression to output file and create entry in dictionary
-                        problematic_expressions[expression] = data
-                        dict_problematic_expressions[problematic_expression] = 1
+            if not name_is_ok and not doc_is_ok:
+                problematic_expressions[expression] = f"{reason_doc}, {reason_name}"
+            elif not name_is_ok:
+                problematic_expressions[expression] = reason_name
+            elif not doc_is_ok:
+                problematic_expressions[expression] = reason_doc
+            else:
+                pass
 
         if problematic_expressions:
-            output += "\n\n" + str(file) + "\n"
-            output += "\n".join([
-                f"{value}. Affected line: {key}" for key, value in problematic_expressions.items()
+            output += "\n\n\n" + str(file) + "\n"
+            output += "\n\n".join([
+                f"{i + 1}: {problematic_expressions[key]}. "
+                f"Affected line: {key}" for i, key in enumerate(problematic_expressions)
             ])
 
     filename = f"wrong_code_parts_{library}.txt"
@@ -267,7 +258,7 @@ def get_possibly_wrong_code_sections(
     #     for key in dict_problematic_expressions.keys():
     #         f.write("%s,%s\n" % (key, dict_problematic_expressions[key]))
 
-    return dict_problematic_expressions, filename
+    return problematic_expressions, filename
 
 
 def get_expressions(filepath_model: str, naming_config: NamingGuidelineConfig):
@@ -338,9 +329,9 @@ def get_expressions(filepath_model: str, naming_config: NamingGuidelineConfig):
 def line_is_ok(line, naming_config: NamingGuidelineConfig):
     # Only a comment line
     if line.startswith("//") or line.__contains__("***") or line.__contains__("</"):
-        return True, None, []
+        return True, True, None, None, []
     if line.startswith("within"):
-        return True, None, []
+        return True, True, None, None, []
     doc = get_documentation_from_line(line=line)
     if doc is None:
         doc_is_ok = False
@@ -357,15 +348,16 @@ def line_is_ok(line, naming_config: NamingGuidelineConfig):
         line_without_doc = line.split(f'"{doc}')[0]
     name = get_name_from_line(line=line_without_doc, naming_config=naming_config)
     name_is_ok, reason_name, list_parts_not_okay = check_if_name_is_ok(name=name, naming_config=naming_config)
-    data = doc_is_ok, f"{reason_doc}, {reason_name}"
-    return name_is_ok, (doc_is_ok, f"{reason_doc}, {reason_name}"), list_parts_not_okay
+    return name_is_ok, doc_is_ok, reason_name, reason_doc, list_parts_not_okay
 
 
 def check_if_name_is_ok(name: str, naming_config: NamingGuidelineConfig):
     name_clean = name
     if name in naming_config.special_names:
         return True, "Name is correct", []
-
+    if " " in name:
+        return False, ("Could not extract name from line and check correctness, "
+                       "is your type specification correct (full library path)?"), []
     for special_parts_with_cap in naming_config.special_parts_with_upper:
         name = name.replace(special_parts_with_cap, "")
     name_parts = split_camel_case(string=name)
@@ -387,6 +379,7 @@ def check_if_name_is_ok(name: str, naming_config: NamingGuidelineConfig):
             if part.startswith(special_start):
                 part = part[len(special_start):]
                 break
+
         part_is_ok = (
                 (part in naming_config.special_parts) or
                 (len(part) == 3) or
@@ -557,6 +550,8 @@ def move_output_to_artifacts_and_post_comment(file, args):
 
 if __name__ == '__main__':
     logging.basicConfig(level="INFO")
+    os.chdir(r"D:\04_git\AixLib")
+    sys.argv = "file --changed-flag --gitlab-page https://ebc.pages.rwth-aachen.de/EBC_all/github_ci/AixLib --github-token ${GITHUB_API_TOKEN} --working-branch $CI_COMMIT_BRANCH --github-repository RWTH-EBC/AixLib --main-branch main --config naming_guideline.config --library AixLib".split(" ")
     ARGS = parse_args()
 
     with open(ARGS.config, "r") as FILE:
