@@ -98,8 +98,8 @@ class InteractConfig(BaseModelNoExtra):
 
 
 class CIConfig(BaseModelNoExtra):
-    library_root: Path = ""
-    dir: Path = "dymola-ci-tests"
+    library_root: str = ""
+    dir: str = "ci-tests"
     result: ResultConfig = ResultConfig()
     ci_files: FilesConfig = FilesConfig()
     whitelist: WhitelistConfig = WhitelistConfig()
