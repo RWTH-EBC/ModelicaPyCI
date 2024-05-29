@@ -8,11 +8,9 @@ COLORS = ColorConfig()
 
 
 def write_whitelist(model_list, library: str, whitelist_library: str):
-    file = open(CI_CONFIG.get_file_path("whitelist", "ibpsa_file"), "w")
-    for model in model_list:
-        model = model.replace(whitelist_library, library)
-        file.write("\n" + model + ".mo" + "\n")
-    file.close()
+    model_list = [model.replace(whitelist_library, library) for model in model_list]
+    with open(CI_CONFIG.get_file_path("whitelist", "ibpsa_file"), "w") as file:
+        file.writelines(model_list)
 
 
 def parse_args():
