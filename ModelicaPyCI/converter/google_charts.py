@@ -23,13 +23,13 @@ class PlotCharts:
         """
         self.package = package
         self.library = library
-        self.f_log = Path(self.library, "unitTests-dymola.log")
+        self.f_log = Path(self.library).joinpath("unitTests-dymola.log")
         self.csv_file = Path("reference.csv")
         self.test_csv = Path("test.csv")
-        self.temp_chart_path = Path(CI_CONFIG.plots.chart_dir, self.package)
-        self.funnel_path = Path(self.library, "funnel_comp")
-        self.ref_path = Path(self.library, CI_CONFIG.artifacts.library_ref_results_dir)
-        self.index_html_file = Path(self.temp_chart_path, "index.html")
+        self.temp_chart_path = Path(CI_CONFIG.plots.chart_dir).joinpath(self.package)
+        self.funnel_path = Path(self.library).joinpath("funnel_comp")
+        self.ref_path = Path(self.library).joinpath(CI_CONFIG.artifacts.library_ref_results_dir)
+        self.index_html_file = self.temp_chart_path.joinpath("index.html")
 
     @staticmethod
     def _check_ref_file(reference_file_list):
@@ -629,14 +629,16 @@ if __name__ == '__main__':
                                                 var=ref[ref.rfind(".mat") + 5:])
         charts.create_index_layout()
         charts.create_layout(temp_dir=Path(CI_CONFIG.plots.chart_dir),
-                             layout_html_file=Path(CI_CONFIG.plots.chart_dir, "index.html"))
+                             layout_html_file=Path(CI_CONFIG.plots.chart_dir).joinpath("index.html"))
         config_structure.prepare_data(
             source_target_dict={
-                CI_CONFIG.plots.chart_dir: Path(CI_CONFIG.get_file_path("result", "plot_dir"), args.packages)
+                CI_CONFIG.plots.chart_dir: CI_CONFIG.get_file_path("result", "plot_dir").joinpath(args.packages)
             }
         )
 
     if args.create_layout_flag is True:
         config_structure.create_path(Path(CI_CONFIG.get_file_path("result", "plot_dir")))
-        charts.create_layout(temp_dir=Path(CI_CONFIG.get_file_path("result", "plot_dir")),
-                             layout_html_file=Path(CI_CONFIG.get_file_path("result", "plot_dir"), "index.html"))
+        charts.create_layout(
+            temp_dir=Path(CI_CONFIG.get_file_path("result", "plot_dir")),
+            layout_html_file=CI_CONFIG.get_file_path("result", "plot_dir").joinpath("index.html")
+        )
