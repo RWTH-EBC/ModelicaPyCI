@@ -15,7 +15,6 @@ class CheckPythonDymola:
 
     def __init__(self,
                  dym,
-                 dym_exp,
                  library: str,
                  library_package_mo: Path,
                  additional_libraries_to_load: list,
@@ -26,7 +25,6 @@ class CheckPythonDymola:
             library_package_mo: root path of library (e.g. ../AixLib/package.mo)
             additional_libraries_to_load:
             dym (): python_dymola_interface class.
-            dym_exp (): python_dymola_exception class.
             library (): library to test.
         """
         # [Libraries]
@@ -35,7 +33,6 @@ class CheckPythonDymola:
         self.library = library
         # [Start Dymola]
         self.dymola = dym
-        self.dymola_exception = dym_exp
         self.dymola_log = Path(self.library_package_mo).parent.joinpath(f'{self.library}-log.txt')
 
     def start_dummy_dymola_instance(self):
@@ -47,7 +44,6 @@ class CheckPythonDymola:
         """
         dym_int = python_dymola_interface.PythonDymolaInterface(
             dymola=self.dymola,
-            dymola_exception=self.dymola_exception
         )
         dym_int.dym_check_lic()
         dym_int.load_library(library_package_mo=self.library_package_mo,
@@ -175,7 +171,6 @@ class CreateWhitelist:
     def __init__(self,
                  library: str,
                  dym,
-                 dymola_ex,
                  library_package_mo: str,
                  dymola_version: int = 2022,
                  additional_libraries_to_load: dict = None
@@ -186,7 +181,6 @@ class CreateWhitelist:
             dymola_version:
             additional_libraries_to_load:
             dym (): python_dymola_interface class.
-            dymola_ex (): python_dymola_exception class.
         """
         self.library = library
         self.library_package_mo = library_package_mo
@@ -196,12 +190,11 @@ class CreateWhitelist:
         self.dymola_version = dymola_version
         # [Start Dymola]
         self.dymola = dym
-        self.dymola_exception = dymola_ex
         self.dymola.ExecuteCommand("Advanced.TranslationInCommandLog:=true;")
 
     def start_dummy_dymola_instance(self):
         dym_int = python_dymola_interface.PythonDymolaInterface(
-            dymola=self.dymola, dymola_exception=self.dymola_exception
+            dymola=self.dymola
         )
         dym_int.dym_check_lic()
         dym_int.load_library(library_package_mo=self.library_package_mo,
@@ -334,7 +327,7 @@ def read_script_version(library_package_mo):
         return vers
 
 
-def create_whitelist(args, dymola, dymola_exception, library_package_mo):
+def create_whitelist(args, dymola, library_package_mo):
     config_structure.create_path(CI_CONFIG.get_dir_path("ci_files"), CI_CONFIG.get_dir_path("whitelist"))
     version = read_script_version(library_package_mo=library_package_mo)
     for options in args.dym_options:
@@ -348,13 +341,12 @@ def create_whitelist(args, dymola, dymola_exception, library_package_mo):
 
         wh = CreateWhitelist(
             dym=dymola,
-            dymola_ex=dymola_exception,
             library=args.library,
             dymola_version=args.dymola_version,
             additional_libraries_to_load=args.additional_libraries_to_load,
             library_package_mo=library_package_mo
         )
-        # wh.start_dummy_dymola_instance()
+        wh.start_dummy_dymola_instance()
         model_list = mo.get_option_model(
             library=args.library,
             package=".",
@@ -372,9 +364,8 @@ def create_whitelist(args, dymola, dymola_exception, library_package_mo):
         )
 
 
-def validate_only(args, dymola, dymola_exception, library_package_mo):
+def validate_only(args, dymola, library_package_mo):
     dym = CheckPythonDymola(dym=dymola,
-                            dym_exp=dymola_exception,
                             library=args.library,
                             library_package_mo=library_package_mo,
                             additional_libraries_to_load=args.additional_libraries_to_load)
@@ -458,13 +449,11 @@ if __name__ == '__main__':
         validate_only(
             args=ARGS,
             dymola=DYMOLA,
-            dymola_exception=DYMOLA_EXCEPTION,
             library_package_mo=LIBRARY_PACKAGE_MO
         )
     if ARGS.create_whitelist_flag is True:
         create_whitelist(
             args=ARGS,
             dymola=DYMOLA,
-            dymola_exception=DYMOLA_EXCEPTION,
             library_package_mo=LIBRARY_PACKAGE_MO
         )

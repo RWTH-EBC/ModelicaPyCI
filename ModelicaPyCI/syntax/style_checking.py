@@ -14,7 +14,6 @@ class StyleCheck:
 
     def __init__(self,
                  dymola,
-                 dymola_exception,
                  library: str,
                  dymola_version: int,
                  library_package_mo: Path,
@@ -25,7 +24,6 @@ class StyleCheck:
         Export HTML-Log File.
         Args:
             dymola (): dymola_python interface class
-            dymola_exception (): dymola_exception class
             library (): library to test
             dymola_version (): dymola version (e.g. 2022)
         """
@@ -34,13 +32,11 @@ class StyleCheck:
         self.additional_libraries_to_load = additional_libraries_to_load
         self.library_package_mo = library_package_mo
         self.dymola = dymola
-        self.dymola_exception = dymola_exception
         self.dymola.ExecuteCommand("Advanced.TranslationInCommandLog:=true;")
 
     def __call__(self):
         dym_int = python_dymola_interface.PythonDymolaInterface(
             dymola=self.dymola,
-            dymola_exception=self.dymola_exception
         )
         # dym_int.dym_check_lic()
         dym_int.load_library(
@@ -86,16 +82,13 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
     dym = python_dymola_interface.load_dymola_python_interface(dymola_version=args.dymola_version)
-    dymola = dym[0]
-    dymola_exception = dym[1]
+    dymola = dym
     LIBRARY_PACKAGE_MO = Path(CI_CONFIG.library_root).joinpath(args.library, "package.mo")
 
     mm = ModelManagement(dymola=dymola,
-                         dymola_exception=dymola_exception,
                          dymola_version=args.dymola_version)
     mm.load_model_management()
     CheckStyle = StyleCheck(dymola=dymola,
-                            dymola_exception=dymola_exception,
                             library=args.library,
                             dymola_version=args.dymola_version,
                             library_package_mo=LIBRARY_PACKAGE_MO,

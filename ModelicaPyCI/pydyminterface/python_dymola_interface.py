@@ -13,11 +13,9 @@ class PythonDymolaInterface:
     def __init__(
             self,
             dymola: classmethod = None,
-            dymola_exception: classmethod = None
     ):
         super().__init__()
         self.dymola = dymola
-        self.dymola_exception = dymola_exception
         if self.dymola is not None:
             self.dymola.ExecuteCommand("Advanced.TranslationInCommandLog:=true;")
 
@@ -114,16 +112,13 @@ def load_dymola_python_interface(dymola_version: int = 2022):
     """
     set_environment_path(dymola_version=dymola_version)
     from dymola.dymola_interface import DymolaInterface
-    from dymola.dymola_exception import DymolaException
     print(f'1: Starting Dymola instance')
     if platform.system() == "Windows":
         dymola = DymolaInterface()
-        dymola_exception = DymolaException()
     else:
         dymola = DymolaInterface(dymolapath="/usr/local/bin/dymola")
-        dymola_exception = DymolaException()
     dymola.cd(os.getcwd())
-    return dymola, dymola_exception
+    return dymola
 
 
 def set_environment_variables(var, value):

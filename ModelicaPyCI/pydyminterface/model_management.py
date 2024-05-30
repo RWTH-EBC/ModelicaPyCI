@@ -12,10 +12,8 @@ class ModelManagement:
 
     def __init__(self,
                  dymola,
-                 dymola_exception,
                  dymola_version: int = 2022):
         self.dymola = dymola
-        self.dymola_exception = dymola_exception
         self.dymola.ExecuteCommand("Advanced.TranslationInCommandLog:=true;")
         self.dymola_version = dymola_version
 

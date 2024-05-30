@@ -480,7 +480,7 @@ if __name__ == '__main__':
     CI_CONFIG.library_root = args.library_root
     LIBRARY_PACKAGE_MO = Path(CI_CONFIG.library_root).joinpath(args.library, "package.mo")
 
-    dymola, dymola_exception = python_dymola_interface.load_dymola_python_interface(dymola_version=args.dymola_version)
+    dymola = python_dymola_interface.load_dymola_python_interface(dymola_version=args.dymola_version)
     for package in args.packages:
         if args.validate_html_only:
             var = BuildingspyValidateTest(validate=validate,
@@ -499,7 +499,7 @@ if __name__ == '__main__':
             exit(var)
         else:
             dym_interface = python_dymola_interface.PythonDymolaInterface(
-                dymola=dymola, dymola_exception=dymola_exception
+                dymola=dymola
             )
             dym_interface.load_library(library_package_mo=LIBRARY_PACKAGE_MO,
                                        additional_libraries_to_load=None)
@@ -536,7 +536,6 @@ if __name__ == '__main__':
 
                     package_list = mo.get_changed_regression_models(
                         dymola=dymola,
-                        dymola_exception=dymola_exception,
                         dymola_version=args.dymola_version,
                         root_package=Path(package.replace(".", os.sep)),
                         library=args.library,

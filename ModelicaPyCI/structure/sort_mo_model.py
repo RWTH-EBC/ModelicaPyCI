@@ -12,7 +12,6 @@ def get_option_model(
         library: str,
         package: str,
         dymola=None,
-        dymola_exception=None,
         changed_flag: bool = False,
         simulate_flag: bool = False,
         filter_whitelist_flag: bool = False,
@@ -27,7 +26,6 @@ def get_option_model(
         library ():
         package ():
         dymola ():
-        dymola_exception ():
         changed_flag ():
         simulate_flag ():
         filter_whitelist_flag ():
@@ -66,7 +64,6 @@ def get_option_model(
         model_list = result[0]
         if extended_ex_flag is True:
             simulate_list = get_extended_model(dymola=dymola,
-                                               dymola_exception=dymola_exception,
                                                model_list=result[1],
                                                library=library,
                                                dymola_version=dymola_version)
@@ -104,7 +101,6 @@ def get_option_model(
         model_list = result[0]
         if extended_ex_flag is True:
             simulate_list = get_extended_model(dymola=dymola,
-                                               dymola_exception=dymola_exception,
                                                model_list=result[1],
                                                library=library,
                                                dymola_version=dymola_version)
@@ -121,7 +117,6 @@ def get_option_model(
 
 def get_changed_regression_models(
         dymola,
-        dymola_exception,
         dymola_version: int,
         root_package: Path,
         library: str,
@@ -143,7 +138,6 @@ def get_changed_regression_models(
                                              simulate_flag=True,
                                              extended_ex_flag=False)
     extended_list = get_extended_model(dymola=dymola,
-                                       dymola_exception=dymola_exception,
                                        model_list=model_list,
                                        dymola_version=dymola_version,
                                        library=library)
@@ -169,12 +163,10 @@ def get_changed_regression_models(
 
 def get_extended_model(
         dymola: object,
-        dymola_exception: object,
         model_list: list,
         dymola_version: int = 2022,
         library: str = "AixLib"):
     mm = ModelManagement(dymola=dymola,
-                         dymola_exception=dymola_exception,
                          dymola_version=dymola_version)
 
     mm.load_model_management()
