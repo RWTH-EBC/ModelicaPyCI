@@ -550,8 +550,6 @@ def move_output_to_artifacts_and_post_comment(file, args):
 
 if __name__ == '__main__':
     logging.basicConfig(level="INFO")
-    os.chdir(r"D:\04_git\AixLib")
-    sys.argv = "file --changed-flag --gitlab-page https://ebc.pages.rwth-aachen.de/EBC_all/github_ci/AixLib --github-token ${GITHUB_API_TOKEN} --working-branch $CI_COMMIT_BRANCH --github-repository RWTH-EBC/AixLib --main-branch main --config naming_guideline.config --library AixLib".split(" ")
     ARGS = parse_args()
 
     with open(ARGS.config, "r") as FILE:
