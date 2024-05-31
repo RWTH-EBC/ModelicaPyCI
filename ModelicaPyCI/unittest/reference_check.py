@@ -27,7 +27,7 @@ def write_exit_file(var):
         print(f'Error: File {CI_CONFIG.get_file_path("ci_files", "exit_file")} does not exist.')
 
 
-class BuildingspyRegressionCheck():
+class BuildingspyRegressionCheck:
 
     def __init__(self, buildingspy_regression, pack, n_pro, tool, batch, show_gui, path, library):
         """
@@ -36,7 +36,8 @@ class BuildingspyRegressionCheck():
             pack (): package to be checked
             n_pro (): number of processors
             tool (): dymola or Openmodelica
-            batch (): boolean: - False: interactive with script (e.g. generate new regression-tests) - True: No interactive with script
+            batch (): boolean: - False: interactive with script (e.g. generate new regression-tests) -
+                True: No interactive with script
             show_gui (): show_gui (): True - show dymola, false - dymola hidden.
             path (): Path where top-level package.mo of the library is located.
         """
@@ -480,7 +481,9 @@ if __name__ == '__main__':
     CI_CONFIG.library_root = args.library_root
     LIBRARY_PACKAGE_MO = Path(CI_CONFIG.library_root).joinpath(args.library, "package.mo")
 
-    dymola = python_dymola_interface.load_dymola_python_interface(dymola_version=args.dymola_version)
+    dymola_api = python_dymola_interface.load_dymola_api(
+        dymola_version=args.dymola_version, packages=[LIBRARY_PACKAGE_MO], requires_license=True
+    )
     for package in args.packages:
         if args.validate_html_only:
             var = BuildingspyValidateTest(validate=validate,
@@ -498,17 +501,11 @@ if __name__ == '__main__':
                                                                             package=package)
             exit(var)
         else:
-            dym_interface = python_dymola_interface.PythonDymolaInterface(
-                dymola=dymola
-            )
-            dym_interface.load_library(library_package_mo=LIBRARY_PACKAGE_MO,
-                                       additional_libraries_to_load=None)
             ref_model = ReferenceModel(library=args.library)
             package_list = []
             if args.ref_list:
                 ref_model.write_regression_list()
                 exit(0)
-            # dym_interface.dym_check_lic()
             ref_check = BuildingspyRegressionCheck(buildingspy_regression=regression,
                                                    pack=args.packages,
                                                    n_pro=args.number_of_processors,
@@ -535,8 +532,7 @@ if __name__ == '__main__':
                     changed_files_file = create_changed_files_file(repo_root=args.library_root)
 
                     package_list = mo.get_changed_regression_models(
-                        dymola=dymola,
-                        dymola_version=args.dymola_version,
+                        dymola_api=dymola_api,
                         root_package=Path(package.replace(".", os.sep)),
                         library=args.library,
                         changed_files=changed_files_file,

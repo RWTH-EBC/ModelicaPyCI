@@ -333,7 +333,9 @@ def _htmlCorrection(html_code):
     html_str = join_body(html_list=html_code)
 
     if sys.platform == "win32":
-        tidy_document = Tidy(lib_names=[r"C:\Program Files\tidy 5.8.0\bin\tidy.dll"]).tidy_document
+        # Enable local testing, requires ModelicaPyCI to be cloned, and then installed.
+        dll_path = str(Path(__file__).parent.joinpath("tidy-5.6.0-vc10-64b", "bin", "tidy.dll"))
+        tidy_document = Tidy(lib_names=[dll_path]).tidy_document
     else:
         tidy_document = Tidy().tidy_document
     html_correct, errors = tidy_document(

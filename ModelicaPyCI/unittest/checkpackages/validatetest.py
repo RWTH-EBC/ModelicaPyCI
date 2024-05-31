@@ -3,6 +3,9 @@ import glob
 import os
 from natsort import natsorted
 from pathlib import Path
+
+from ebcpy import DymolaAPI
+
 from ModelicaPyCI.config import CI_CONFIG, ColorConfig
 from ModelicaPyCI.structure import sort_mo_model as mo
 from ModelicaPyCI.structure import config_structure
@@ -14,40 +17,23 @@ COLORS = ColorConfig()
 class CheckPythonDymola:
 
     def __init__(self,
-                 dym,
+                 dymola_api: DymolaAPI,
                  library: str,
                  library_package_mo: Path,
-                 additional_libraries_to_load: list,
                  ):
         """
         The class check or simulate models. Return an error-log. Can filter models from a whitelist
         Args:
             library_package_mo: root path of library (e.g. ../AixLib/package.mo)
-            additional_libraries_to_load:
-            dym (): python_dymola_interface class.
+            dymola_api (DymolaAPI): python_dymola_interface class.
             library (): library to test.
         """
         # [Libraries]
         self.library_package_mo = library_package_mo
-        self.additional_libraries_to_load = additional_libraries_to_load
         self.library = library
         # [Start Dymola]
-        self.dymola = dym
+        self.dymola_api = dymola_api
         self.dymola_log = Path(self.library_package_mo).parent.joinpath(f'{self.library}-log.txt')
-
-    def start_dummy_dymola_instance(self):
-        """
-        1. Start dymola interface
-        2. Check dymola license
-        3. load library to check
-        4. Install library to check
-        """
-        dym_int = python_dymola_interface.PythonDymolaInterface(
-            dymola=self.dymola,
-        )
-        dym_int.dym_check_lic()
-        dym_int.load_library(library_package_mo=self.library_package_mo,
-                             additional_libraries_to_load=self.additional_libraries_to_load)
 
     def check_dymola_model(self,
                            check_model_list: list = None,
@@ -69,7 +55,7 @@ class CheckPythonDymola:
         else:
             for dym_model in check_model_list:
                 try:
-                    res = self.dymola.checkModel(dym_model, simulate=sim_ex_flag)
+                    res = self.dymola_api.dymola.checkModel(dym_model, simulate=sim_ex_flag)
                     if res is True:
                         print(f'{COLORS.green}Successful: {COLORS.CEND} {dym_model}')
                     if res is False:
@@ -77,11 +63,11 @@ class CheckPythonDymola:
                             f'Check for Model {dym_model}{COLORS.CRED} failed!{COLORS.CEND}\n\n{COLORS.CRED}Error:{COLORS.CEND} '
                             f'{dym_model}\nSecond Check Test for model {dym_model}')"""
                         # Second test for model
-                        sec_result = self.dymola.checkModel(dym_model, simulate=sim_ex_flag)
+                        sec_result = self.dymola_api.dymola.checkModel(dym_model, simulate=sim_ex_flag)
                         if sec_result is True:
                             print(f'{COLORS.green}Successful: {COLORS.CEND} {dym_model}')
                         if sec_result is False:
-                            log = self.dymola.getLastError()
+                            log = self.dymola_api.dymola.getLastError()
                             err_list, warning_list = sort_warnings_from_log(log=log, exception_list=exception_list)
                             if len(err_list) > 0:
                                 print(f'{COLORS.CRED}Error: {COLORS.CEND} {dym_model} \n{err_list}')
@@ -92,8 +78,8 @@ class CheckPythonDymola:
                 except Exception as ex:
                     print("Simulation failed: " + str(ex))
                     continue
-        self.dymola.savelog(f'{self.dymola_log}')
-        self.dymola.close()
+        self.dymola_api.dymola.savelog(f'{self.dymola_log}')
+        self.dymola_api.close()
         return error_model_message_dic
 
     def write_error_log(self,
@@ -170,35 +156,18 @@ class CreateWhitelist:
 
     def __init__(self,
                  library: str,
-                 dym,
-                 library_package_mo: str,
-                 dymola_version: int = 2022,
-                 additional_libraries_to_load: dict = None
+                 dymola_api: DymolaAPI,
+                 library_package_mo: str
                  ):
         """
         The class creates a whitelist of faulty models based on library.
         Args:
-            dymola_version:
-            additional_libraries_to_load:
-            dym (): python_dymola_interface class.
+            dymola_api (): python_dymola_interface class.
         """
         self.library = library
         self.library_package_mo = library_package_mo
-        # [libraries]
-        self.additional_libraries_to_load = additional_libraries_to_load
-        # [dymola version]
-        self.dymola_version = dymola_version
         # [Start Dymola]
-        self.dymola = dym
-        self.dymola.ExecuteCommand("Advanced.TranslationInCommandLog:=true;")
-
-    def start_dummy_dymola_instance(self):
-        dym_int = python_dymola_interface.PythonDymolaInterface(
-            dymola=self.dymola
-        )
-        dym_int.dym_check_lic()
-        dym_int.load_library(library_package_mo=self.library_package_mo,
-                             additional_libraries_to_load=self.additional_libraries_to_load)
+        self.dymola_api = dymola_api
 
     def check_whitelist_model(self, model_list: list, whitelist_files: Path, version: float, simulate_examples: bool):
         """
@@ -224,17 +193,17 @@ class CreateWhitelist:
                 )
                 whitelist_file.write(f'\n{version} \n \n')
                 for model in model_list:
-                    result = self.dymola.checkModel(model, simulate=simulate_examples)
+                    result = self.dymola_api.dymola.checkModel(model, simulate=simulate_examples)
                     if result is True:
                         print(f'{COLORS.green}Successful:{COLORS.CEND} {model}')
                     if result is False:
-                        log = self.dymola.getLastError()
+                        log = self.dymola_api.dymola.getLastError()
                         print(f'\n{COLORS.CRED}Error:{COLORS.CEND} {model}\n{log}')
                         error_model_message_dic[model] = log
                         whitelist_file.write(f'\n{model} \n \n')
                         error_log.write(f'\n \n Error in model:  {model} \n{log}')
-                self.dymola.savelog(f'{dymola_log}')
-                self.dymola.close()
+                self.dymola_api.dymola.savelog(f'{dymola_log}')
+                self.dymola_api.close()
             print(f'{COLORS.green}Whitelist check finished.{COLORS.CEND}')
             config_structure.prepare_data(source_target_dict={
                 err_log: Path(CI_CONFIG.get_file_path("result", "whitelist_dir")).joinpath(self.library),
@@ -327,7 +296,7 @@ def read_script_version(library_package_mo):
         return vers
 
 
-def create_whitelist(args, dymola, library_package_mo):
+def create_whitelist(args, dymola_api, library_package_mo):
     config_structure.create_path(CI_CONFIG.get_dir_path("ci_files"), CI_CONFIG.get_dir_path("whitelist"))
     version = read_script_version(library_package_mo=library_package_mo)
     for options in args.dym_options:
@@ -340,20 +309,19 @@ def create_whitelist(args, dymola, library_package_mo):
         config_structure.create_files(ci_file, CI_CONFIG.get_file_path("ci_files", "exit_file"))
 
         wh = CreateWhitelist(
-            dym=dymola,
+            dymola_api=dymola_api,
             library=args.library,
-            dymola_version=args.dymola_version,
-            additional_libraries_to_load=args.additional_libraries_to_load,
             library_package_mo=library_package_mo
         )
-        wh.start_dummy_dymola_instance()
+
         model_list = mo.get_option_model(
             library=args.library,
             package=".",
             changed_flag=False,
             simulate_flag=simulate_flag,
+            dymola_api=dymola_api,
             filter_whitelist_flag=False,
-            extended_ex_flag=False,
+            extended_ex_flag=True,
             library_package_mo=library_package_mo
         )
         wh.check_whitelist_model(
@@ -364,12 +332,13 @@ def create_whitelist(args, dymola, library_package_mo):
         )
 
 
-def validate_only(args, dymola, library_package_mo):
-    dym = CheckPythonDymola(dym=dymola,
-                            library=args.library,
-                            library_package_mo=library_package_mo,
-                            additional_libraries_to_load=args.additional_libraries_to_load)
-    dym.start_dummy_dymola_instance()
+def validate_only(args, dymola_api, library_package_mo):
+    check_python_dymola = CheckPythonDymola(
+        dymola_api=dymola_api,
+        library=args.library,
+        library_package_mo=library_package_mo
+    )
+
     package_results = {}
     for package in args.packages:
         option_check_dictionary = {}
@@ -379,19 +348,23 @@ def validate_only(args, dymola, library_package_mo):
                 library=args.library,
                 package=package,
                 changed_flag=args.changed_flag,
+                dymola_api=dymola_api,
+                extended_ex_flag=True,
                 simulate_flag=simulate_flag,
                 filter_whitelist_flag=args.filter_whitelist_flag,
                 library_package_mo=library_package_mo)
 
-            error_model_dict = dym.check_dymola_model(
+            error_model_dict = check_python_dymola.check_dymola_model(
                 check_model_list=model_list,
                 exception_list=None,
-                sim_ex_flag=simulate_flag)
-            error_log, ch_log = dym.write_error_log(
+                sim_ex_flag=simulate_flag
+            )
+            error_log, ch_log = check_python_dymola.write_error_log(
                 pack=package,
                 error_dict=error_model_dict,
-                exception_list=None)
-            var = dym.read_error_log(pack=package, err_log=error_log, check_log=ch_log)
+                exception_list=None
+            )
+            var = check_python_dymola.read_error_log(pack=package, err_log=error_log, check_log=ch_log)
             option_check_dictionary[options] = var
         package_results[package] = option_check_dictionary
     return_exit_var(package_results=package_results)
@@ -443,17 +416,21 @@ if __name__ == '__main__':
     for lib in ARGS.additional_libraries_to_load:
         add_lib_path = Path(ARGS.additional_libraries_to_load[lib], lib, "package.mo")
         config_structure.check_file_setting(add_lib_path=add_lib_path)
-    DYMOLA, DYMOLA_EXCEPTION = python_dymola_interface.load_dymola_python_interface(dymola_version=ARGS.dymola_version)
+    DYMOLA_API = python_dymola_interface.load_dymola_api(
+        dymola_version=ARGS.dymola_version,
+        packages=[LIBRARY_PACKAGE_MO] + ARGS.additional_libraries_to_load,
+        requires_license=True
+    )
 
     if ARGS.create_whitelist_flag is False:
         validate_only(
             args=ARGS,
-            dymola=DYMOLA,
+            dymola_api=DYMOLA_API,
             library_package_mo=LIBRARY_PACKAGE_MO
         )
     if ARGS.create_whitelist_flag is True:
         create_whitelist(
             args=ARGS,
-            dymola=DYMOLA,
+            dymola_api=DYMOLA_API,
             library_package_mo=LIBRARY_PACKAGE_MO
         )

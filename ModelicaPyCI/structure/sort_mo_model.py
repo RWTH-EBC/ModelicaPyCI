@@ -1,7 +1,10 @@
 import os
+from pathlib import Path
+
+from ebcpy import DymolaAPI
+
 from ModelicaPyCI.config import CI_CONFIG, ColorConfig
 from ModelicaPyCI.pydyminterface.model_management import ModelManagement
-from pathlib import Path
 from ModelicaPyCI.structure import config_structure
 from ModelicaPyCI.utils import create_changed_files_file
 
@@ -11,12 +14,11 @@ COLORS = ColorConfig()
 def get_option_model(
         library: str,
         package: str,
-        dymola=None,
+        dymola_api: DymolaAPI = None,
         changed_flag: bool = False,
         simulate_flag: bool = False,
         filter_whitelist_flag: bool = False,
         extended_ex_flag: bool = False,
-        dymola_version: int = 2022,
         library_package_mo: Path = None,
         root_package: Path = None,
         changed_to_branch: str = None):
@@ -25,12 +27,11 @@ def get_option_model(
     Args:
         library ():
         package ():
-        dymola ():
+        dymola_api ():
         changed_flag ():
         simulate_flag ():
         filter_whitelist_flag ():
         extended_ex_flag ():
-        dymola_version ():
         library_package_mo ():
         root_package ():
     Returns:
@@ -52,7 +53,7 @@ def get_option_model(
         else:
             root_package = Path(Path(library_package_mo).parent, package.replace(".", os.sep))
     config_structure.check_path_setting(root_package=root_package)
-    if dymola is None:
+    if dymola_api is None:
         extended_ex_flag = False
     if changed_flag is True:
         changed_files_file = create_changed_files_file(to_branch=changed_to_branch)
@@ -63,10 +64,9 @@ def get_option_model(
                                     simulate_examples=simulate_flag)
         model_list = result[0]
         if extended_ex_flag is True:
-            simulate_list = get_extended_model(dymola=dymola,
+            simulate_list = get_extended_model(dymola_api=dymola_api,
                                                model_list=result[1],
-                                               library=library,
-                                               dymola_version=dymola_version)
+                                               library=library)
             model_list.extend(simulate_list)
             model_list = list(set(model_list))
     else:
@@ -100,10 +100,9 @@ def get_option_model(
                             extended_ex_flag=extended_ex_flag)
         model_list = result[0]
         if extended_ex_flag is True:
-            simulate_list = get_extended_model(dymola=dymola,
+            simulate_list = get_extended_model(dymola_api=dymola_api,
                                                model_list=result[1],
-                                               library=library,
-                                               dymola_version=dymola_version)
+                                               library=library)
             model_list.extend(simulate_list)
             model_list = list(set(model_list))
         model_list = filter_whitelist_models(models=model_list,
@@ -116,8 +115,7 @@ def get_option_model(
 
 
 def get_changed_regression_models(
-        dymola,
-        dymola_version: int,
+        dymola_api: DymolaAPI,
         root_package: Path,
         library: str,
         changed_files: Path,
@@ -137,9 +135,8 @@ def get_changed_regression_models(
                                              library=library,
                                              simulate_flag=True,
                                              extended_ex_flag=False)
-    extended_list = get_extended_model(dymola=dymola,
+    extended_list = get_extended_model(dymola_api=dymola_api,
                                        model_list=model_list,
-                                       dymola_version=dymola_version,
                                        library=library)
 
     changed_model_list = get_changed_used_model(
@@ -162,14 +159,11 @@ def get_changed_regression_models(
 
 
 def get_extended_model(
-        dymola: object,
+        dymola_api: DymolaAPI,
         model_list: list,
-        dymola_version: int = 2022,
         library: str = "AixLib"):
-    mm = ModelManagement(dymola=dymola,
-                         dymola_version=dymola_version)
+    mm = ModelManagement(dymola_api=dymola_api)
 
-    mm.load_model_management()
     simulate_list = list()
     for model in model_list:
         print(f' **** Check structure of model {model} ****')

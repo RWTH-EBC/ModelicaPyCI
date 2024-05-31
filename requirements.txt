@@ -16,7 +16,7 @@ glob2
 GitPython
 pytidylib
 OMPython
-ebcpy
+ebcpy>=0.4.1
 tomli_w
 numpy
 scipy
