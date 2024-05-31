@@ -51,8 +51,6 @@ def parse_args():
 
 
 if __name__ == '__main__':
-    sys.argv = "ModelicaPyCI.syntax.style_checking --dymola-version 2022 --library AixLib".split(" ")
-    os.chdir(r"D:\04_git\AixLib")
     args = parse_args()
     LIBRARY_PACKAGE_MO = Path(CI_CONFIG.library_root).joinpath(args.library, "package.mo")
     dymola_api = python_dymola_interface.load_dymola_api(
