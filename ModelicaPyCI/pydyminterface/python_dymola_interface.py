@@ -1,12 +1,14 @@
 import os
 import sys
 import time
+import logging
 
 from ebcpy import DymolaAPI
 
 from ModelicaPyCI.config import ColorConfig
 
 COLORS = ColorConfig()
+logger = logging.getLogger(__name__)
 
 
 def load_dymola_api(dymola_version: str, packages: list, requires_license: bool = True) -> DymolaAPI:
@@ -14,14 +16,28 @@ def load_dymola_api(dymola_version: str, packages: list, requires_license: bool 
     if requires_license:
         # TODO: Read env variable?
         lic = os.environ.get("DYMOLA_RUNTIME_LICENSE", "50064@license2.rz.rwth-aachen.de")
+        port, url = None, None
         if "@" in lic:
             port, url = lic.split("@")
+        else:
+            if not os.path.isfile(lic):
+                logger.error("License file not found: %s", lic)
+            else:
+                with open(lic, "r") as file:
+                    lines = file.readlines()
+                for line in lines:
+                    if line.startswith("SERVER"):
+                        url, port = line.replace("SERVER ", "").split(" ANY ")
+                        break
+                else:
+                    logger.error(
+                        "Did not find SERVER line in license file content: %s",
+                        "\n".join(lines)
+                    )
+        if url is not None and port is not None:
             server_is_available = check_server_connection(url=url, port=int(port))
             if not server_is_available:
                 raise ConnectionError("Can't reach license server!")
-        else:
-            print(f"License file check not yet implemented: {lic}")
-
         lic_counter = 0
         dym_sta_lic_available = dymola_api.license_is_available
         while not dym_sta_lic_available:
@@ -48,10 +64,10 @@ def check_server_connection(url, port, timeout=5):
     try:
         # Create a socket object
         with socket.create_connection((url, port), timeout) as sock:
-            print(f"Successfully connected to {url} on port {port}")
+            logger.info(f"Successfully connected to %s on port %s", url, port)
             return True
     except (socket.timeout, socket.error) as e:
-        print(f"Failed to connect to {url} on port {port}: {e}")
+        logger.error(f"Failed to connect to %s on port %s: %s", url, port, e)
         return False
 
 
