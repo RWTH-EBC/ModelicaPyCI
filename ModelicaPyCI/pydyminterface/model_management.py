@@ -16,7 +16,7 @@ class ModelManagement:
         self.load_model_management()
 
     def load_model_management(self):
-        path_libraries = Path(self.dymola_api.dymola_exe_path).parents[1].joinpath(
+        path_libraries = Path(self.dymola_api.dymola_path).joinpath(
             "Modelica", "Library"
         )
         for folder in os.listdir(path_libraries):
