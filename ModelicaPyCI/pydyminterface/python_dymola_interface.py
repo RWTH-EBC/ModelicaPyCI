@@ -1,20 +1,19 @@
 import os
 import sys
 import time
-import logging
 
 from ebcpy import DymolaAPI
 
 from ModelicaPyCI.config import ColorConfig
+from ModelicaPyCI.utils import logger
+
 
 COLORS = ColorConfig()
-logger = logging.getLogger(__name__)
 
 
 def load_dymola_api(dymola_version: str, packages: list, requires_license: bool = True) -> DymolaAPI:
     dymola_api = _start_dymola_api(dymola_version=dymola_version, packages=packages)
     if requires_license:
-        # TODO: Read env variable?
         lic = os.environ.get("DYMOLA_RUNTIME_LICENSE", "50064@license2.rz.rwth-aachen.de")
         port, url = None, None
         if "@" in lic:

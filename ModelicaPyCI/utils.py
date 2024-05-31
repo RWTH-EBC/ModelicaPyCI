@@ -1,13 +1,25 @@
+import logging
 import os
-from typing import Union
 import uuid
 from pathlib import Path
+from typing import Union
 
 from ModelicaPyCI.config import CI_CONFIG, ColorConfig
 from ModelicaPyCI.structure import config_structure
 
-
 COLORS = ColorConfig()
+logger = logging.getLogger("ModelicaPyCI")
+
+
+def setup_logging():
+    if not logging.getLogger().hasHandlers():
+        logging.basicConfig(level=logging.INFO,
+                            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        logging.debug("Logging is set up.")
+
+
+# Example usage
+setup_logging()
 
 
 def create_changed_files_file(repo_root: Union[str, Path] = None, to_branch: str = None):
