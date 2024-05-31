@@ -482,7 +482,7 @@ if __name__ == '__main__':
     LIBRARY_PACKAGE_MO = Path(CI_CONFIG.library_root).joinpath(args.library, "package.mo")
 
     dymola_api = python_dymola_interface.load_dymola_api(
-        dymola_version=args.dymola_version, packages=[LIBRARY_PACKAGE_MO], requires_license=True
+        dymola_version=args.dymola_version, packages=[LIBRARY_PACKAGE_MO], requires_license=False
     )
     for package in args.packages:
         if args.validate_html_only:

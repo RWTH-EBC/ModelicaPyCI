@@ -81,5 +81,5 @@ def _start_dymola_api(dymola_version: str, packages: list) -> DymolaAPI:
         #dymola_version=str(dymola_version),
         dymola_exe_path=dymola_exe_path,
         model_name=None,
-        show_window=True
+        show_window=False
     )

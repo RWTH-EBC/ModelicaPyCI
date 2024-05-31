@@ -18,7 +18,6 @@ def setup_logging():
         logging.debug("Logging is set up.")
 
 
-# Example usage
 setup_logging()
 
 

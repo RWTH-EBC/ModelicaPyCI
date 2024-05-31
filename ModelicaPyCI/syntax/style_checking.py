@@ -54,7 +54,7 @@ if __name__ == '__main__':
     args = parse_args()
     LIBRARY_PACKAGE_MO = Path(CI_CONFIG.library_root).joinpath(args.library, "package.mo")
     dymola_api = python_dymola_interface.load_dymola_api(
-        dymola_version=args.dymola_version, packages=[LIBRARY_PACKAGE_MO]
+        dymola_version=args.dymola_version, packages=[LIBRARY_PACKAGE_MO], requires_license=False
     )
 
     mm = ModelManagement(dymola_api=dymola_api)
