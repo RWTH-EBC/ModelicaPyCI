@@ -12,6 +12,16 @@ COLORS = ColorConfig()
 def load_dymola_api(dymola_version: str, packages: list, requires_license: bool = True) -> DymolaAPI:
     dymola_api = _start_dymola_api(dymola_version=dymola_version, packages=packages)
     if requires_license:
+        # TODO: Read env variable?
+        lic = os.environ.get("DYMOLA_RUNTIME_LICENSE", "50064@license2.rz.rwth-aachen.de")
+        if "@" in lic:
+            port, url = lic.split("@")
+            server_is_available = check_server_connection(url=url, port=int(port))
+            if not server_is_available:
+                raise ConnectionError("Can't reach license server!")
+        else:
+            print(f"License file check not yet implemented: {lic}")
+
         lic_counter = 0
         dym_sta_lic_available = dymola_api.license_is_available
         while not dym_sta_lic_available:
@@ -31,6 +41,18 @@ def load_dymola_api(dymola_version: str, packages: list, requires_license: bool 
 
     dymola_api.dymola.ExecuteCommand("Advanced.TranslationInCommandLog:=true;")
     return dymola_api
+
+
+def check_server_connection(url, port, timeout=5):
+    import socket
+    try:
+        # Create a socket object
+        with socket.create_connection((url, port), timeout) as sock:
+            print(f"Successfully connected to {url} on port {port}")
+            return True
+    except (socket.timeout, socket.error) as e:
+        print(f"Failed to connect to {url} on port {port}: {e}")
+        return False
 
 
 def _start_dymola_api(dymola_version: str, packages: list) -> DymolaAPI:
