@@ -22,11 +22,12 @@ class PlotCharts:
             self.temp_chart_path (): path for every single package
         """
         self.library = library
-        self.f_log = Path(self.library).joinpath("unitTests-dymola.log")
+        result_path = Path(CI_CONFIG.get_file_path("result", "regression_dir"), package)
+        self.f_log = result_path.joinpath("unitTests-dymola.log")
         self.csv_file = Path("reference.csv")
         self.test_csv = Path("test.csv")
         self.temp_chart_path = Path(CI_CONFIG.plots.chart_dir).joinpath(package)
-        self.funnel_path = Path(self.library).joinpath("funnel_comp")
+        self.funnel_path = result_path.joinpath("funnel_comp")
         self.ref_path = Path(self.library).joinpath(CI_CONFIG.artifacts.library_ref_results_dir)
         self.index_html_file = self.temp_chart_path.joinpath("index.html")
 
