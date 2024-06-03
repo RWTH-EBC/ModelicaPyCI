@@ -59,9 +59,9 @@ if __name__ == '__main__':
 
     mm = ModelManagement(dymola_api=dymola_api)
 
-    model_list = mo.get_option_model(library=args.library,
-                                     package="",
-                                     changed_flag=args.changed_flag)
+    model_list = mo.get_model_list(library=args.library,
+                                   package="",
+                                   changed_flag=args.changed_flag)
     logfile = mm.mm_style_check(models_list=model_list,
                                 library=args.library,
                                 changed_flag=args.changed_flag)

@@ -189,11 +189,11 @@ class ReferenceModel:
         """
         mos_list = self._get_mos_scripts()
         try:
-            with open(CI_CONFIG.get_file_path("ci_files", "ref_file"), "w") as whitelist_file:
+            with open(CI_CONFIG.get_file_path("ci_files", "dymola_reference_file"), "w") as whitelist_file:
                 for mos in mos_list:
                     whitelist_file.write(f'\n{mos}\n')
         except IOError:
-            print(f'Error: File {CI_CONFIG.get_file_path("ci_files", "ref_file")} does not exist.')
+            print(f'Error: File {CI_CONFIG.get_file_path("ci_files", "dymola_reference_file")} does not exist.')
 
     def _get_mos_scripts(self):
         """
@@ -254,7 +254,7 @@ def _get_whitelist_package():
     """
     whitelist_list = []
     try:
-        with open(CI_CONFIG.get_file_path("whitelist", "ref_file"), "r") as ref_wh:
+        with open(CI_CONFIG.get_file_path("whitelist", "dymola_reference_file"), "r") as ref_wh:
             lines = ref_wh.readlines()
             for line in lines:
                 if len(line.strip()) == 0:
@@ -268,7 +268,7 @@ def _get_whitelist_package():
                 f'on the whitelist')
         return whitelist_list
     except IOError:
-        print(f'Error: File {CI_CONFIG.get_file_path("whitelist", "ref_file")} does not exist.')
+        print(f'Error: File {CI_CONFIG.get_file_path("whitelist", "dymola_reference_file")} does not exist.')
         return whitelist_list
 
 

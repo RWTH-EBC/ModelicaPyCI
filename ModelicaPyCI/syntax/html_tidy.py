@@ -698,10 +698,10 @@ if __name__ == '__main__':
                                    whitelist_library=args.whitelist_library,
                                    filter_whitelist=args.filter_whitelist_flag)
 
-        html_model = mo.get_option_model(library=args.library,
-                                         package=PACKAGE,
-                                         filter_whitelist_flag=args.filter_whitelist_flag,
-                                         root_package=Path(args.library))
+        html_model = mo.get_model_list(library=args.library,
+                                       package=PACKAGE,
+                                       filter_whitelist_flag=args.filter_whitelist_flag,
+                                       root_package=Path(args.library))
         html_tidy_check.run_files()
         html_tidy_check.check_html_files(model_list=html_model)
         if args.log_flag is True:

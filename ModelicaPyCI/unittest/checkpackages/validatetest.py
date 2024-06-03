@@ -302,9 +302,9 @@ def create_whitelist(args, dymola_api, library_package_mo):
     for options in args.dym_options:
         simulate_flag = options == "DYM_SIM"
         if options == "DYM_SIM":
-            ci_file = CI_CONFIG.get_file_path("whitelist", "simulate_file")
+            ci_file = CI_CONFIG.get_file_path("whitelist", "dymola_simulate_file")
         else:
-            ci_file = CI_CONFIG.get_file_path("whitelist", "check_file")
+            ci_file = CI_CONFIG.get_file_path("whitelist", "dymola_check_file")
 
         config_structure.create_files(ci_file, CI_CONFIG.get_file_path("ci_files", "exit_file"))
 
@@ -314,7 +314,7 @@ def create_whitelist(args, dymola_api, library_package_mo):
             library_package_mo=library_package_mo
         )
 
-        model_list = mo.get_option_model(
+        model_list = mo.get_model_list(
             library=args.library,
             package=".",
             changed_flag=False,
@@ -344,7 +344,7 @@ def validate_only(args, dymola_api, library_package_mo):
         option_check_dictionary = {}
         for options in args.dym_options:
             simulate_flag = options == "DYM_SIM"
-            model_list = mo.get_option_model(
+            model_list = mo.get_model_list(
                 library=args.library,
                 package=package,
                 changed_flag=args.changed_flag,

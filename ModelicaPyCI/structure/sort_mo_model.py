@@ -11,7 +11,7 @@ from ModelicaPyCI.utils import create_changed_files_file
 COLORS = ColorConfig()
 
 
-def get_option_model(
+def get_model_list(
         library: str,
         package: str,
         dymola_api: DymolaAPI = None,
@@ -21,21 +21,10 @@ def get_option_model(
         extended_examples_flag: bool = False,
         library_package_mo: Path = None,
         root_package: Path = None,
-        changed_to_branch: str = None):
+        changed_to_branch: str = None,
+        tool: str = "dymola"
+):
     # todo: flag mit einbauen: In zukunft sollen die pfade gegeben werden, nach wunsch auch in modelica form
-    """
-    Args:
-        library ():
-        package ():
-        dymola_api ():
-        changed_flag ():
-        simulate_flag ():
-        filter_whitelist_flag ():
-        extended_examples_flag ():
-        library_package_mo ():
-        root_package ():
-    Returns:
-    """
     config_structure.check_arguments_settings(
         package=package,
         library=library,
@@ -82,9 +71,9 @@ def get_option_model(
             )
         if filter_whitelist_flag is True:
             if simulate_flag is True:
-                ci_whitelist_file = CI_CONFIG.get_file_path("whitelist", "simulate_file")
+                ci_whitelist_file = CI_CONFIG.get_file_path("whitelist", f"{tool}_simulate_file")
             else:
-                ci_whitelist_file = CI_CONFIG.get_file_path("whitelist", "check_file")
+                ci_whitelist_file = CI_CONFIG.get_file_path("whitelist", f"{tool}_check_file")
 
             whitelist_list_models.extend(
                 get_whitelist_models(

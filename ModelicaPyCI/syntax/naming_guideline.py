@@ -555,7 +555,7 @@ if __name__ == '__main__':
     with open(ARGS.config, "r") as FILE:
         NAMING_CONFIG = NamingGuidelineConfig(**toml.load(FILE))
 
-    FILES_TO_CHECK = mo.get_option_model(
+    FILES_TO_CHECK = mo.get_model_list(
         library=ARGS.library,
         package=".",
         filter_whitelist_flag=False,

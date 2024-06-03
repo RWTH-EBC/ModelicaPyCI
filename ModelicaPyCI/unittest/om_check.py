@@ -554,7 +554,14 @@ if __name__ == '__main__':
                            library_package_mo=LIBRARY_PACKAGE_MO,
                            additional_libraries_to_load=additional_libraries_to_load)
     OM()
-
+    get_model_list_kwargs = dict(
+        library=args.library,
+        changed_flag=args.changed_flag,
+        extended_examples_flag=False,
+        filter_whitelist_flag=args.filter_whitelist_flag,
+        library_package_mo=LIBRARY_PACKAGE_MO,
+        tool="om"
+    )
     for package in args.packages:
         for options in args.om_options:
             if options == "OM_CHECK":
@@ -565,14 +572,11 @@ if __name__ == '__main__':
                 simulate_flag = True
                 options = "simulate"
                 func = OM.simulate_models
-            model_list = mo.get_option_model(
-                library=args.library,
+            model_list = mo.get_model_list(
                 package=package,
-                changed_flag=args.changed_flag,
-                extended_examples_flag=False,
                 simulate_flag=simulate_flag,
-                filter_whitelist_flag=args.filter_whitelist_flag,
-                library_package_mo=LIBRARY_PACKAGE_MO)
+                **get_model_list_kwargs
+            )
             error_model_dict = func(
                 model_list=model_list,
                 exception_list=except_list)
@@ -583,26 +587,20 @@ if __name__ == '__main__':
                 options=options)
 
             if options == "DYMOLA_SIM":
-                model_list = mo.get_option_model(
-                    library=args.library,
+                model_list = mo.get_model_list(
                     package=package,
-                    changed_flag=args.changed_flag,
                     simulate_flag=True,
-                    extended_examples_flag=False,
-                    filter_whitelist_flag=args.filter_whitelist_flag,
-                    library_package_mo=LIBRARY_PACKAGE_MO)
+                    **get_model_list_kwargs
+                )
                 OM.sim_with_dymola(example_list=model_list, pack=package)
             if args.om_options == "COMPARE":
                 ERROR_DATA = {}
                 STATS = None
-                model_list = mo.get_option_model(
-                    library=args.library,
+                model_list = mo.get_model_list(
                     package=package,
-                    changed_flag=args.changed_flag,
                     simulate_flag=True,
-                    extended_examples_flag=False,
-                    filter_whitelist_flag=args.filter_whitelist_flag,
-                    library_package_mo=LIBRARY_PACKAGE_MO)
+                    **get_model_list_kwargs
+                )
                 STATS = OM.compare_dym_to_om(pack=package,
                                              example_list=model_list,
                                              stats=STATS)

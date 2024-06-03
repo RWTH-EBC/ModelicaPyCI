@@ -70,11 +70,13 @@ class FilesConfig(BaseModelNoExtra):
 
 
 class WhitelistConfig(BaseModelNoExtra):
-    dir: str = "ci_whitelist"
-    check_file: str = 'check_whitelist.txt'
-    simulate_file: str = 'simulate_whitelist.txt'
+    dir: str = "whitelist"
+    dymola_check_file: str = 'dymola_check_whitelist.txt'
+    dymola_simulate_file: str = 'dymola_simulate_whitelist.txt'
     ibpsa_file: str = 'ibpsa_whitelist.txt'
-    ref_file: str = "reference_whitelist.txt"
+    dymola_reference_file: str = "dymola_reference_whitelist.txt"
+    om_check_file: str = 'om_check_whitelist.txt'
+    om_simulate_file: str = 'om_simulate_whitelist.txt'
 
 
 class PlotConfig(BaseModelNoExtra):
@@ -106,7 +108,7 @@ class CIConfig(BaseModelNoExtra):
     artifacts: ArtifactsConfig = ArtifactsConfig()
     interact: InteractConfig = InteractConfig()
     plots: PlotConfig = PlotConfig()
-    naming_guideline_file: str = "naming_guideline.config"
+    naming_guideline_file: str = "naming_guideline.toml"
 
     def get_file_path(self, files_type, file_name, different_library_root: Path = None) -> Path:
         dir_path = self.get_dir_path(files_type=files_type, different_library_root=different_library_root)
