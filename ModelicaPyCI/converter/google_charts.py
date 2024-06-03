@@ -21,12 +21,11 @@ class PlotCharts:
             self.f_log ():  path for unitTest-dymola.log, important for errors
             self.temp_chart_path (): path for every single package
         """
-        self.package = package
         self.library = library
         self.f_log = Path(self.library).joinpath("unitTests-dymola.log")
         self.csv_file = Path("reference.csv")
         self.test_csv = Path("test.csv")
-        self.temp_chart_path = Path(CI_CONFIG.plots.chart_dir).joinpath(self.package)
+        self.temp_chart_path = Path(CI_CONFIG.plots.chart_dir).joinpath(package)
         self.funnel_path = Path(self.library).joinpath("funnel_comp")
         self.ref_path = Path(self.library).joinpath(CI_CONFIG.artifacts.library_ref_results_dir)
         self.index_html_file = self.temp_chart_path.joinpath("index.html")
@@ -236,13 +235,13 @@ class PlotCharts:
             time_num = time_num + tim_seq
         return time_list
 
-    def read_unitTest_log(self):
+    def read_unit_test_log(self):
         """
         Read unitTest_log from regressionTest, write variable and model name with difference
         Returns:
         """
         try:
-            self.check_file(file=self.f_log)
+            check_file(file=self.f_log)
             with open(self.f_log, "r") as log_file:
                 lines = log_file.readlines()
             model_variable_list = list()
@@ -315,9 +314,6 @@ class PlotCharts:
             print(f'{csv_file} is empty')
 
     def check_folder_path(self):
-        """
-
-        """
         if os.path.isdir(self.funnel_path) is False:
             print(f'Funnel directory does not exist.')
         else:
@@ -436,39 +432,6 @@ class PlotCharts:
                 file_tmp.write(html_chart)
             print(f'Create html file with reference results.')
 
-    def create_layout(self, temp_dir: Path, layout_html_file: Path):
-        """
-        Creates a layout index that has all links to the subordinate index files.
-        """
-        package_list = list()
-        for folders in os.listdir(temp_dir):
-            if folders == "style.css" or folders == "index.html":
-                continue
-            else:
-                package_list.append(folders)
-        if len(package_list) == 0:
-            print(f'No html files')
-            exit(0)
-        else:
-            print(package_list)
-            my_template = Template(filename=CI_CONFIG.plots.templates_layout_file)
-            html_chart = my_template.render(packages=package_list)
-            with open(layout_html_file, "w") as file_tmp:
-                file_tmp.write(html_chart)
-
-    @staticmethod
-    def check_file(file):
-        """
-
-        Args:
-            file ():
-        """
-        file_check = os.path.isfile(file)
-        if file_check is False:
-            print(f'{file} does not exists.')
-            exit(1)
-        else:
-            print(f'{file} exists.')
 
     def get_funnel_comp(self):
         """
@@ -494,20 +457,39 @@ class PlotCharts:
                 else:
                     shutil.rmtree(f'{CI_CONFIG.plots.chart_dir}{os.sep}{folders}')
 
-    def check_setting(self):
-        """
 
-        """
-        if self.library is None:
-            print(f'Please set a library (e.g. --library AixLib')
-            exit(0)
+def create_layout(self, temp_dir: Path, layout_html_file: Path):
+    """
+    Creates a layout index that has all links to the subordinate index files.
+    """
+    package_list = list()
+    for folders in os.listdir(temp_dir):
+        if folders == "style.css" or folders == "index.html":
+            continue
         else:
-            print(f'Setting library: {self.library}')
-        if self.package is None:
-            print(f'Please set a package (e.g. --single-package Airflow)')
-            exit(0)
-        else:
-            print(f'Setting package: {self.package}\n')
+            package_list.append(folders)
+    if len(package_list) == 0:
+        print(f'No html files')
+        exit(0)
+    else:
+        print(package_list)
+        my_template = Template(filename=CI_CONFIG.plots.templates_layout_file)
+        html_chart = my_template.render(packages=package_list)
+        with open(layout_html_file, "w") as file_tmp:
+            file_tmp.write(html_chart)
+
+def check_file(file):
+    """
+
+    Args:
+        file ():
+    """
+    file_check = os.path.isfile(file)
+    if file_check is False:
+        print(f'{file} does not exists.')
+        exit(1)
+    else:
+        print(f'{file} exists.')
 
 
 def parse_args():
@@ -589,56 +571,56 @@ if __name__ == '__main__':
         templates_index_file=CI_CONFIG.plots.templates_index_file,
         templates_layout_file=CI_CONFIG.plots.templates_layout_file,
     )
-    charts = PlotCharts(package=args.packages,
-                        library=args.library)
-    if args.line_html_flag is True:
-        charts.check_setting()
-        charts.delete_folder()
-        charts.check_folder_path()
-        if args.error_flag is True:
-            model_var_list = charts.read_unitTest_log()
-            print(f'Plot line chart with different reference results.\n')
-            for model_variable in model_var_list:
-                model_variable = model_variable.split(":")
-                if args.funnel_comp_flag is True:
-                    charts.mako_line_html_chart(model=model_variable[0],
-                                                var=model_variable[1])
-                if args.ref_txt_flag is True:
-                    ref_file = charts.get_ref_file(model=model_variable[0])
-                    if ref_file is None:
-                        print(f'Reference file for model {model_variable[0]} does not exist.')
-                        continue
-                    else:
-                        result = charts.get_values(reference_list=ref_file)
-                        charts.mako_line_ref_chart(model=model_variable[0],
-                                                   var=model_variable[1])
-        if args.new_ref_flag is True:
-            ref_list = charts.get_new_reference_files()
-            charts.write_html_plot_templates(reference_file_list=ref_list)
-        if args.update_ref_flag is True:
-            ref_list = charts.get_updated_reference_files()
-            charts.write_html_plot_templates(reference_file_list=ref_list)
-        if args.show_ref_flag is True:
-            ref_list = charts.read_show_reference()
-            charts.write_html_plot_templates(reference_file_list=ref_list)
-        if args.show_package_flag is True:
-            folder = charts.get_funnel_comp()
-            for ref in folder:
-                if args.funnel_comp_flag is True:
-                    charts.mako_line_html_chart(model=ref[:ref.find(".mat")],
-                                                var=ref[ref.rfind(".mat") + 5:])
-        charts.create_index_layout()
-        charts.create_layout(temp_dir=Path(CI_CONFIG.plots.chart_dir),
-                             layout_html_file=Path(CI_CONFIG.plots.chart_dir).joinpath("index.html"))
-        config_structure.prepare_data(
-            source_target_dict={
-                CI_CONFIG.plots.chart_dir: CI_CONFIG.get_file_path("result", "plot_dir").joinpath(args.packages)
-            }
-        )
+    for package in args.packages:
+        charts = PlotCharts(package=package,
+                            library=args.library)
+        if args.line_html_flag is True:
+            charts.delete_folder()
+            charts.check_folder_path()
+            if args.error_flag is True:
+                model_var_list = charts.read_unit_test_log()
+                print(f'Plot line chart with different reference results.\n')
+                for model_variable in model_var_list:
+                    model_variable = model_variable.split(":")
+                    if args.funnel_comp_flag is True:
+                        charts.mako_line_html_chart(model=model_variable[0],
+                                                    var=model_variable[1])
+                    if args.ref_txt_flag is True:
+                        ref_file = charts.get_ref_file(model=model_variable[0])
+                        if ref_file is None:
+                            print(f'Reference file for model {model_variable[0]} does not exist.')
+                            continue
+                        else:
+                            result = charts.get_values(reference_list=ref_file)
+                            charts.mako_line_ref_chart(model=model_variable[0],
+                                                       var=model_variable[1])
+            if args.new_ref_flag is True:
+                ref_list = charts.get_new_reference_files()
+                charts.write_html_plot_templates(reference_file_list=ref_list)
+            if args.update_ref_flag is True:
+                ref_list = charts.get_updated_reference_files()
+                charts.write_html_plot_templates(reference_file_list=ref_list)
+            if args.show_ref_flag is True:
+                ref_list = charts.read_show_reference()
+                charts.write_html_plot_templates(reference_file_list=ref_list)
+            if args.show_package_flag is True:
+                folder = charts.get_funnel_comp()
+                for ref in folder:
+                    if args.funnel_comp_flag is True:
+                        charts.mako_line_html_chart(model=ref[:ref.find(".mat")],
+                                                    var=ref[ref.rfind(".mat") + 5:])
+            charts.create_index_layout()
+            create_layout(temp_dir=Path(CI_CONFIG.plots.chart_dir),
+                                 layout_html_file=Path(CI_CONFIG.plots.chart_dir).joinpath("index.html"))
+            config_structure.prepare_data(
+                source_target_dict={
+                    CI_CONFIG.plots.chart_dir: CI_CONFIG.get_file_path("result", "plot_dir").joinpath(args.packages)
+                }
+            )
 
-    if args.create_layout_flag is True:
-        config_structure.create_path(Path(CI_CONFIG.get_file_path("result", "plot_dir")))
-        charts.create_layout(
-            temp_dir=Path(CI_CONFIG.get_file_path("result", "plot_dir")),
-            layout_html_file=CI_CONFIG.get_file_path("result", "plot_dir").joinpath("index.html")
-        )
+        if args.create_layout_flag is True:
+            config_structure.create_path(Path(CI_CONFIG.get_file_path("result", "plot_dir")))
+            create_layout(
+                temp_dir=Path(CI_CONFIG.get_file_path("result", "plot_dir")),
+                layout_html_file=CI_CONFIG.get_file_path("result", "plot_dir").joinpath("index.html")
+            )
