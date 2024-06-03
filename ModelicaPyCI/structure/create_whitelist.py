@@ -40,7 +40,7 @@ if __name__ == '__main__':
     MODEL_LIST, _ = mo.get_models(library=args.whitelist_library,
                                   path=args.root_whitelist_library,
                                   simulate_flag=False,
-                                  extended_ex_flag=False)
+                                  extended_examples_flag=False)
     write_whitelist(model_list=MODEL_LIST, library=args.library, whitelist_library=args.whitelist_library)
     config_structure.prepare_data(
         source_target_dict={

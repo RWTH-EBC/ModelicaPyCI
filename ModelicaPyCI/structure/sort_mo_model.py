@@ -18,7 +18,7 @@ def get_option_model(
         changed_flag: bool = False,
         simulate_flag: bool = False,
         filter_whitelist_flag: bool = False,
-        extended_ex_flag: bool = False,
+        extended_examples_flag: bool = False,
         library_package_mo: Path = None,
         root_package: Path = None,
         changed_to_branch: str = None):
@@ -31,7 +31,7 @@ def get_option_model(
         changed_flag ():
         simulate_flag ():
         filter_whitelist_flag ():
-        extended_ex_flag ():
+        extended_examples_flag ():
         library_package_mo ():
         root_package ():
     Returns:
@@ -42,7 +42,7 @@ def get_option_model(
         changed_flag=changed_flag,
         simulate_flag=simulate_flag,
         filter_whitelist_flag=filter_whitelist_flag,
-        extended_ex_flag=extended_ex_flag,
+        extended_examples_flag=extended_examples_flag,
     )
     if library_package_mo is None:
         library_package_mo = Path().joinpath(library, "package.mo")
@@ -53,8 +53,8 @@ def get_option_model(
         else:
             root_package = Path(Path(library_package_mo).parent, package.replace(".", os.sep))
     config_structure.check_path_setting(root_package=root_package)
-    if dymola_api is None:
-        extended_ex_flag = False
+    if extended_examples_flag is True and dymola_api is None:
+        raise ValueError("Can't get extended model without dymola_api")
     if changed_flag is True:
         changed_files_file = create_changed_files_file(to_branch=changed_to_branch)
 
@@ -63,7 +63,7 @@ def get_option_model(
                                     single_package=package,
                                     simulate_examples=simulate_flag)
         model_list = result[0]
-        if extended_ex_flag is True:
+        if extended_examples_flag is True:
             simulate_list = get_extended_model(dymola_api=dymola_api,
                                                model_list=result[1],
                                                library=library)
@@ -97,9 +97,9 @@ def get_option_model(
         result = get_models(path=root_package,
                             library=library,
                             simulate_flag=simulate_flag,
-                            extended_ex_flag=extended_ex_flag)
+                            extended_examples_flag=extended_examples_flag)
         model_list = result[0]
-        if extended_ex_flag is True:
+        if extended_examples_flag is True:
             simulate_list = get_extended_model(dymola_api=dymola_api,
                                                model_list=result[1],
                                                library=library)
@@ -134,7 +134,7 @@ def get_changed_regression_models(
     model_list, no_example_list = get_models(path=root_package,
                                              library=library,
                                              simulate_flag=True,
-                                             extended_ex_flag=False)
+                                             extended_examples_flag=False)
     extended_list = get_extended_model(dymola_api=dymola_api,
                                        model_list=model_list,
                                        library=library)
@@ -392,7 +392,7 @@ def get_changed_models(
         library: str,
         single_package: str,
         simulate_examples: bool = False,
-        extended_ex_flag: bool = False):
+        extended_examples_flag: bool = False):
     """
     Returns: return a list with changed models.
     """
@@ -418,7 +418,7 @@ def get_changed_models(
                                 f'Model {model_name} is not a simulation example because it '
                                 f'does not contain the following "Modelica.Icons.Example"'
                             )
-                            if extended_ex_flag is True:
+                            if extended_examples_flag is True:
                                 no_example = line.replace(os.sep, ".")
                                 no_example = no_example[no_example.rfind(library):no_example.rfind(".mo")]
                                 no_example_list.append(no_example)
@@ -446,11 +446,11 @@ def get_models(
         path: Path,
         library: str = "AixLib",
         simulate_flag: bool = False,
-        extended_ex_flag: bool = False):
+        extended_examples_flag: bool = False):
     """
         Args:
             simulate_flag ():
-            extended_ex_flag ():
+            extended_examples_flag ():
             path (): whitelist library or library path.
             library (): library to test.
         Returns:
@@ -469,7 +469,7 @@ def get_models(
                         print(
                             f'Model {filepath} is not a simulation example because '
                             f'it does not contain the following "Modelica.Icons.Example"')
-                        if extended_ex_flag is True:
+                        if extended_examples_flag is True:
                             no_example = filepath.replace(os.sep, ".")
                             no_example = no_example[no_example.rfind(library):no_example.rfind(".mo")]
                             no_example_list.append(no_example)

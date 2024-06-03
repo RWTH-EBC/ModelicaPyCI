@@ -321,7 +321,7 @@ def create_whitelist(args, dymola_api, library_package_mo):
             simulate_flag=simulate_flag,
             dymola_api=dymola_api,
             filter_whitelist_flag=False,
-            extended_ex_flag=True,
+            extended_examples_flag=args.extended_examples,
             library_package_mo=library_package_mo
         )
         wh.check_whitelist_model(
@@ -349,7 +349,7 @@ def validate_only(args, dymola_api, library_package_mo):
                 package=package,
                 changed_flag=args.changed_flag,
                 dymola_api=dymola_api,
-                extended_ex_flag=True,
+                extended_examples_flag=args.extended_examples,
                 simulate_flag=simulate_flag,
                 filter_whitelist_flag=args.filter_whitelist_flag,
                 library_package_mo=library_package_mo)
@@ -393,7 +393,11 @@ def parse_args():
     # [ bool - flag]
     check_test_group.add_argument("--changed-flag", action="store_true")
     check_test_group.add_argument("--filter-whitelist-flag", default=False, action="store_true")
-    check_test_group.add_argument("--extended-ex-flag", default=False, action="store_true")
+    check_test_group.add_argument(
+        "--extended-examples",
+        default=False,
+        action="store_true"
+    )
     check_test_group.add_argument(
         "--create-whitelist-flag",
         help="Create a whitelist of a library with failed models.",

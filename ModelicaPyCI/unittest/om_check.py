@@ -523,9 +523,10 @@ def parse_args():
     check_test_group.add_argument("--filter-whitelist-flag",
                                   default=False,
                                   action="store_true")
-    check_test_group.add_argument("--extended-ex-flag",
-                                  default=False,
-                                  action="store_true")
+    # TODO: Requires ModelManagent, not supported on OpenModelica-Image
+    # check_test_group.add_argument("--extended-examples",
+    #                               default=False,
+    #                               action="store_true")
     # [OM - Options: OM_CHECK, OM_SIM, DYMOLA_SIM, COMPARE]
     check_test_group.add_argument("--om-options",
                                   nargs="+",
@@ -568,6 +569,7 @@ if __name__ == '__main__':
                 library=args.library,
                 package=package,
                 changed_flag=args.changed_flag,
+                extended_examples_flag=False,
                 simulate_flag=simulate_flag,
                 filter_whitelist_flag=args.filter_whitelist_flag,
                 library_package_mo=LIBRARY_PACKAGE_MO)
@@ -581,22 +583,26 @@ if __name__ == '__main__':
                 options=options)
 
             if options == "DYMOLA_SIM":
-                model_list = mo.get_option_model(library=args.library,
-                                                 package=package,
-                                                 changed_flag=args.changed_flag,
-                                                 simulate_flag=True,
-                                                 filter_whitelist_flag=args.filter_whitelist_flag,
-                                                 library_package_mo=LIBRARY_PACKAGE_MO)
+                model_list = mo.get_option_model(
+                    library=args.library,
+                    package=package,
+                    changed_flag=args.changed_flag,
+                    simulate_flag=True,
+                    extended_examples_flag=False,
+                    filter_whitelist_flag=args.filter_whitelist_flag,
+                    library_package_mo=LIBRARY_PACKAGE_MO)
                 OM.sim_with_dymola(example_list=model_list, pack=package)
             if args.om_options == "COMPARE":
                 ERROR_DATA = {}
                 STATS = None
-                model_list = mo.get_option_model(library=args.library,
-                                                 package=package,
-                                                 changed_flag=args.changed_flag,
-                                                 simulate_flag=True,
-                                                 filter_whitelist_flag=args.filter_whitelist_flag,
-                                                 library_package_mo=LIBRARY_PACKAGE_MO)
+                model_list = mo.get_option_model(
+                    library=args.library,
+                    package=package,
+                    changed_flag=args.changed_flag,
+                    simulate_flag=True,
+                    extended_examples_flag=False,
+                    filter_whitelist_flag=args.filter_whitelist_flag,
+                    library_package_mo=LIBRARY_PACKAGE_MO)
                 STATS = OM.compare_dym_to_om(pack=package,
                                              example_list=model_list,
                                              stats=STATS)
