@@ -38,14 +38,14 @@ def load_dymola_api(dymola_version: str, packages: list, requires_license: bool 
             if not server_is_available:
                 raise ConnectionError("Can't reach license server!")
         lic_counter = 0
-        dym_sta_lic_available = dymola_api.license_is_available
+        dym_sta_lic_available = dymola_api.license_is_available()
         while not dym_sta_lic_available:
             print(f'{COLORS.CRED} No Dymola License is available {COLORS.CEND} \n '
                   f'Check Dymola license after 180.0 seconds')
             dymola_api.close()
             time.sleep(180.0)
             dymola_api = _start_dymola_api(dymola_version=dymola_version, packages=packages)
-            dym_sta_lic_available = dymola_api.license_is_available
+            dym_sta_lic_available = dymola_api.license_is_available()
             lic_counter += 1
             if lic_counter > 10:
                 print(f'There are currently no available Dymola licenses available. Please try again later.')
