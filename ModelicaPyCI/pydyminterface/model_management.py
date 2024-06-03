@@ -90,10 +90,10 @@ def _filter_modelica_types(model_list: list,
                 if extended_model.find(f'{types}') > -1:
                     extended_list.append(extended_model)
                     continue
-    extended_list = list(set(extended_list))
-    for ext in extended_list:
-        model_list.remove(ext)
-    model_list = list(set(model_list))
+        extended_list = list(set(extended_list))
+        for ext in extended_list:
+            model_list.remove(ext)
+        model_list = list(set(model_list))
     return model_list
 
 
