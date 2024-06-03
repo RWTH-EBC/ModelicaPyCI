@@ -240,31 +240,27 @@ class PlotCharts:
         Read unitTest_log from regressionTest, write variable and model name with difference
         Returns:
         """
-        try:
-            check_file(file=self.f_log)
-            with open(self.f_log, "r") as log_file:
-                lines = log_file.readlines()
-            model_variable_list = list()
-            for line in lines:
-                if line.find("*** Warning:") > -1:
-                    if line.find(".mat") > -1:
-                        model = line[line.find("Warning:") + 9:line.find(".mat")]
-                        var = line[line.find(".mat:") + 5:line.find("exceeds ")].lstrip()
-                        model_variable_list.append(f'{model}:{var}')
-                    if line.find("*** Warning: Numerical Jacobian in 'RunScript") > -1 and line.find(".mos") > -1:
-                        model = line[line.rfind(os.sep) + 1:line.find(".mos")].lstrip()
-                        var = ""
-                        model_variable_list.append(f'{model}:{var}')
-                    if line.find(
-                            "*** Warning: Failed to interpret experiment annotation in 'RunScript") > -1 and line.find(
-                        ".mos") > -1:
-                        model = line[line.rfind(os.sep) + 1:line.find(".mos")].lstrip()
-                        var = ""
-                        model_variable_list.append(f'{model}:{var}')
-            return model_variable_list
-        except IOError:
-            print(f'Error: File {self.f_log} does not exist.')
-            exit(1)
+        with open(self.f_log, "r") as log_file:
+            lines = log_file.readlines()
+        model_variable_list = list()
+        for line in lines:
+            if line.find("*** Warning:") > -1:
+                if line.find(".mat") > -1:
+                    model = line[line.find("Warning:") + 9:line.find(".mat")]
+                    var = line[line.find(".mat:") + 5:line.find("exceeds ")].lstrip()
+                    model_variable_list.append(f'{model}:{var}')
+                if line.find("*** Warning: Numerical Jacobian in 'RunScript") > -1 and line.find(".mos") > -1:
+                    model = line[line.rfind(os.sep) + 1:line.find(".mos")].lstrip()
+                    var = ""
+                    model_variable_list.append(f'{model}:{var}')
+                if line.find(
+                        "*** Warning: Failed to interpret experiment annotation in 'RunScript") > -1 and line.find(
+                    ".mos") > -1:
+                    model = line[line.rfind(os.sep) + 1:line.find(".mos")].lstrip()
+                    var = ""
+                    model_variable_list.append(f'{model}:{var}')
+        return model_variable_list
+
 
     def get_ref_file(self, model):
         """
@@ -432,7 +428,6 @@ class PlotCharts:
                 file_tmp.write(html_chart)
             print(f'Create html file with reference results.')
 
-
     def get_funnel_comp(self):
         """
 
@@ -458,7 +453,7 @@ class PlotCharts:
                     shutil.rmtree(f'{CI_CONFIG.plots.chart_dir}{os.sep}{folders}')
 
 
-def create_layout(self, temp_dir: Path, layout_html_file: Path):
+def create_layout(temp_dir: Path, layout_html_file: Path):
     """
     Creates a layout index that has all links to the subordinate index files.
     """
@@ -477,19 +472,6 @@ def create_layout(self, temp_dir: Path, layout_html_file: Path):
         html_chart = my_template.render(packages=package_list)
         with open(layout_html_file, "w") as file_tmp:
             file_tmp.write(html_chart)
-
-def check_file(file):
-    """
-
-    Args:
-        file ():
-    """
-    file_check = os.path.isfile(file)
-    if file_check is False:
-        print(f'{file} does not exists.')
-        exit(1)
-    else:
-        print(f'{file} exists.')
 
 
 def parse_args():
@@ -611,7 +593,7 @@ if __name__ == '__main__':
                                                     var=ref[ref.rfind(".mat") + 5:])
             charts.create_index_layout()
             create_layout(temp_dir=Path(CI_CONFIG.plots.chart_dir),
-                                 layout_html_file=Path(CI_CONFIG.plots.chart_dir).joinpath("index.html"))
+                          layout_html_file=Path(CI_CONFIG.plots.chart_dir).joinpath("index.html"))
             config_structure.prepare_data(
                 source_target_dict={
                     CI_CONFIG.plots.chart_dir: CI_CONFIG.get_file_path("result", "plot_dir").joinpath(args.packages)
