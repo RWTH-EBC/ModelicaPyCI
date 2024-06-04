@@ -1,28 +1,20 @@
 import argparse
 import os
 import shutil
-import pandas as pd
-from mako.template import Template
-from ModelicaPyCI.config import CI_CONFIG, ColorConfig
-from ModelicaPyCI.structure import config_structure
 from pathlib import Path
 
-COLORS = ColorConfig()
+import pandas as pd
+from mako.template import Template
+
+from ModelicaPyCI.config import CI_CONFIG
+from ModelicaPyCI.structure import config_structure
+from ModelicaPyCI.utils import logger
 
 
 class PlotCharts:
 
-    def __init__(self, package, library):
-        """
-        Args:
-            package (): package to plot
-            library (): library to plot
-        init:
-            self.f_log ():  path for unitTest-dymola.log, important for errors
-            self.temp_chart_path (): path for every single package
-        """
+    def __init__(self, result_path, library):
         self.library = library
-        result_path = Path(CI_CONFIG.get_file_path("result", "regression_dir"), package)
         self.f_log = result_path.joinpath("unitTests-dymola.log")
         self.csv_file = Path("reference.csv")
         self.test_csv = Path("test.csv")
@@ -41,10 +33,10 @@ class PlotCharts:
         update_ref_list = list()
         for reference_file in reference_file_list:
             if os.path.isfile(reference_file) is False:
-                print(f'File {reference_file} does not exist.')
+                logger.error(f'File {reference_file} does not exist.')
             else:
                 update_ref_list.append(reference_file)
-                print(f'\nCreate plots for reference result {reference_file}')
+                logger.info(f'\nCreate plots for reference result {reference_file}')
         return update_ref_list
 
     def write_html_plot_templates(self, reference_file_list):
@@ -65,10 +57,10 @@ class PlotCharts:
         Returns:
         """
         if os.path.isfile(CI_CONFIG.interact.get_path(CI_CONFIG.interact.show_ref_file)) is False:
-            print(f'File {CI_CONFIG.interact.get_path(CI_CONFIG.interact.show_ref_file)} does not exist.')
+            logger.error(f'File {CI_CONFIG.interact.get_path(CI_CONFIG.interact.show_ref_file)} does not exist.')
             exit(0)
         else:
-            print(f'Plot results from file {CI_CONFIG.interact.get_path(CI_CONFIG.interact.show_ref_file)}')
+            logger.info(f'Plot results from file {CI_CONFIG.interact.get_path(CI_CONFIG.interact.show_ref_file)}')
             with open(CI_CONFIG.interact.get_path(CI_CONFIG.interact.show_ref_file), "r") as file:
                 lines = file.readlines()
             reference_file_list = list()
@@ -77,7 +69,7 @@ class PlotCharts:
                     reference_file_list.append(f'{self.ref_path}{os.sep}{line.strip()}')
                     continue
             if len(reference_file_list) == 0:
-                print(
+                logger.info(
                     f'No reference files in file {CI_CONFIG.interact.get_path(CI_CONFIG.interact.show_ref_file)}. Please add here your reference files you want to '
                     f'update')
                 exit(0)
@@ -149,10 +141,10 @@ class PlotCharts:
         Returns:
         """
         if os.path.isfile(CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)) is False:
-            print(f'File {CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)} directory does not exist.')
+            logger.error(f'File {CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)} directory does not exist.')
             exit(0)
         else:
-            print(f'Plot results from file {CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)}')
+            logger.info(f'Plot results from file {CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)}')
         with open(CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file), "r") as file:
             lines = file.readlines()
         reference_list = list()
@@ -168,10 +160,10 @@ class PlotCharts:
         Returns:
         """
         if os.path.isfile(CI_CONFIG.get_file_path("ci_files", "new_create_ref_file")) is False:
-            print(f'File {CI_CONFIG.get_file_path("ci_files", "new_create_ref_file")} directory does not exist.')
+            logger.error(f'File {CI_CONFIG.get_file_path("ci_files", "new_create_ref_file")} directory does not exist.')
             exit(0)
         else:
-            print(f'Plot results from file {CI_CONFIG.get_file_path("ci_files", "new_create_ref_file")}')
+            logger.info(f'Plot results from file {CI_CONFIG.get_file_path("ci_files", "new_create_ref_file")}')
         with open(CI_CONFIG.get_file_path("ci_files", "new_create_ref_file"), "r") as file:
             lines = file.readlines()
         reference_list = list()
@@ -308,16 +300,16 @@ class PlotCharts:
                 value_list.append("[" + i + "]")
             return value_list
         except pd.errors.EmptyDataError:
-            print(f'{csv_file} is empty')
+            logger.error(f'{csv_file} is empty')
 
     def check_folder_path(self):
         if os.path.isdir(self.funnel_path) is False:
-            print(f'Funnel directory does not exist.')
+            logger.error(f'Funnel directory does not exist.')
         else:
-            print(f'Search for reference result in {self.funnel_path}')
+            logger.info(f'Search for reference result in {self.funnel_path}')
         if os.path.isdir(self.temp_chart_path) is False:
             os.mkdir(self.temp_chart_path)
-            print(f'Save plot in {self.temp_chart_path}')
+            logger.info(f'Save plot in {self.temp_chart_path}')
         if os.path.isdir(CI_CONFIG.plots.chart_dir) is False:
             os.mkdir(CI_CONFIG.plots.chart_dir)
 
@@ -335,11 +327,11 @@ class PlotCharts:
                     path_name = f'{self.library}{os.sep}funnel_comp{os.sep}{file}'.strip()
                     var = file[file.find(".mat") + 5:]
                     if os.path.isdir(path_name) is False:
-                        print(
-                            f'Cant find folder: {COLORS.CRED}{model}{COLORS.CEND} with variable {COLORS.CRED}{var}{COLORS.CEND}')
+                        logger.error(
+                            f'Cant find folder: {model} with variable {var}')
                     else:
-                        print(
-                            f'Plot model: {COLORS.green}{model}{COLORS.CEND} with variable:{COLORS.green} {var}{COLORS.CEND}')
+                        logger.info(
+                            f'Plot model: {model} with variable: {var}')
                         value = self._read_csv_funnel(url=path_name)
                         my_template = Template(filename=CI_CONFIG.plots.templates_chart_file)
                         html_chart = my_template.render(values=value,
@@ -351,10 +343,10 @@ class PlotCharts:
         else:
             path_name = (f'{self.library}{os.sep}funnel_comp{os.sep}{model}.mat_{var}'.strip())
             if os.path.isdir(path_name) is False:
-                print(
-                    f'Cant find folder: {COLORS.CRED}{model}{COLORS.CEND} with variable {COLORS.CRED}{var}{COLORS.CEND}')
+                logger.error(
+                    f'Cant find folder: {model} with variable {var}')
             else:
-                print(f'Plot model: {COLORS.green}{model}{COLORS.CEND} with variable:{COLORS.green} {var}{COLORS.CEND}')
+                logger.info(f'Plot model: {model} with variable: {var}')
                 value = self._read_csv_funnel(url=path_name)
                 my_template = Template(filename=CI_CONFIG.plots.templates_chart_file)
                 html_chart = my_template.render(values=value,
@@ -373,11 +365,11 @@ class PlotCharts:
             legend_list ():
         """
         if os.path.isfile(reference_file) is False:
-            print(
-                f'Cant find folder: {COLORS.CRED}{reference_file[reference_file.rfind(os.sep) + 1:]}{COLORS.CEND} with variables: {COLORS.CRED}{legend_list}{COLORS.CEND}')
+            logger.error(
+                f'Cant find folder: {reference_file[reference_file.rfind(os.sep) + 1:]} with variables: {legend_list}')
         else:
-            print(
-                f'Plot model: {COLORS.green}{reference_file[reference_file.rfind(os.sep) + 1:]}{COLORS.CEND} with variables:\n{COLORS.green}{legend_list}{COLORS.CEND}\n')
+            logger.info(
+                f'Plot model: {reference_file[reference_file.rfind(os.sep) + 1:]} with variables:\n{legend_list}\n')
             my_template = Template(filename=CI_CONFIG.plots.templates_chart_file)
             html_chart = my_template.render(values=value_list,
                                             var=legend_list,
@@ -398,9 +390,9 @@ class PlotCharts:
         path_name = (f'{self.library}{os.sep}funnel_comp{os.sep}{model}.mat_{var}'.strip())
         folder_name = os.path.isdir(path_name)
         if folder_name is False:
-            print(f'Cant find folder: {COLORS.CRED}{model}{COLORS.CEND} with variable {COLORS.CRED}{var}{COLORS.CEND}')
+            logger.error(f'Cant find folder: {model} with variable {var}')
         else:
-            print(f'Plot model: {COLORS.green}{model}{COLORS.CEND} with variable:{COLORS.green} {var}{COLORS.CEND}')
+            logger.info(f'Plot model: {model} with variable: {var}')
             value = self._read_csv_funnel(url=path_name)
             my_template = Template(filename=CI_CONFIG.plots.templates_chart_file)
             html_chart = my_template.render(values=value,
@@ -420,14 +412,14 @@ class PlotCharts:
                 html_file_list.append(file)
         my_template = Template(filename=CI_CONFIG.plots.templates_index_file)
         if len(html_file_list) == 0:
-            print(f'No html files')
+            logger.info(f'No html files')
             os.rmdir(self.temp_chart_path)
             exit(0)
         else:
             html_chart = my_template.render(html_model=html_file_list)
             with open(CI_CONFIG.plots.templates_index_file, "w") as file_tmp:
                 file_tmp.write(html_chart)
-            print(f'Create html file with reference results.')
+            logger.info(f'Create html file with reference results.')
 
     def get_funnel_comp(self):
         """
@@ -443,7 +435,7 @@ class PlotCharts:
 
         """
         if os.path.isdir(CI_CONFIG.plots.chart_dir) is False:
-            print(f'Directory {CI_CONFIG.plots.chart_dir} does not exist.')
+            logger.error(f'Directory {CI_CONFIG.plots.chart_dir} does not exist.')
         else:
             folder_list = os.listdir(CI_CONFIG.plots.chart_dir)
             for folders in folder_list:
@@ -465,10 +457,10 @@ def create_layout(temp_dir: Path, layout_html_file: Path):
         else:
             package_list.append(folders)
     if len(package_list) == 0:
-        print(f'No html files')
+        logger.info(f'No html files')
         exit(0)
     else:
-        print(package_list)
+        logger.info(package_list)
         my_template = Template(filename=CI_CONFIG.plots.templates_layout_file)
         html_chart = my_template.render(packages=package_list)
         with open(layout_html_file, "w") as file_tmp:
@@ -555,14 +547,18 @@ if __name__ == '__main__':
         templates_layout_file=CI_CONFIG.plots.templates_layout_file,
     )
     for package in args.packages:
-        charts = PlotCharts(package=package,
+        result_path = Path(CI_CONFIG.get_file_path("result", "regression_dir"), package)
+        if not os.path.isdir(result_path):
+            logger.info("Package %s has no regression directory, no plots to prepare.", package)
+            continue
+        charts = PlotCharts(result_path=result_path,
                             library=args.library)
         if args.line_html_flag is True:
             charts.delete_folder()
             charts.check_folder_path()
             if args.error_flag is True:
                 model_var_list = charts.read_unit_test_log()
-                print(f'Plot line chart with different reference results.\n')
+                logger.info(f'Plot line chart with different reference results.\n')
                 for model_variable in model_var_list:
                     model_variable = model_variable.split(":")
                     if args.funnel_comp_flag is True:
@@ -571,7 +567,7 @@ if __name__ == '__main__':
                     if args.ref_txt_flag is True:
                         ref_file = charts.get_ref_file(model=model_variable[0])
                         if ref_file is None:
-                            print(f'Reference file for model {model_variable[0]} does not exist.')
+                            logger.error(f'Reference file for model {model_variable[0]} does not exist.')
                             continue
                         else:
                             result = charts.get_values(reference_list=ref_file)
