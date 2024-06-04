@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Union
 from pathlib import Path
@@ -151,16 +152,11 @@ def load_config():
     if "CI_CONFIG" not in locals():
         if env_var in os.environ:
             config_file = Path(os.environ["CI_PYTHON_CONFIG_FILE"])
-            print(f"Using CI_PYTHON_CONFIG_FILE located at {config_file}")
+            logging.info(f"Using CI_PYTHON_CONFIG_FILE located at {config_file}")
             return load_toml_config(path=config_file)
-        print("No variable CI_PYTHON_CONFIG_FILE defined, using default config.")
+        logging.warning("No variable CI_PYTHON_CONFIG_FILE defined, using default config.")
         return CIConfig()  # Use default
     return CI_CONFIG
 
 
 CI_CONFIG = load_config()
-
-
-if __name__ == '__main__':
-    print(CI_CONFIG)
-    save_toml_config(CI_CONFIG, "config/ci_test_config.toml")
