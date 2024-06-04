@@ -11,6 +11,7 @@ class BaseModelNoExtra(BaseModel):
 
 
 class ColorConfig(BaseModelNoExtra):
+    # TODO: Use Logging in all cases.
     CRED: str = Field(
         description="Start ANSI escape code for red text",
         default='\033[91m'

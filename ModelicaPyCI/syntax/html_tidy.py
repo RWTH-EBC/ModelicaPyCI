@@ -6,11 +6,11 @@ import sys
 from tidylib import Tidy
 from ModelicaPyCI.structure import config_structure
 from ModelicaPyCI.structure import sort_mo_model as mo
-from ModelicaPyCI.config import CI_CONFIG, ColorConfig
+from ModelicaPyCI.config import CI_CONFIG
+from ModelicaPyCI.utils import logger
 
 from pathlib import Path
 
-COLORS = ColorConfig()
 
 # ! /usr/bin/env python3.6
 # -*- coding: utf-8 -*-
@@ -117,10 +117,10 @@ class HtmlTidy:
                                             file_counter=file_counter)
             if len(error_list) > 0 and error_list is not None:
                 if self.correct_overwrite:
-                    print(f'Error in file {model_file} with error:')
+                    logger.error(f'Error in file {model_file} with error:')
                     for error in error_list:
-                        print(f'\n{error}\n')
-                    print(f'Overwrite model: {model_file}\n')
+                        logger.error(f'\n{error}\n')
+                    logger.info(f'Overwrite model: {model_file}\n')
                     _call_correct_overwrite(model_name=model_file, document_corr=correct_code)
                     if self.log:
                         correct_code, error_list, html_correct_code, html_code = _getInfoRevisionsHTML(
@@ -154,10 +154,10 @@ class HtmlTidy:
                                                 file_counter=file_counter)
                 if len(error_list) > 0:
                     if self.correct_overwrite:
-                        print(f'Error in file {model_file} with error:')
+                        logger.error(f'Error in file {model_file} with error:')
                         for error in error_list:
-                            print(f'\n{error}\n')
-                        print(f'Overwrite model: {model_file}\n')
+                            logger.error(f'\n{error}\n')
+                        logger.info(f'Overwrite model: {model_file}\n')
                         _call_correct_overwrite(model_name=model_file, document_corr=correct_code)
                         if self.log:
                             correct_code, error_list, html_correct_code, html_code = _getInfoRevisionsHTML(
@@ -190,8 +190,8 @@ class HtmlTidy:
         if len(error_list) > 0 and error_list is not None:
             with open(f'{self.html_error_log}', "a", encoding="utf-8") as error_log_file, open(
                     f'{self.html_correct_log}', "a", encoding="utf-8") as correct_log_file:
-                print(f'Error-log-file is saved in {self.html_error_log}')
-                print(f'Correct-log-file is saved in {self.html_correct_log}')
+                logger.error(f'Error-log-file is saved in {self.html_error_log}')
+                logger.error(f'Correct-log-file is saved in {self.html_correct_log}')
                 error_log_file.write(f'\n---- {model_file} ----')
                 correct_log_file.write(
                     f'\n---- {model_file} ----'
@@ -215,7 +215,7 @@ class HtmlTidy:
         root_dir = self.package.replace(".", os.sep)
         if os.path.exists(root_dir + "_backup") is False and file_counter == 1:
             shutil.copytree(root_dir, root_dir + "_backup")
-            print(f'You can find your backup under {root_dir}_backup')
+            logger.info(f'You can find your backup under {root_dir}_backup')
         os.remove(model_file)
         newfile = open(model_file, "w+b")
         newfile.write(document_corr.encode("utf-8"))
@@ -236,8 +236,8 @@ def _get_whitelist_library_model():
                 whitelist_library_list.append(line)
         return whitelist_library_list
     except IOError:
-        print(f'Error: File {CI_CONFIG.get_file_path("whitelist", "ibpsa_file")} '
-              f'does not exist. Check without a whitelist.')
+        logger.error(f'Error: File {CI_CONFIG.get_file_path("whitelist", "ibpsa_file")} '
+                     f'does not exist. Check without a whitelist.')
         return whitelist_library_list
 
 
@@ -564,7 +564,7 @@ def _call_correct_view(model_file, error_list, html_correct_code, html_code):
         html_code (): html code of a modelica file
     """
     if len(error_list) > 0:
-        print(
+        logger.error(
             f'\n---- {model_file} ----\n'
             f'-------- HTML Code --------\n'
             f'{html_code}'
@@ -572,7 +572,7 @@ def _call_correct_view(model_file, error_list, html_correct_code, html_code):
             f'{html_correct_code}'
             f'\n-------- Errors --------')
         for error in error_list:
-            print(f'\n{error}\n')
+            logger.error(f'\n{error}\n')
 
 
 def call_read_log(html_error_log, html_correct_log):
@@ -600,17 +600,17 @@ def _write_exit(err_list):
     try:
         exit_file = open(CI_CONFIG.get_file_path("ci_files", "exit_file"), "w")
         if len(err_list) > 0:
-            print(f'{COLORS.CRED}Syntax Error:{COLORS.CEND} Check HTML-logfile')
+            logger.error(f'Syntax Error: Check HTML-logfile')
             exit_file.write("exit 1")
             var = 1
         else:
-            print(f'{COLORS.green}HTML Check was successful!{COLORS.CEND}')
+            logger.info(f'HTML Check was successful!')
             exit_file.write("exit 0")
             var = 0
         exit_file.close()
         return var
     except IOError:
-        print(f'Error: File {CI_CONFIG.get_file_path("ci_files", "exit_file")} does not exist.')
+        logger.error(f'Error: File {CI_CONFIG.get_file_path("ci_files", "exit_file")} does not exist.')
 
 
 def _remove_whitelist_model(library_list, whitelist_library_list):

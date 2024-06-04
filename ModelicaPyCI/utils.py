@@ -11,11 +11,31 @@ COLORS = ColorConfig()
 logger = logging.getLogger("ModelicaPyCI")
 
 
+class ColoredFormatter(logging.Formatter):
+    """Logging Formatter to add colors and count warning / errors"""
+
+    def __init__(self, fmt=None, datefmt=None, style='%', validate=True, *, defaults=None):
+        super().__init__(fmt=fmt, datefmt=datefmt, style=style, validate=validate, defaults=defaults)
+        self.colored_formats = {
+            logging.DEBUG: logging.Formatter(COLORS.yellow + fmt + COLORS.CEND),
+            logging.INFO: logging.Formatter(COLORS.green + fmt + COLORS.CEND),
+            logging.WARNING: logging.Formatter(COLORS.blue + fmt + COLORS.CEND),
+            logging.ERROR: logging.Formatter(COLORS.CRED + fmt + COLORS.CEND),
+            logging.CRITICAL: logging.Formatter(COLORS.CRED + fmt + COLORS.CEND)
+        }
+
+    def format(self, record):
+        return self.colored_formats.get(record.levelno).format(record)
+
+
 def setup_logging():
     if not logging.getLogger().hasHandlers():
-        logging.basicConfig(level=logging.INFO,
-                            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        logging.debug("Logging is set up.")
+        logging.basicConfig(level=logging.INFO)
+        root_logger = logging.getLogger()
+        root_logger.handlers[0].setFormatter(
+            ColoredFormatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        )
+        logging.info("Logging is set up.")
 
 
 setup_logging()

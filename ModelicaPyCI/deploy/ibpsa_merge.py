@@ -7,6 +7,7 @@ from natsort import natsorted
 from buildingspy.development import merger
 
 from ModelicaPyCI.config import CI_CONFIG
+from ModelicaPyCI.utils import logger
 
 
 def merge_workflow(
@@ -24,7 +25,7 @@ def merge_workflow(
     )
     mer.set_excluded_directories(["Experimental", "Obsolete"])
     mer.merge()
-    print("Merged.")
+    logger.info("Merged.")
 
     temporary_mos_path = Path().joinpath(temporary_mos_path)
     merge_library_scripts_dir = Path(merge_library_dir).joinpath(merge_library, merge_library_mos_scripts)
@@ -39,7 +40,7 @@ def merge_workflow(
                                                           last_mlibrary_conversion=last_mlibrary_conversion,
                                                           library_conversions=library_conversions)
     if result is True:
-        print(
+        logger.info(
             f'The {library} conversion script '
             f'{last_library_conversion} is up to date with '
             f'{merge_library} conversion script {last_mlibrary_conversion}'
@@ -64,7 +65,7 @@ def merge_workflow(
             old_to_numb=old_to_numb,
             new_to_numb=new_to_numb
         )
-        print(f'New {library} Conversion scrip was created: {new_conversion_script}')
+        logger.info(f'New {library} Conversion scrip was created: {new_conversion_script}')
     correct_user_guide(library_dir)
 
 
@@ -77,10 +78,10 @@ def _read_library_conversions(library_scripts_dir: Path):
     """
     filelist = (glob.glob(f'{library_scripts_dir}{os.sep}*.mos'))
     if len(filelist) == 0:
-        print(f"Cant find a Conversion Script in {library_scripts_dir}")
+        logger.error(f"Cant find a Conversion Script in {library_scripts_dir}")
         exit(1)
     filelist = natsorted(filelist)[::-1]
-    print(f'Conversion scripts: {filelist}')
+    logger.info(f'Conversion scripts: {filelist}')
     return filelist
 
 
@@ -98,12 +99,12 @@ def _copy_merge_mos_script(
         os.mkdir(temporary_mos_path)
     mos_file_list = (glob.glob(f"{merge_library_scripts_dir}{os.sep}*.mos"))
     if len(mos_file_list) == 0:
-        print(f'Cant find a Conversion Script in path {merge_library_scripts_dir}')
+        logger.error('Cant find a Conversion Script in path %s, exiting', merge_library_scripts_dir)
         exit(1)
     last_ibpsa_conv = natsorted(mos_file_list)[(-1)]
     last_ibpsa_conv = last_ibpsa_conv.replace("/", os.sep)
     last_ibpsa_conv = last_ibpsa_conv.replace("\\", os.sep)
-    print(f'Latest IBPSA Conversion script: {last_ibpsa_conv}')
+    logger.info(f'Latest IBPSA Conversion script: {last_ibpsa_conv}')
     shutil.copy(last_ibpsa_conv, temporary_mos_path)
     return last_ibpsa_conv
 
@@ -132,7 +133,7 @@ def _create_convert(
     start_name = f"Convert{library}_from_"
     conversion_number = last_library_conversion.replace(start_name, "").replace(".mos", "")
     # Now: X.X.X_to_Y.Y.Y
-    print(f'Latest conversion number: {conversion_number}')
+    logger.info(f'Latest conversion number: {conversion_number}')
     old_to_numb = conversion_number.split("_to_")[-1]
 
     # Update TO Number 1.0.2 old_to_numb == new_from_numb
