@@ -68,13 +68,14 @@ class ModelManagement:
         model_list = self.dymola_api.dymola.ExecuteCommand(
             f'ModelManagement.Structure.AST.Classes.ExtendsInClass("{model}");'
         )
-        extended_list = _filter_modelica_types(model_list=model_list)
-        return extended_list
+        return _filter_modelica_types(model_list=model_list)
 
     def get_used_models(self, model: str = ""):
         model_list = self.dymola_api.dymola.ExecuteCommand(
             f'ModelManagement.Structure.Instantiated.UsedModels("{model}");'
         )
+        if model_list is None:
+            model_list = []
         extended_list = _filter_modelica_types(model_list=model_list)
         return extended_list
 
@@ -87,7 +88,7 @@ def _filter_modelica_types(model_list: list,
     if model_list is not None:
         for extended_model in model_list:
             for types in type_list:
-                if extended_model.find(f'{types}') > -1:
+                if extended_model.find(types) > -1:
                     extended_list.append(extended_model)
                     continue
         extended_list = list(set(extended_list))
