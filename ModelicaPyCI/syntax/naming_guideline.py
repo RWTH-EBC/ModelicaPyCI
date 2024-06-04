@@ -536,7 +536,7 @@ def move_output_to_artifacts_and_post_comment(file, args):
         github_token=args.github_token
     )
     shutil.copy(file, CI_CONFIG.get_file_path("result", "naming_violation_file"))
-    page_url = f'{args.gitlab_page}/{CI_CONFIG.get_dir_path("result").as_posix()}'
+    page_url = f'{args.gitlab_page}/{args.working_branch}/{CI_CONFIG.result.naming_violation_file}'
     print(f'Setting gitlab page url: {page_url}')
     pr_number = pull_request.get_pr_number()
     message = (f'Naming convention is possibly violated or documentation is missing in changed files. '
