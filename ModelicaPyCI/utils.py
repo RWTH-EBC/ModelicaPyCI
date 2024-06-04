@@ -14,8 +14,8 @@ logger = logging.getLogger("ModelicaPyCI")
 class ColoredFormatter(logging.Formatter):
     """Logging Formatter to add colors and count warning / errors"""
 
-    def __init__(self, fmt=None, datefmt=None, style='%', validate=True, *, defaults=None):
-        super().__init__(fmt=fmt, datefmt=datefmt, style=style, validate=validate, defaults=defaults)
+    def __init__(self, fmt: str):
+        super().__init__(fmt=fmt)
         self.colored_formats = {
             logging.DEBUG: logging.Formatter(COLORS.yellow + fmt + COLORS.CEND),
             logging.INFO: logging.Formatter(COLORS.green + fmt + COLORS.CEND),
