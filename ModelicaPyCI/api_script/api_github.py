@@ -5,9 +5,8 @@ from pathlib import Path
 import requests
 from git import Repo
 
-from ModelicaPyCI.config import ColorConfig
-
-COLORS = ColorConfig()
+from ModelicaPyCI.config import ColorConfig, CI_CONFIG
+from ModelicaPyCI.utils import logger
 
 
 def clone_repository(clone_into_folder: Path, git_url: str):
@@ -19,12 +18,12 @@ def clone_repository(clone_into_folder: Path, git_url: str):
         git_url (): Git url of the cloned project.
     """
     if os.path.exists(clone_into_folder):
-        print(f'{clone_into_folder} folder already exists.')
+        logger.info(f'{clone_into_folder} folder already exists.')
         return
-    print(f'Clone {clone_into_folder} Repo')
+    logger.info(f'Clone {clone_into_folder} Repo')
     if "@" in git_url:
         url, branch = git_url.split("@")
-        print(f"Converted {git_url=} to {url=} with {branch=}")
+        logger.info(f"Converted {git_url=} to {url=} with {branch=}")
         Repo.clone_from(url, clone_into_folder, branch=branch)
     else:
         Repo.clone_from(git_url, clone_into_folder)
@@ -48,10 +47,10 @@ class PullRequestGithub(object):
             if name == self.working_branch:
                 pr_number = pull["number"]
                 if pr_number is None:
-                    print(f'Cant find Pull Request Number')
+                    logger.error(f'Cant find Pull Request Number')
                     exit(1)
                 else:
-                    print(f'Setting pull request number: {pr_number}')
+                    logger.info(f'Setting pull request number: {pr_number}')
                     return pr_number
 
     def get_github_username(self, branch):
@@ -66,13 +65,13 @@ class PullRequestGithub(object):
         if commit is not None:
             assignees_owner = commit["name"]
             if assignees_owner is not None:
-                print(f'Setting login name: {assignees_owner}')
+                logger.info(f'Setting login name: {assignees_owner}')
             else:
                 assignees_owner = "ebc-aixlib-bot"
-                print(f'Setting login name: {assignees_owner}')
+                logger.info(f'Setting login name: {assignees_owner}')
         else:
             assignees_owner = "ebc-aixlib-bot"
-            print(f'Setting login name: {assignees_owner}')
+            logger.info(f'Setting login name: {assignees_owner}')
         return assignees_owner
 
     def return_owner(self):
@@ -93,13 +92,13 @@ class PullRequestGithub(object):
         }
         response = requests.request("POST", url, headers=headers, data=payload)
         if not response.ok:
-            print(f'{COLORS.CRED}  Error:   {COLORS.CEND}  {response.text}')
+            logger.error(response.text)
             if "A pull request already exists" in str(response.text):
-                print("The pull-request seems to already exist, won't update it.")
+                logger.info("The pull-request seems to already exist, won't update it.")
                 exit(0)
             exit(1)
         else:
-            print(f'{COLORS.green}  Success:   {COLORS.CEND}  {response.text}')
+            logger.info(response.text)
         return response
 
     def update_pull_request_assignees(self, pull_request_number, assignees_owner, label_name):
@@ -117,7 +116,7 @@ class PullRequestGithub(object):
             assignees = f'\"assignees\":[\"{assignees_owner}\"]'
             payload = "{\r\n" + assignees + ",\r\n" + labels + "\r\n}"
             requests.request("PATCH", url, headers=headers, data=payload)
-        print(f'User {assignees_owner} assignee to pull request Number {str(pull_request_number)}')
+        logger.info(f'User {assignees_owner} assignee to pull request Number {str(pull_request_number)}')
 
     def post_pull_request_comment(self, pull_request_number, post_message):
         url = f'https://api.github.com/repos/{self.github_repo}/issues/{str(pull_request_number)}/comments'
@@ -199,8 +198,11 @@ if __name__ == '__main__':
     if not args.post_pr_comment_flag and not args.create_pr_flag:
         raise TypeError("Can't do anything, neither comment nor pr flag is set.")
     if args.post_pr_comment_flag is True:
-        page_url = f'{args.gitlab_page}/{args.working_branch}/charts'
-        print(f'Setting gitlab page url: {page_url}')
+        if not os.path.isdir(CI_CONFIG.get_file_path("result", "plot_dir")):
+            logger.info("No results to report, won't post PR comment")
+            exit(0)
+        page_url = f'{args.gitlab_page}/{args.working_branch}/{CI_CONFIG.result.plot_dir}'
+        logger.info(f'Setting gitlab page url: {page_url}')
         pr_number = pull_request.get_pr_number()
         if args.prepare_plot_flag is True:
             message = (f'Errors in regression test. '
