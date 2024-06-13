@@ -9,13 +9,14 @@ jsons
 regex
 python-time
 DateTime
+pydantic
 pytest-shutil
 pytest
 glob2
 GitPython
 pytidylib
 OMPython
-ebcpy
+ebcpy>=0.4.1
 tomli_w
 numpy
 scipy
@@ -23,9 +24,5 @@ matplotlib
 lib-platform
 toml
 tomli_w
-
-
-
-
-
-
+buildingspy>=5.1.0
+requests

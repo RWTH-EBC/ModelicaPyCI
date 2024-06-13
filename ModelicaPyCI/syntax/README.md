@@ -15,15 +15,15 @@ Return a log file.
 | --whitelist | Create a new whitelist for a Library.|
 | --correct-view  | Check and print the Correct HTML Code.|
 | --library  | library tested for correct html syntax.|
-| --wh-library | library tested for correct html syntax.|
+| --whitelist-library | library tested for correct html syntax.|
 | --git-url  | Url repository of a library for which a whitelist is written.|
 | --filter-whitelist | Argument that models on the whitelist are not tested (default: True).|
 
 
 #### Example: Execution on gitlab runner (linux)
-    python Dymola_python_tests/CITests/SyntaxTests/html_tidy_errors.py --s AixLib --correct-view --log  --filter-whitelist
-    python Dymola_python_tests/CITests/SyntaxTests/html_tidy_errors.py --s AixLib --correct-overwrite --filter-whitelist --log
-    python Dymola_python_tests/CITests/SyntaxTests/html_tidy_errors.py --whitelist --git-url https://github.com/ibpsa/modelica-ibpsa.git --wh-library IBPSA
+    python modelicapyci_tests/CITests/SyntaxTests/html_tidy_errors.py --s AixLib --correct-view --log  --filter-whitelist
+    python modelicapyci_tests/CITests/SyntaxTests/html_tidy_errors.py --s AixLib --correct-overwrite --filter-whitelist --log
+    python modelicapyci_tests/CITests/SyntaxTests/html_tidy_errors.py --whitelist --git-url https://github.com/ibpsa/modelica-ibpsa.git --whitelist-library IBPSA
 
 ![ModelManagement_StyleChecking.PNG](../../Documentation/Images/HTMLProcess.png)
 For more information look at following [Repository](https://github.com/RWTH-EBC/HTML-Tidy-Modelica).
@@ -41,8 +41,8 @@ Return a log file.
 | --changed-models  | Check only changed models with last commit push (in CI: ci_changed_model_list.txt)|
 
 #### Example: Execution on gitlab runner (linux)
-    xvfb-run -n 77 python Dymola_python_tests/CITests/SyntaxTests/StyleChecking.py -s AixLib -p AixLib/package.mo -DS 2022
-    xvfb-run -n 77 python Dymola_python_tests/CITests/SyntaxTests/StyleChecking.py -s AixLib -p AixLib/package.mo -CM -DS 2022
+    xvfb-run -n 77 python modelicapyci_tests/CITests/SyntaxTests/StyleChecking.py -s AixLib -p AixLib/package.mo -DS 2022
+    xvfb-run -n 77 python modelicapyci_tests/CITests/SyntaxTests/StyleChecking.py -s AixLib -p AixLib/package.mo -CM -DS 2022
 
 ![ModelManagement_StyleChecking.PNG](../../Documentation/Images/ModelManagement_StyleChecking.PNG)
 

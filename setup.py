@@ -10,6 +10,7 @@ with open("dependency_requirements.txt", 'r') as f:
     dep_required = f.read().splitlines()
 version = "0.1.0"
 
+
 def copy_non_code_file(non_code_dir:list, not_include:list):
     path_file_dict = {}
     for filename in non_code_dir:
@@ -36,9 +37,9 @@ setup(
     license="LICENSE",
     long_description=long_description,
     long_description_content_type='text/markdown',
-    author='Sven Hinrichs',
-    author_email='sven.hinrichs@eonerc.rwth-aachen.de',
-    url="https://git.rwth-aachen.de/EBC/EBC_all/gitlab_ci/Dymola_python_tests",
+    author='Sven Hinrichs, Fabian Wuellhorst, David Jansen',
+    author_email='fabian.wuellhorst@eonerc.rwth-aachen.de, david.jansen@eonerc.rwth-aachen.de',
+    url="https://github.com/RWTH-EBC/ModelicaPyCI",
     packages=find_packages(include=['ModelicaPyCI*',
                                     'config*',
                                     'templates*']),
