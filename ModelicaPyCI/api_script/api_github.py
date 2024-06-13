@@ -5,7 +5,6 @@ from pathlib import Path
 import requests
 from git import Repo
 
-from ModelicaPyCI.config import ColorConfig, CI_CONFIG
 from ModelicaPyCI.utils import logger
 
 

@@ -12,7 +12,8 @@ import toml
 from pydantic import BaseModel
 
 from ModelicaPyCI.api_script.api_github import PullRequestGithub
-from ModelicaPyCI.config import ColorConfig, CI_CONFIG
+from ModelicaPyCI.config import ColorConfig
+from ModelicaPyCI.load_global_config import CI_CONFIG
 from ModelicaPyCI.structure import sort_mo_model as mo
 
 COLORS = ColorConfig()
