@@ -34,16 +34,11 @@ def create_badge(badge_name: str, library: str, main_branch: str):
     simulate_find = [n for n, i in enumerate(titles) if "Simulation" in i]
     assert len(simulate_find) == 1
 
-    # om_readiness == n_simulate / n_total
     # column indices for "Total" and "Simulation" define where the corresponding values are stored
     om_readiness = round(values[simulate_find[0]] /
                          values[total_find[0]], 2)
 
-    # Define thresholds: <0.7=red,
-    #                    <0.8=orange
-    #                    <0.9=yellow
-    #                   >=0.9=green
-
+    # Define thresholds:
     thresholds = {0.6: 'red',
                   0.7: 'orange',
                   0.8: 'yellow',
