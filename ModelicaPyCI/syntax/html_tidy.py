@@ -6,7 +6,7 @@ import sys
 from tidylib import Tidy
 from ModelicaPyCI.structure import config_structure
 from ModelicaPyCI.structure import sort_mo_model as mo
-from ModelicaPyCI.config import CI_CONFIG
+from ModelicaPyCI.load_global_config import CI_CONFIG
 from ModelicaPyCI.utils import logger
 
 from pathlib import Path

@@ -9,7 +9,8 @@ from OMPython import OMCSessionZMQ
 from ebcpy import DymolaAPI, TimeSeriesData
 from ebcpy.utils.statistics_analyzer import StatisticsAnalyzer
 
-from ModelicaPyCI.config import CI_CONFIG, ColorConfig
+from ModelicaPyCI.config import ColorConfig
+from ModelicaPyCI.load_global_config import CI_CONFIG
 from ModelicaPyCI.structure import config_structure
 from ModelicaPyCI.structure import sort_mo_model as mo
 

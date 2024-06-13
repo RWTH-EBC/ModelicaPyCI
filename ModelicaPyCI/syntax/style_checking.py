@@ -1,11 +1,8 @@
 import argparse
 import codecs
-import os
-import sys
 
-from ebcpy import DymolaAPI
-
-from ModelicaPyCI.config import CI_CONFIG, ColorConfig
+from ModelicaPyCI.config import ColorConfig
+from ModelicaPyCI.load_global_config import CI_CONFIG
 from ModelicaPyCI.pydyminterface.model_management import ModelManagement
 from ModelicaPyCI.pydyminterface import python_dymola_interface
 from ModelicaPyCI.structure import sort_mo_model as mo

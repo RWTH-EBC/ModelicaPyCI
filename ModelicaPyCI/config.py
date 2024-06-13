@@ -1,9 +1,7 @@
-import logging
-import os
-from typing import Union
 from pathlib import Path
-import toml
+from typing import Union
 
+import toml
 from pydantic import BaseModel, Field, ConfigDict
 
 
@@ -143,20 +141,3 @@ def load_toml_config(path: Union[Path, str]):
 def save_toml_config(config: BaseModel, path: Union[Path, str]):
     with open(path, "w") as file:
         toml.dump(config.model_dump(), file)
-
-
-def load_config():
-    global CI_CONFIG
-
-    env_var = "CI_PYTHON_CONFIG_FILE"
-    if "CI_CONFIG" not in locals():
-        if env_var in os.environ:
-            config_file = Path(os.environ["CI_PYTHON_CONFIG_FILE"])
-            logging.info(f"Using CI_PYTHON_CONFIG_FILE located at {config_file}")
-            return load_toml_config(path=config_file)
-        logging.warning("No variable CI_PYTHON_CONFIG_FILE defined, using default config.")
-        return CIConfig()  # Use default
-    return CI_CONFIG
-
-
-CI_CONFIG = load_config()

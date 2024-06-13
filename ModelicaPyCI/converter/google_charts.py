@@ -6,7 +6,7 @@ from pathlib import Path
 import pandas as pd
 from mako.template import Template
 
-from ModelicaPyCI.config import CI_CONFIG
+from ModelicaPyCI.load_global_config import CI_CONFIG
 from ModelicaPyCI.structure import config_structure
 from ModelicaPyCI.utils import logger
 

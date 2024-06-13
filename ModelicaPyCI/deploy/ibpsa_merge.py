@@ -6,7 +6,7 @@ import shutil
 from natsort import natsorted
 from buildingspy.development import merger
 
-from ModelicaPyCI.config import CI_CONFIG
+from ModelicaPyCI.load_global_config import CI_CONFIG
 from ModelicaPyCI.utils import logger
 
 

@@ -3,7 +3,7 @@ import shutil
 import urllib.request
 from pathlib import Path
 
-from ModelicaPyCI.config import CI_CONFIG
+from ModelicaPyCI.load_global_config import CI_CONFIG
 from ModelicaPyCI.structure import config_structure
 
 

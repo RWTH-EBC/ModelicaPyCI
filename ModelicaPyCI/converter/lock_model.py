@@ -1,7 +1,8 @@
 import argparse
 import os
 from pathlib import Path
-from ModelicaPyCI.config import CI_CONFIG, ColorConfig
+from ModelicaPyCI.config import ColorConfig
+from ModelicaPyCI.load_global_config import CI_CONFIG
 
 COLORS = ColorConfig()
 

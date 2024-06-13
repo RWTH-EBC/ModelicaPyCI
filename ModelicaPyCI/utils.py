@@ -4,7 +4,8 @@ import uuid
 from pathlib import Path
 from typing import Union
 
-from ModelicaPyCI.config import CI_CONFIG, ColorConfig
+from ModelicaPyCI.config import ColorConfig
+from ModelicaPyCI.load_global_config import CI_CONFIG
 from ModelicaPyCI.structure import config_structure
 
 COLORS = ColorConfig()
