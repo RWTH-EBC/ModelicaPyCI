@@ -34,7 +34,7 @@ class ColorConfig(BaseModelNoExtra):
 
 
 class ModelicaPyCIConfig(BaseModelNoExtra):
-    url: str = "https://github.com/RWTH-EBC/ModelicaPyCI.git@2_pydantic_config"
+    url: str = "https://github.com/RWTH-EBC/ModelicaPyCI.git"
     OM_python_check_model_module: str = "ModelicaPyCI.unittest.om_check"
     test_validate_module: str = "ModelicaPyCI.unittest.checkpackages.validatetest"
     test_reference_module: str = "ModelicaPyCI.unittest.reference_check"
