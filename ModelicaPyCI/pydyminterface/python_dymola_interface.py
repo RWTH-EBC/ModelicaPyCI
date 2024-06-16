@@ -11,8 +11,15 @@ from ModelicaPyCI.utils import logger
 COLORS = ColorConfig()
 
 
-def load_dymola_api(dymola_version: str, packages: list, requires_license: bool = True) -> DymolaAPI:
-    dymola_api = _start_dymola_api(dymola_version=dymola_version, packages=packages)
+def load_dymola_api(
+        dymola_version: str,
+        packages: list,
+        requires_license: bool = True,
+        startup_mos: str = None
+) -> DymolaAPI:
+    dymola_api = _start_dymola_api(
+        dymola_version=dymola_version, packages=packages, startup_mos=startup_mos
+    )
     if requires_license:
         lic = os.environ.get("DYMOLA_RUNTIME_LICENSE", "50064@license2.rz.rwth-aachen.de")
         port, url = None, None
@@ -44,7 +51,9 @@ def load_dymola_api(dymola_version: str, packages: list, requires_license: bool 
                   f'Check Dymola license after 180.0 seconds')
             dymola_api.close()
             time.sleep(180.0)
-            dymola_api = _start_dymola_api(dymola_version=dymola_version, packages=packages)
+            dymola_api = _start_dymola_api(
+                dymola_version=dymola_version, packages=packages, startup_mos=startup_mos
+            )
             dym_sta_lic_available = dymola_api.license_is_available()
             lic_counter += 1
             if lic_counter > 10:
@@ -70,7 +79,7 @@ def check_server_connection(url, port, timeout=5):
         return False
 
 
-def _start_dymola_api(dymola_version: str, packages: list) -> DymolaAPI:
+def _start_dymola_api(packages: list, dymola_version: str = None, startup_mos: str = None) -> DymolaAPI:
     if "win" in sys.platform:
         dymola_exe_path = None
     else:
@@ -78,8 +87,9 @@ def _start_dymola_api(dymola_version: str, packages: list) -> DymolaAPI:
     return DymolaAPI(
         working_directory=os.getcwd(),
         packages=packages,
-        #dymola_version=str(dymola_version),
+        dymola_version=str(dymola_version) if dymola_version is not None else None,
         dymola_exe_path=dymola_exe_path,
         model_name=None,
-        show_window=False
+        show_window=False,
+        mos_script_pre=startup_mos
     )

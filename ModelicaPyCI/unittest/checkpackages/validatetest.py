@@ -389,8 +389,13 @@ def parse_args():
 
     # [Dymola - settings]
     check_test_group.add_argument("--dymola-version",
-                                  default="2022",
+                                  default=None,
                                   help="Version of dymola (Give the number e.g. 2020")
+    check_test_group.add_argument(
+        "--startup-mos",
+        default=None,
+        help="Possible startup-mos script to e.g. load additional libraries"
+    )
     # [ bool - flag]
     check_test_group.add_argument("--changed-flag", action="store_true")
     check_test_group.add_argument("--filter-whitelist-flag", default=False, action="store_true")
@@ -424,7 +429,8 @@ if __name__ == '__main__':
     DYMOLA_API = python_dymola_interface.load_dymola_api(
         dymola_version=ARGS.dymola_version,
         packages=[LIBRARY_PACKAGE_MO] + ARGS.additional_libraries_to_load,
-        requires_license=True
+        requires_license=True,
+        startup_mos=ARGS.startup_mos
     )
 
     if ARGS.create_whitelist_flag is False:

@@ -593,8 +593,13 @@ def parse_args():
         help="Tool for the regression tests. Set to dymola or jmodelica")
     unit_test_group.add_argument(
         "--dymola-version",
-        default="2022",
+        default=None,
         help="Version of Dymola(Give the number e.g. 2022")
+    unit_test_group.add_argument(
+        "--startup-mos",
+        default=None,
+        help="Possible startup-mos script to e.g. load additional libraries"
+    )
     # [ bool - flag]
     unit_test_group.add_argument(
         "-b", "--batch",
@@ -644,7 +649,10 @@ if __name__ == '__main__':
     LIBRARY_PACKAGE_MO = Path(CI_CONFIG.library_root).joinpath(args.library, "package.mo")
 
     dymola_api = python_dymola_interface.load_dymola_api(
-        dymola_version=args.dymola_version, packages=[LIBRARY_PACKAGE_MO], requires_license=False
+        dymola_version=args.dymola_version,
+        packages=[LIBRARY_PACKAGE_MO],
+        requires_license=False,
+        startup_mos=args.startup_mos
     )
     for package in args.packages:
         if args.validate_html_only:

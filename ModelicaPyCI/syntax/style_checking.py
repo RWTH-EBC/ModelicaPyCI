@@ -41,8 +41,13 @@ def parse_args():
     check_test_group = parser.add_argument_group("Arguments to start style tests")
     check_test_group.add_argument("--library", default="AixLib",
                                   help="Path where top-level package.mo of the library is located")
-    check_test_group.add_argument("--dymola-version", default="2022",
+    check_test_group.add_argument("--dymola-version", default=None,
                                   help="Version of Dymola(Give the number e.g. 2022")
+    check_test_group.add_argument(
+        "--startup-mos",
+        default=None,
+        help="Possible startup-mos script to e.g. load additional libraries"
+    )
     check_test_group.add_argument("--changed-flag", action="store_true")
     return parser.parse_args()
 
@@ -51,7 +56,8 @@ if __name__ == '__main__':
     args = parse_args()
     LIBRARY_PACKAGE_MO = Path(CI_CONFIG.library_root).joinpath(args.library, "package.mo")
     dymola_api = python_dymola_interface.load_dymola_api(
-        dymola_version=args.dymola_version, packages=[LIBRARY_PACKAGE_MO], requires_license=False
+        dymola_version=args.dymola_version, packages=[LIBRARY_PACKAGE_MO], requires_license=False,
+        startup_mos=args.startup_mos
     )
 
     mm = ModelManagement(dymola_api=dymola_api)
