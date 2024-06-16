@@ -29,10 +29,9 @@ def write_exit_file(var):
 
 class BuildingspyRegressionCheck:
 
-    def __init__(self, buildingspy_regression, pack, n_pro, tool, batch, show_gui, path, library):
+    def __init__(self, pack, n_pro, tool, batch, show_gui, path, library):
         """
         Args:
-            buildingspy_regression (): library buildingspy: use for regression tests
             pack (): package to be checked
             n_pro (): number of processors
             tool (): dymola or Openmodelica
@@ -48,7 +47,7 @@ class BuildingspyRegressionCheck:
         self.show_gui = show_gui
         self.path = path
         self.library = library
-        self.ut = buildingspy_regression.Tester(tool=self.tool)
+        self.ut = regression.Tester(tool=self.tool)
 
     def check_regression_test(self, package_list):
         """
@@ -375,22 +374,185 @@ class BuildingspyValidateTest:
         ret_val = valid.validateExperimentSetup(self.path)
         return ret_val
 
-    def run_coverage_only(self, buildingspy_regression, batch, tool, package):
+    def run_coverage_only(self, batch, tool, package):
         """
         Specifies which models are tested
         Args:
-            buildingspy_regression (): library buildingspy: use for regression tests
             batch (): boolean: - False: interactive with script (e.g. generate new regression-tests) - True: No interactive with script
             tool (): dymola or Openmodelica
             package (): package to be checked
         """
-        ut = buildingspy_regression.Tester(tool=tool)
+        ut = CustomTester(tool=tool)
         ut.batchMode(batch)
         ut.setLibraryRoot(self.path)
         if package is not None:
             ut.setSinglePackage(package)
-        ut.get_test_example_coverage()
-        return 0
+        coverage_result = ut.getCoverage()
+        ut.printCoverage(*coverage_result, printer=print)
+
+
+class CustomTester(regression.Tester):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._packages = []
+
+    def getCoverage(self):
+        """
+        Analyse how many examples are tested.
+        If ``setSinglePackage`` is called before this function,
+        only packages set will be included. Else, the whole library
+        will be checked.
+
+        Returns:
+            - The coverage rate in percent as float
+            - The number of examples tested as int
+            - The total number of examples as int
+            - The list of models not tested as List[str]
+            - The list of packages included in the analysis as List[str]
+        """
+        # first lines copy and paste from run function
+        if self.get_number_of_tests() == 0:
+            self.setDataDictionary(self._rootPackage)
+
+        # Remove all data that do not require a simulation or an FMU export.
+        # Otherwise, some processes may have no simulation to run and then
+        # the json output file would have an invalid syntax
+
+        # to not interact with other code here, we use the temp_data list
+
+        temp_data = [
+            element for element in self.data[:]
+            if element['mustSimulate'] or element['mustExportFMU']
+        ]
+
+        # now we got clean _data to compare
+        # next step get all examples in the package (whether whole library or
+        # single package)
+        if self._packages:
+            packages = self._packages
+        else:
+            packages = list(dict.fromkeys(
+                [pac['ScriptFile'].split(os.sep)[0] for pac in self._data])
+            )
+
+        all_examples = []
+        for package in packages:
+            package_path = os.path.join(self._libHome, package)
+            for dirpath, dirnames, filenames in os.walk(package_path):
+                for filename in filenames:
+                    if any(
+                            xs in filename for xs in ['Examples', 'Validation']
+                    ) and not filename.endswith(('package.mo', '.order')):
+                        all_examples.append(os.path.abspath(
+                            os.path.join(dirpath, filename))
+                        )
+
+        coverage = round(len(temp_data) / len(all_examples), 2) * 100
+
+        tested_model_names = [
+            nam['ScriptFile'].split(os.sep)[-1][:-1] for nam in temp_data
+        ]
+
+        missing_examples = [
+            i for i in all_examples if not any(
+                xs in i for xs in tested_model_names)
+        ]
+
+        n_tested_examples = len(temp_data)
+        n_examples = len(all_examples)
+        return coverage, n_tested_examples, n_examples, missing_examples, packages
+
+    def printCoverage(
+            self,
+            coverage: float,
+            n_tested_examples: int,
+            n_examples: int,
+            missing_examples: list,
+            packages: list,
+            printer: callable = None
+    ) -> None:
+        """
+        Print the output of getCoverage to inform about
+        coverage rate and missing models.
+        The default printer is the ``reporter.writeOutput``.
+        If another printing method is required, e.g. ``print`` or
+        ``logging.info``, it may be passed via the ``printer`` argument.
+        """
+        if printer is None:
+            printer = self._reporter.writeOutput
+        printer('***\n\nModel Coverage: ', str(int(coverage)) + '%')
+        printer(
+            '***\n\nYou are testing : ',
+            n_tested_examples,
+            ' out of ',
+            n_examples,
+            'total examples in '
+        )
+        for package in packages:
+            printer(package)
+        printer('\n')
+
+        if missing_examples:
+            print('***\n\nThe following examples are not tested\n')
+            for i in missing_examples:
+                print(i.split(self._libHome)[1])
+
+    def setSinglePackage(self, packageName):
+        """
+        Set the name of one or multiple Modelica package(s) to be tested.
+
+        :param packageName: The name of the package(s) to be tested.
+
+        Calling this method will cause the regression tests to run
+        only for the examples in the package ``packageName``, and in
+        all its sub-packages.
+
+        For example:
+
+        * If ``packageName = IBPSA.Controls.Continuous.Examples``,
+          then a test of the ``IBPSA`` library will run all examples in
+          ``IBPSA.Controls.Continuous.Examples``.
+        * If ``packageName = IBPSA.Controls.Continuous.Examples,IBPSA.Controls.Continuous.Validation``,
+          then a test of the ``IBPSA`` library will run all examples in
+          ``IBPSA.Controls.Continuous.Examples`` and in ``IBPSA.Controls.Continuous.Validation``.
+
+        """
+
+        # Create a list of packages, unless packageName is already a list
+        packages = list()
+        if ',' in packageName:
+            # First, split packages in case they are of the form Building.{Examples, Fluid}
+            expanded_packages = self.expand_packages(packageName)
+            packages = expanded_packages.split(',')
+        else:
+            packages.append(packageName)
+        packages = self._remove_duplicate_packages(packages)
+        # Inform the user that not all tests are run, but don't add to warnings
+        # as this would flag the test to have failed
+        self._reporter.writeOutput(
+            """Regression tests are only run for the following package{}:""".format(
+                '' if len(packages) == 1 else 's'))
+        for pac in packages:
+            self._reporter.writeOutput("""  {}""".format(pac))
+        # Remove the top-level package name as the unit test directory does not
+        # contain the name of the library.
+
+        # Set data dictionary as it may have been generated earlier for the whole library.
+        self._data = []
+        self._packages = []
+        for pac in packages:
+            pacSep = pac.find('.')
+            pacPat = pac[pacSep + 1:]
+            pacPat = pacPat.replace('.', os.sep)
+            self._packages.append(pacPat)
+            rooPat = os.path.join(self._libHome, 'Resources', 'Scripts', 'Dymola', pacPat)
+            # Verify that the directory indeed exists
+            if not os.path.isdir(rooPat):
+                msg = """Requested to test only package '%s', but directory
+        '%s' does not exist.""" % (pac, rooPat)
+                raise ValueError(msg)
+            self.setDataDictionary(rooPat)
 
 
 def parse_args():
@@ -494,20 +656,17 @@ if __name__ == '__main__':
                                           path=args.path).validate_experiment_setup()
             exit(var)
         elif args.coverage_only:
-            var = BuildingspyValidateTest(validate=validate,
-                                          path=args.path).run_coverage_only(buildingspy_regression=regression,
-                                                                            batch=args.batch,
-                                                                            tool=args.tool,
-                                                                            package=package)
-            exit(var)
+            BuildingspyValidateTest(validate=validate,
+                                    path=args.path).run_coverage_only(batch=args.batch,
+                                                                      tool=args.tool,
+                                                                      package=package)
         else:
             ref_model = ReferenceModel(library=args.library)
             package_list = []
             if args.ref_list:
                 ref_model.write_regression_list()
                 exit(0)
-            ref_check = BuildingspyRegressionCheck(buildingspy_regression=regression,
-                                                   pack=args.packages,
+            ref_check = BuildingspyRegressionCheck(pack=args.packages,
                                                    n_pro=args.number_of_processors,
                                                    tool=args.tool,
                                                    batch=args.batch,
