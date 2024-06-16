@@ -469,7 +469,7 @@ def get_models(
                         continue
                 else:
                     model = filepath.replace(os.sep, ".")
-                    model = model[model.rfind(library):model.rfind(".mo")]
+                    model = model[model.find(library):model.rfind(".mo")]
                     model_list.append(model)
     if model_list is None or len(model_list) == 0:
         print(f'No models in package {path}')
