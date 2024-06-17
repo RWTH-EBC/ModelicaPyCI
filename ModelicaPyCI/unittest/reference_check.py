@@ -648,6 +648,9 @@ if __name__ == '__main__':
     LIBRARY_PACKAGE_MO = Path(CI_CONFIG.library_root).joinpath(args.library, "package.mo")
     STARTUP_MOS = Path(CI_CONFIG.library_root).joinpath(args.startup_mos)
 
+    with open(STARTUP_MOS, "r") as file:
+        print(file.read())
+
     dymola_api = python_dymola_interface.load_dymola_api(packages=[LIBRARY_PACKAGE_MO], requires_license=False,
                                                          startup_mos=STARTUP_MOS)
     for package in args.packages:
