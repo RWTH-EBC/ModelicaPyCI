@@ -178,7 +178,6 @@ class ReferenceModel:
                 f'No reference files in file {CI_CONFIG.artifacts.library_ref_results_dir}. '
                 f'Please add here your reference files you want to '
                 f'update')
-            exit(0)
         else:
             return ref_list
 
