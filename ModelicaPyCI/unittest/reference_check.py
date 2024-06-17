@@ -680,8 +680,9 @@ if __name__ == '__main__':
                                                    show_gui=args.show_gui,
                                                    path=args.path,
                                                    library=args.library)
-            # todo: Liste?
+            ref_check.setAdditionalLibResource(str(STARTUP_MOS.absolute()))
 
+            # todo: Liste?
             created_ref_list = list()
             if args.create_ref:
                 package_list, created_ref_list = ref_model.get_update_model()
