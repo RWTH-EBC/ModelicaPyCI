@@ -427,11 +427,8 @@ if __name__ == '__main__':
         add_lib_path = Path(ARGS.additional_libraries_to_load[lib], lib, "package.mo")
         config_structure.check_file_setting(add_lib_path=add_lib_path)
     DYMOLA_API = python_dymola_interface.load_dymola_api(
-        dymola_version=ARGS.dymola_version,
-        packages=[LIBRARY_PACKAGE_MO] + ARGS.additional_libraries_to_load,
-        requires_license=True,
-        startup_mos=ARGS.startup_mos
-    )
+        packages=[LIBRARY_PACKAGE_MO] + ARGS.additional_libraries_to_load, requires_license=True,
+        startup_mos=ARGS.startup_mos)
 
     if ARGS.create_whitelist_flag is False:
         validate_only(

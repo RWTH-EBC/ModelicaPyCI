@@ -647,13 +647,10 @@ if __name__ == '__main__':
     args = parse_args()
     CI_CONFIG.library_root = args.library_root
     LIBRARY_PACKAGE_MO = Path(CI_CONFIG.library_root).joinpath(args.library, "package.mo")
+    STARTUP_MOS = Path(CI_CONFIG.library_root).joinpath(args.startup_mos)
 
-    dymola_api = python_dymola_interface.load_dymola_api(
-        dymola_version=args.dymola_version,
-        packages=[LIBRARY_PACKAGE_MO],
-        requires_license=False,
-        startup_mos=args.startup_mos
-    )
+    dymola_api = python_dymola_interface.load_dymola_api(packages=[LIBRARY_PACKAGE_MO], requires_license=False,
+                                                         startup_mos=STARTUP_MOS)
     for package in args.packages:
         if args.validate_html_only:
             var = BuildingspyValidateTest(validate=validate,
