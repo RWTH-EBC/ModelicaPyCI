@@ -177,9 +177,9 @@ class ReferenceModel:
             print(
                 f'No reference files in file {CI_CONFIG.artifacts.library_ref_results_dir}. '
                 f'Please add here your reference files you want to '
-                f'update')
-        else:
-            return ref_list
+                f'update'
+            )
+        return ref_list
 
     def write_regression_list(self):
         """
