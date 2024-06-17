@@ -421,7 +421,7 @@ class CustomTester(regression.Tester):
         # to not interact with other code here, we use the temp_data list
 
         temp_data = [
-            element for element in self.data[:]
+            element for element in self._data[:]
             if element['mustSimulate'] or element['mustExportFMU']
         ]
 
