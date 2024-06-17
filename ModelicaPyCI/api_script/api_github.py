@@ -194,6 +194,7 @@ if __name__ == '__main__':
         working_branch=args.working_branch,
         github_token=args.github_token
     )
+    from ModelicaPyCI.load_global_config import CI_CONFIG
     if not args.post_pr_comment_flag and not args.create_pr_flag:
         raise TypeError("Can't do anything, neither comment nor pr flag is set.")
     if args.post_pr_comment_flag is True:
