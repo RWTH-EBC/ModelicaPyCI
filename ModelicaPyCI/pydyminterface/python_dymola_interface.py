@@ -101,5 +101,4 @@ def get_libraries_to_load_from_mos(startup_mos_path):
             line = line.replace(delete_string, "")
         path = Path(line.split(",")[0])
         libraries_to_load.append(path.parents[1].as_posix())
-    print(libraries_to_load)
     return libraries_to_load

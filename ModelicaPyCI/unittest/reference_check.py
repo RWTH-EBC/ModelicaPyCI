@@ -6,11 +6,9 @@ import buildingspy.development.regressiontest as regression
 from ModelicaPyCI.structure import sort_mo_model as mo
 from ModelicaPyCI.structure import config_structure
 from ModelicaPyCI.pydyminterface import python_dymola_interface
-from ModelicaPyCI.config import ColorConfig
 from ModelicaPyCI.load_global_config import CI_CONFIG
-from ModelicaPyCI.utils import create_changed_files_file
+from ModelicaPyCI.utils import create_changed_files_file, logger
 
-COLORS = ColorConfig()
 
 
 def write_exit_file(var):
@@ -24,7 +22,7 @@ def write_exit_file(var):
             else:
                 ex_file.write(f'FAIL')
     except IOError:
-        print(f'Error: File {CI_CONFIG.get_file_path("ci_files", "exit_file")} does not exist.')
+        logger.error(f'File {CI_CONFIG.get_file_path("ci_files", "exit_file")} does not exist.')
 
 
 class BuildingspyRegressionCheck:
@@ -53,7 +51,7 @@ class BuildingspyRegressionCheck:
             if "MODELICAPATH" in os.environ:
                 libraries_to_load.append(os.environ["MODELICAPATH"])
             os.environ["MODELICAPATH"] = ":".join(libraries_to_load)
-            print("Changed MODELICAPATH to:", os.environ["MODELICAPATH"])
+            logger.info("Changed MODELICAPATH to: %s", os.environ["MODELICAPATH"])
         self.ut = regression.Tester(tool=self.tool)
 
     def check_regression_test(self, package_list):
@@ -75,14 +73,14 @@ class BuildingspyRegressionCheck:
             for package in package_list:
                 if self.batch is False:
                     new_ref_list.append(package)
-                    print(f'{COLORS.green}Generate new reference results for package: {COLORS.CEND} {package}')
+                    logger.info(f'Generate new reference results for package:  {package}')
                 else:
-                    print(f'{COLORS.green}Regression test for package:{COLORS.CEND} {package}')
+                    logger.info(f'Regression test for package: {package}')
                 try:
                     self.ut.setSinglePackage(package)
                 except ValueError as err:
-                    print(f"{COLORS.CRED}Can't perform regression test for package '{package}', "
-                          f"no valid scripts are available{COLORS.CEND}: {err}")
+                    logger.error(f"Can't perform regression test for package '{package}', "
+                          f"no valid scripts are available: {err}")
                     continue
                 response = self.ut.run()
                 config_structure.prepare_data(
@@ -96,26 +94,26 @@ class BuildingspyRegressionCheck:
                 if response != 0:
                     err_list.append(package)
                     if self.batch is False:
-                        print(f'{COLORS.CRED}Error in package: {COLORS.CEND} {package}')
+                        logger.error(f'Error in package:  {package}')
                         continue
                     else:
-                        print(f'{COLORS.CRED}Regression test for model {package} was not successfully{COLORS.CEND}')
+                        logger.error(f'Regression test for model {package} was not successfully')
                         continue
                 else:
                     if self.batch is False:
-                        print(f'{COLORS.green}New reference results in package: {COLORS.CEND} {package}\n')
+                        logger.info(f'New reference results in package:  {package}\n')
                         continue
                     else:
-                        print(f'{COLORS.green}Regression test for model {package} was successful {COLORS.CEND}')
+                        logger.info(f'Regression test for model {package} was successful ')
                         continue
         if self.batch is True:
             if len(err_list) > 0:
-                print(f'{COLORS.CRED}The following packages in regression test failed:{COLORS.CEND}')
+                logger.error(f'The following packages in regression test failed:')
                 for error in err_list:
-                    print(f'{COLORS.CRED}Error:{COLORS.CEND} {error}')
+                    logger.error(f'{error}')
                 return 1
             else:
-                print(f'{COLORS.green}Regression test was successful {COLORS.CEND}')
+                logger.info(f'Regression test was successful ')
                 return 0
         else:
             if len(new_ref_list) > 0:
@@ -139,11 +137,11 @@ class ReferenceModel:
         """
         ref_dir = Path(CI_CONFIG.library_root, self.library, CI_CONFIG.artifacts.library_ref_results_dir)
         for ref in ref_list:
-            print(f'Update reference file: {Path(ref_dir, ref)} \n')
+            logger.info(f'Update reference file: {Path(ref_dir, ref)} \n')
             if os.path.exists(Path(ref_dir, ref)) is True:
                 os.remove(Path(ref_dir, ref))
             else:
-                print(f'File {Path(ref_dir, ref)} does not exist\n')
+                logger.error(f'File {Path(ref_dir, ref)} does not exist\n')
 
     def get_update_model(self):
         """
@@ -162,7 +160,7 @@ class ReferenceModel:
         model_list = list(set(model_list))
         package_list = []
         for model in model_list:
-            print(f'{COLORS.green}Generate new reference results for model: {COLORS.CEND} {model}')
+            logger.info(f'Generate new reference results for model:  {model}')
             package_list.append(model[:model.rfind(".")])
         package_list = list(set(package_list))
         return package_list, model_list
@@ -181,7 +179,7 @@ class ReferenceModel:
                     ref_file = filepath[filepath.rfind(self.library):filepath.find(".txt")]
                     ref_list.append(ref_file)
         if len(ref_list) == 0:
-            print(
+            logger.error(
                 f'No reference files in file {CI_CONFIG.artifacts.library_ref_results_dir}. '
                 f'Please add here your reference files you want to '
                 f'update'
@@ -198,7 +196,7 @@ class ReferenceModel:
                 for mos in mos_list:
                     whitelist_file.write(f'\n{mos}\n')
         except IOError:
-            print(f'Error: File {CI_CONFIG.get_file_path("ci_files", "dymola_reference_file")} does not exist.')
+            logger.error(f'File {CI_CONFIG.get_file_path("ci_files", "dymola_reference_file")} does not exist.')
 
     def _get_mos_scripts(self):
         """
@@ -220,10 +218,10 @@ class ReferenceModel:
                         mos_script = mos_script.replace(os.sep, ".")
                         mos_list.append(mos_script)
                     if lines.find("simulateModel") == -1:
-                        print(
-                            f'{COLORS.CRED}This mos script is not suitable for regression testing:{COLORS.CEND} {filepath}')
+                        logger.error(
+                            f'This mos script is not suitable for regression testing: {filepath}')
         if len(mos_list) == 0:
-            print(f'No feasible mos script for regression test in {CI_CONFIG.artifacts.library_resource_dir}.')
+            logger.error(f'No feasible mos script for regression test in {CI_CONFIG.artifacts.library_resource_dir}.')
             return mos_list
         else:
             return mos_list
@@ -241,8 +239,8 @@ def _compare_whitelist_mos(package_list, whitelist_list):
     for package in package_list:
         for whitelist_package in whitelist_list:
             if package[:package.rfind(".")].find(whitelist_package) > -1:
-                print(
-                    f'{COLORS.green}Don´t Create reference results for model{COLORS.CEND} {package} This package is '
+                logger.info(
+                    f'Don´t Create reference results for model {package} This package is '
                     f'on the whitelist')
                 err_list.append(package)
             else:
@@ -267,13 +265,13 @@ def _get_whitelist_package():
                 else:
                     whitelist_list.append(line.strip())
         for whitelist_package in whitelist_list:
-            print(
-                f'{COLORS.CRED} Don´t create reference results for package{COLORS.CEND} {whitelist_package}: '
+            logger.error(
+                f' Don´t create reference results for package {whitelist_package}: '
                 f'This Package is '
                 f'on the whitelist')
         return whitelist_list
     except IOError:
-        print(f'Error: File {CI_CONFIG.get_file_path("whitelist", "dymola_reference_file")} does not exist.')
+        logger.error(f'File {CI_CONFIG.get_file_path("whitelist", "dymola_reference_file")} does not exist.')
         return whitelist_list
 
 
@@ -311,7 +309,7 @@ def _compare_ref_mos(mos_script_list, reference_list):
     for err in err_list:
         mos_script_list.remove(err)
     for package in mos_script_list:
-        print(f'{COLORS.CRED}No Reference result for Model:{COLORS.CEND} {package}')
+        logger.error(f'No Reference result for Model: {package}')
     return mos_script_list
 
 
@@ -330,15 +328,15 @@ def get_update_ref():
             elif line.find(".txt") > -1:
                 update_ref_list.append(line.strip())
         if len(update_ref_list) == 0:
-            print(
+            logger.error(
                 f'No reference files in file {CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)}. '
                 f'Please add here your reference files you '
                 f'want to update')
             exit(0)
         return update_ref_list
     except IOError:
-        print(
-            f'Error: File ..{os.sep}{CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)} does not exist.')
+        logger.error(
+            f'File ..{os.sep}{CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)} does not exist.')
         exit(0)
 
 
@@ -363,13 +361,13 @@ class BuildingspyValidateTest:
         n_msg = len(err_msg)
         for i in range(n_msg):
             if i == 0:
-                print("The following malformed html syntax has been found:\n%s" % err_msg[i])
+                logger.error("The following malformed html syntax has been found:\n%s" % err_msg[i])
             else:
-                print(err_msg[i])
+                logger.error(err_msg[i])
         if n_msg == 0:
             return 0
         else:
-            print(f'{COLORS.CRED}html check failed.{COLORS.CEND}')
+            logger.error(f'html check failed.')
             return 1
 
     def validate_experiment_setup(self):
@@ -495,9 +493,9 @@ class CustomTester(regression.Tester):
         printer('\n')
 
         if missing_examples:
-            print('***\n\nThe following examples are not tested\n')
+            logger.info('***\n\nThe following examples are not tested\n')
             for i in missing_examples:
-                print(i.split(self._libHome)[1])
+                logger.info(i.split(self._libHome)[1])
 
     def setSinglePackage(self, packageName):
         """
@@ -650,9 +648,6 @@ if __name__ == '__main__':
     LIBRARY_PACKAGE_MO = Path(CI_CONFIG.library_root).joinpath(args.library, "package.mo")
     STARTUP_MOS = Path(CI_CONFIG.library_root).joinpath(args.startup_mos)
 
-    with open(STARTUP_MOS, "r") as file:
-        print(file.read())
-
     for package in args.packages:
         if args.validate_html_only:
             var = BuildingspyValidateTest(validate=validate,
@@ -717,16 +712,16 @@ if __name__ == '__main__':
             val = 0
             if package_list is None or len(package_list) == 0:
                 if args.batch is False:
-                    print(f'{COLORS.green}All Reference files exist.{COLORS.CEND}')
+                    logger.info(f'All Reference files exist.')
                     val = 0
                 elif args.changed_flag is False:
-                    print(f'{COLORS.CRED}Error:{COLORS.CEND} Package is missing! (e.g. Airflow)')
+                    logger.error(f'Package is missing! (e.g. Airflow)')
                     val = 1
                 elif args.changed_flag is True:
-                    print(f'No changed models in Package {args.packages}')
+                    logger.info(f'No changed models in Package {args.packages}')
                     val = 0
             elif args.create_ref is True:
-                print(f'Start regression Test.\nTest following packages: {package_list}')
+                logger.info(f'Start regression Test.\nTest following packages: {package_list}')
                 val = ref_check.check_regression_test(package_list=package_list)
                 if len(created_ref_list) > 0:
                     for ref in created_ref_list:
@@ -737,7 +732,7 @@ if __name__ == '__main__':
                 write_exit_file(var=1)
 
             else:
-                print(f'Start regression Test.\nTest following packages: {package_list}')
+                logger.info(f'Start regression Test.\nTest following packages: {package_list}')
                 val = ref_check.check_regression_test(package_list=package_list)
                 write_exit_file(var=val)
             exit(val)
