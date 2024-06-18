@@ -87,3 +87,13 @@ def _start_dymola_api(packages: list, startup_mos: str = None) -> DymolaAPI:
         show_window=False,
         mos_script_pre=startup_mos
     )
+
+
+def get_libraries_to_load_from_mos(startup_mos_path):
+    libraries_to_load = []
+    with open(startup_mos_path, "r") as file:
+        lines = file.readlines()
+        for line in lines:
+            if line.startswith("openModel("):
+                path = line.replace("openModel(", "").replace(");", "").split(",")[0]
+    return libraries_to_load

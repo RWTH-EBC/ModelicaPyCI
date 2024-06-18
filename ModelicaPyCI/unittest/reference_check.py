@@ -47,6 +47,10 @@ class BuildingspyRegressionCheck:
         self.show_gui = show_gui
         self.path = path
         self.library = library
+        libraries_to_load = python_dymola_interface.get_libraries_to_load_from_mos(STARTUP_MOS)
+        if "MODELICAPATH" in os.environ:
+            libraries_to_load.append(os.environ["MODELICAPATH"])
+        os.environ["MODELICAPATH"] = ":".join(libraries_to_load)
         self.ut = regression.Tester(tool=self.tool)
 
     def check_regression_test(self, package_list):
@@ -651,8 +655,6 @@ if __name__ == '__main__':
     with open(STARTUP_MOS, "r") as file:
         print(file.read())
 
-    dymola_api = python_dymola_interface.load_dymola_api(packages=[LIBRARY_PACKAGE_MO], requires_license=False,
-                                                         startup_mos=STARTUP_MOS)
     for package in args.packages:
         if args.validate_html_only:
             var = BuildingspyValidateTest(validate=validate,
@@ -673,14 +675,16 @@ if __name__ == '__main__':
             if args.ref_list:
                 ref_model.write_regression_list()
                 exit(0)
-            ref_check = BuildingspyRegressionCheck(pack=args.packages,
-                                                   n_pro=args.number_of_processors,
-                                                   tool=args.tool,
-                                                   batch=args.batch,
-                                                   show_gui=args.show_gui,
-                                                   path=args.path,
-                                                   library=args.library)
-            #ref_check.ut.setStartupMOS(str(STARTUP_MOS.absolute()))
+            ref_check = BuildingspyRegressionCheck(
+                pack=args.packages,
+                n_pro=args.number_of_processors,
+                tool=args.tool,
+                batch=args.batch,
+                show_gui=args.show_gui,
+                path=args.path,
+                library=args.library,
+                startup_mos=STARTUP_MOS
+            )
 
             # todo: Liste?
             created_ref_list = list()
@@ -697,6 +701,12 @@ if __name__ == '__main__':
                     package_list = args.packages
                 if args.changed_flag is True:
                     changed_files_file = create_changed_files_file(repo_root=args.library_root)
+
+                    dymola_api = python_dymola_interface.load_dymola_api(
+                        packages=[LIBRARY_PACKAGE_MO],
+                        requires_license=False,
+                        startup_mos=STARTUP_MOS
+                    )
 
                     package_list = mo.get_changed_regression_models(
                         dymola_api=dymola_api,
