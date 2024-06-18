@@ -96,6 +96,10 @@ def get_libraries_to_load_from_mos(startup_mos_path):
         print(lines)
         for line in lines:
             if line.startswith("openModel("):
-                path = line.replace("openModel(", "").replace(");", "").split(",")[0]
+                path = line.replace(
+                    "openModel(", "").replace(
+                    ");\n", "").replace(
+                    "'", "").replace(
+                    '"', "").split(",")[0]
     print(libraries_to_load)
     return libraries_to_load
