@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+from pathlib import Path
 
 from ebcpy import DymolaAPI
 
@@ -98,6 +99,7 @@ def get_libraries_to_load_from_mos(startup_mos_path):
             continue
         for delete_string in ["openModel(", ");\n", "'", '"']:
             line = line.replace(delete_string, "")
-        libraries_to_load.append(line.split(",")[0])
+        path = Path(line.split(",")[0])
+        libraries_to_load.append(path.parents[1].as_posix())
     print(libraries_to_load)
     return libraries_to_load
