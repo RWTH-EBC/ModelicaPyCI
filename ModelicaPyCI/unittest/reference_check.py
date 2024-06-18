@@ -53,6 +53,7 @@ class BuildingspyRegressionCheck:
             if "MODELICAPATH" in os.environ:
                 libraries_to_load.append(os.environ["MODELICAPATH"])
             os.environ["MODELICAPATH"] = ":".join(libraries_to_load)
+            print("Changed MODELICAPATH to:", os.environ["MODELICAPATH"])
         self.ut = regression.Tester(tool=self.tool)
 
     def check_regression_test(self, package_list):
