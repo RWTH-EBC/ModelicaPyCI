@@ -646,7 +646,8 @@ if __name__ == '__main__':
     args = parse_args()
     CI_CONFIG.library_root = args.library_root
     LIBRARY_PACKAGE_MO = Path(CI_CONFIG.library_root).joinpath(args.library, "package.mo")
-    STARTUP_MOS = Path(CI_CONFIG.library_root).joinpath(args.startup_mos)
+    if args.startup_mos is not None:
+        STARTUP_MOS = Path(CI_CONFIG.library_root).joinpath(args.startup_mos)
 
     for package in args.packages:
         if args.validate_html_only:
