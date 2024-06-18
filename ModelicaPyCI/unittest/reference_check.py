@@ -676,7 +676,7 @@ if __name__ == '__main__':
                 show_gui=args.show_gui,
                 path=args.path,
                 library=args.library,
-                startup_mos=STARTUP_MOS
+                #startup_mos=STARTUP_MOS
             )
 
             # todo: Liste?
