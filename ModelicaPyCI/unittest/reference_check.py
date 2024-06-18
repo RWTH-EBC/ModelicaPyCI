@@ -29,7 +29,7 @@ def write_exit_file(var):
 
 class BuildingspyRegressionCheck:
 
-    def __init__(self, pack, n_pro, tool, batch, show_gui, path, library):
+    def __init__(self, pack, n_pro, tool, batch, show_gui, path, library, startup_mos: str = None):
         """
         Args:
             pack (): package to be checked
@@ -39,6 +39,7 @@ class BuildingspyRegressionCheck:
                 True: No interactive with script
             show_gui (): show_gui (): True - show dymola, false - dymola hidden.
             path (): Path where top-level package.mo of the library is located.
+            startup_mos (): Path to possible startup mos
         """
         self.package = pack
         self.n_pro = n_pro
@@ -47,10 +48,11 @@ class BuildingspyRegressionCheck:
         self.show_gui = show_gui
         self.path = path
         self.library = library
-        libraries_to_load = python_dymola_interface.get_libraries_to_load_from_mos(STARTUP_MOS)
-        if "MODELICAPATH" in os.environ:
-            libraries_to_load.append(os.environ["MODELICAPATH"])
-        os.environ["MODELICAPATH"] = ":".join(libraries_to_load)
+        if startup_mos is not None:
+            libraries_to_load = python_dymola_interface.get_libraries_to_load_from_mos(STARTUP_MOS)
+            if "MODELICAPATH" in os.environ:
+                libraries_to_load.append(os.environ["MODELICAPATH"])
+            os.environ["MODELICAPATH"] = ":".join(libraries_to_load)
         self.ut = regression.Tester(tool=self.tool)
 
     def check_regression_test(self, package_list):
