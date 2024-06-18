@@ -603,7 +603,7 @@ def parse_args():
     unit_test_group.add_argument(
         "-b", "--batch",
         action="store_true",
-        default=False,
+        default=True,
         help="Run in batch mode without user interaction")
     unit_test_group.add_argument(
         "--coverage-only",
