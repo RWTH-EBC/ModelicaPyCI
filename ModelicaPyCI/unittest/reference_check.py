@@ -680,7 +680,7 @@ if __name__ == '__main__':
                                                    show_gui=args.show_gui,
                                                    path=args.path,
                                                    library=args.library)
-            ref_check.ut.setStartupMOS(str(STARTUP_MOS.absolute()))
+            #ref_check.ut.setStartupMOS(str(STARTUP_MOS.absolute()))
 
             # todo: Liste?
             created_ref_list = list()
