@@ -61,7 +61,7 @@ class BuildingspyRegressionCheck:
             package_list ():
         Returns:
         """
-        self.ut.batchMode(self.batch)
+        self.ut.batchMode(self.batch, createNewReferenceResultsInBatchMode=True)
         self.ut.setLibraryRoot(self.path)
         self.ut.setNumberOfThreads(self.n_pro)
         self.ut.pedanticModelica(False)
