@@ -93,13 +93,11 @@ def get_libraries_to_load_from_mos(startup_mos_path):
     libraries_to_load = []
     with open(startup_mos_path, "r") as file:
         lines = file.readlines()
-        print(lines)
-        for line in lines:
-            if line.startswith("openModel("):
-                path = line.replace(
-                    "openModel(", "").replace(
-                    ");\n", "").replace(
-                    "'", "").replace(
-                    '"', "").split(",")[0]
+    for line in lines:
+        if not line.startswith("openModel("):
+            continue
+        for delete_string in ["openModel(", ");\n", "'", '"']:
+            line = line.replace(delete_string, "")
+        libraries_to_load.append(line.split(",")[0])
     print(libraries_to_load)
     return libraries_to_load
