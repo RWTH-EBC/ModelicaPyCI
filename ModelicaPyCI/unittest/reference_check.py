@@ -425,12 +425,7 @@ class CustomTester(regression.Tester):
         # Otherwise, some processes may have no simulation to run and then
         # the json output file would have an invalid syntax
 
-        # to not interact with other code here, we use the temp_data list
-
-        temp_data = [
-            element for element in self._data[:]
-            if element['mustSimulate'] or element['mustExportFMU']
-        ]
+        temp_data = self._data[:]
 
         # now we got clean _data to compare
         # next step get all examples in the package (whether whole library or
