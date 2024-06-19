@@ -273,7 +273,7 @@ def _get_whitelist_package():
                 f'This Package is '
                 f'on the whitelist')
         return whitelist_list
-    except IOError:
+    except FileNotFoundError:
         logger.info(f'File {filepath} does not exist, not using any whitelist.')
         return whitelist_list
 
@@ -321,8 +321,9 @@ def get_update_ref():
     get a model to update
     Returns:
     """
+    filepath = CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)
     try:
-        with open(f'..{os.sep}{CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)}', "r") as file:
+        with open(filepath, "r") as file:
             lines = file.readlines()
         update_ref_list = []
         for line in lines:
@@ -337,9 +338,8 @@ def get_update_ref():
                 f'want to update')
             exit(0)
         return update_ref_list
-    except IOError:
-        logger.error(
-            f'File ..{os.sep}{CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)} does not exist.')
+    except FileNotFoundError:
+        logger.error(f'File {filepath} does not exist.')
         exit(0)
 
 
