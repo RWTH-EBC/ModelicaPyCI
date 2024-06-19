@@ -30,13 +30,16 @@ class ColoredFormatter(logging.Formatter):
 
 
 def setup_logging():
-    if not logging.getLogger().hasHandlers():
+    root_logger = logging.getLogger()
+    if not root_logger.hasHandlers():
         logging.basicConfig(level=logging.INFO)
         root_logger = logging.getLogger()
         root_logger.handlers[0].setFormatter(
             ColoredFormatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         )
         logging.info("Logging is set up.")
+    else:
+        print("Root logger was already set up with level", root_logger.level)
 
 
 setup_logging()

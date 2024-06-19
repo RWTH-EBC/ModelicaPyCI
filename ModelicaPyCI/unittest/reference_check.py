@@ -10,19 +10,20 @@ from ModelicaPyCI.load_global_config import CI_CONFIG
 from ModelicaPyCI.utils import create_changed_files_file, logger
 
 
-
-def write_exit_file(var):
+def write_exit_file(var, message: str = None):
     """
     write an exit file, use for gitlab ci.
     """
+    exit_file_path = CI_CONFIG.get_file_path("ci_files", "exit_file").absolute()
     try:
-        with open(CI_CONFIG.get_file_path("ci_files", "exit_file"), "w") as ex_file:
+        with open(exit_file_path, "w") as ex_file:
             if var == 0:
-                ex_file.write(f'successful')
+                ex_file.write(message if message is None else 'successful')
             else:
-                ex_file.write(f'FAIL')
+                ex_file.write(message if message is None else 'FAIL')
+                logger.error(f"Wrote var {var} to {exit_file_path}.")
     except IOError:
-        logger.error(f'File {CI_CONFIG.get_file_path("ci_files", "exit_file")} does not exist.')
+        logger.error(f'File {exit_file_path} does not exist.')
 
 
 class BuildingspyRegressionCheck:
@@ -80,7 +81,7 @@ class BuildingspyRegressionCheck:
                     self.ut.setSinglePackage(package)
                 except ValueError as err:
                     logger.error(f"Can't perform regression test for package '{package}', "
-                          f"no valid scripts are available: {err}")
+                                 f"no valid scripts are available: {err}")
                     continue
                 response = self.ut.run()
                 config_structure.prepare_data(
@@ -640,6 +641,8 @@ def parse_args():
 
 
 if __name__ == '__main__':
+    import logging
+    logging.basicConfig(level="INFO")
     # todo: Package list bearbeiten.
     # todo: /bin/sh: 1: xdg-settings: not found
     # todo: Template für push hat changed:flag drin, ist falsch
@@ -648,21 +651,29 @@ if __name__ == '__main__':
     LIBRARY_PACKAGE_MO = Path(CI_CONFIG.library_root).joinpath(args.library, "package.mo")
     if args.startup_mos is not None:
         STARTUP_MOS = Path(CI_CONFIG.library_root).joinpath(args.startup_mos)
-
+    exit_var = 0
     for package in args.packages:
         if args.validate_html_only:
-            var = BuildingspyValidateTest(validate=validate,
-                                          path=args.path).validate_html()
-            exit(var)
+            var = BuildingspyValidateTest(
+                validate=validate,
+                path=args.path
+            ).validate_html()
+            exit_var = max(exit_var, var)
         elif args.validate_experiment_setup:  # Match the mos file parameters with the mo files only, and then exit
-            var = BuildingspyValidateTest(validate=validate,
-                                          path=args.path).validate_experiment_setup()
-            exit(var)
+            var = BuildingspyValidateTest(
+                validate=validate,
+                path=args.path
+            ).validate_experiment_setup()
+            exit_var = max(exit_var, var)
         elif args.coverage_only:
-            BuildingspyValidateTest(validate=validate,
-                                    path=args.path).run_coverage_only(batch=args.batch,
-                                                                      tool=args.tool,
-                                                                      package=package)
+            BuildingspyValidateTest(
+                validate=validate,
+                path=args.path
+            ).run_coverage_only(
+                batch=args.batch,
+                tool=args.tool,
+                package=package
+            )
         else:
             ref_model = ReferenceModel(library=args.library)
             package_list = []
@@ -729,11 +740,12 @@ if __name__ == '__main__':
                         config_structure.prepare_data(
                             source_target_dict={
                                 f'{CI_CONFIG.artifacts.library_ref_results_dir}{os.sep}{ref.replace(".", "_")}.txt':
-                                    CI_CONFIG.get_file_path("result", "regression_dir").joinpath("referencefiles")})
-                write_exit_file(var=1)
-
+                                    CI_CONFIG.get_file_path("result", "regression_dir").joinpath("referencefiles")}
+                        )
+                write_exit_file(var=0, message="GENERATED_NEW_RESULTS")
             else:
                 logger.info(f'Start regression Test.\nTest following packages: {package_list}')
                 val = ref_check.check_regression_test(package_list=package_list)
                 write_exit_file(var=val)
-            exit(val)
+            exit_var = max(exit_var, val)
+    exit(exit_var)
