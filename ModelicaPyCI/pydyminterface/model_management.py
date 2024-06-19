@@ -4,9 +4,7 @@ from pathlib import Path
 
 from ebcpy import DymolaAPI
 
-from ModelicaPyCI.config import ColorConfig
-
-COLORS = ColorConfig()
+from ModelicaPyCI.utils import logger
 
 
 class ModelManagement:
@@ -25,18 +23,16 @@ class ModelManagement:
                 if os.path.isfile(mm_path):
                     break
         else:
-            print(
-                f"{COLORS.CRED}Error: {COLORS.CEND} "
+            logger.error(
                 f"Could not locate ModelManagement library in {path_libraries}. "
             )
             exit(1)
         res = self.dymola_api.dymola.openModel(str(mm_path), changeDirectory=False)
         if res:
-            print(f"Load Model Management from path: {mm_path}")
+            logger.info(f"Load Model Management from path: {mm_path}")
         else:
             log = self.dymola_api.dymola.getLastErrorLog()
-            print(
-                f"{COLORS.CRED}Error: {COLORS.CEND} "
+            logger.error(
                 f"Could not load ModelManagement from {mm_path}. "
                 f"Reason: {log}"
             )
@@ -46,7 +42,7 @@ class ModelManagement:
         if changed_flag is True and len(models_list) <= 100:
             changed_model_list = []
             for model in models_list:
-                print(f'Check model {model} \n')
+                logger.info(f'Check model {model} \n')
                 self.dymola_api.dymola.ExecuteCommand(_get_check_library_or_model(model))
                 log = codecs.open(str(Path(Path.cwd(), f'{model}_StyleCheckLog.html')), "r",
                                   encoding='utf8')
@@ -59,7 +55,7 @@ class ModelManagement:
                 all_logs.write(model)
             all_logs.close()
         else:
-            print(f'Check all models in {library} library\n')
+            logger.info(f'Check all models in {library} library\n')
             self.dymola_api.dymola.ExecuteCommand(_get_check_library_or_model(library))
             self.dymola_api.close()
         return log_file

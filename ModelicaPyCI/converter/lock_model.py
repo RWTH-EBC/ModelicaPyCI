@@ -1,10 +1,8 @@
 import argparse
 import os
 from pathlib import Path
-from ModelicaPyCI.config import ColorConfig
 from ModelicaPyCI.load_global_config import CI_CONFIG
-
-COLORS = ColorConfig()
+from ModelicaPyCI.utils import logger
 
 
 def _sort_whitelist_model():
@@ -43,10 +41,10 @@ def call_lock_model():
                 new_content = lock_model(model, result[0])
                 write_lock_model(model, new_content)
             else:
-                print(f'Already locked: {model}')
+                logger.info(f'Already locked: {model}')
                 continue
         else:
-            print(f'\n{model} File does not exist.')
+            logger.error(f'\n{model} File does not exist.')
             continue
 
 def get_last_line(model_file):
@@ -69,9 +67,9 @@ def get_last_line(model_file):
             infile.close()
             return model_part, flag_tag
         else:
-            print(f'\n{model_file}\nFile does not exist.')
+            logger.error(f'\n{model_file}\nFile does not exist.')
     except IOError:
-        print(f'Error: File {model_file} does not exist.')
+        logger.error(f'Error: File {model_file} does not exist.')
 
 def lock_model(model, content):
     mo = model[model.rfind(os.sep) + 1:model.rfind(".mo")]
@@ -106,13 +104,13 @@ def lock_model(model, content):
 
 def write_lock_model(model, new_content):
     try:
-        print("lock object: " + model)
+        logger.info("lock object: " + model)
         outfile = open(model, 'w')
         new_content = (' '.join(new_content))
         outfile.write(new_content)
         outfile.close()
     except IOError:
-        print(f'Error: File {model} does not exist.')
+        logger.error(f'Error: File {model} does not exist.')
         exit(1)
 
 
