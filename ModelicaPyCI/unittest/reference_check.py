@@ -15,15 +15,13 @@ def write_exit_file(var, message: str = None):
     write an exit file, use for gitlab ci.
     """
     exit_file_path = CI_CONFIG.get_file_path("ci_files", "exit_file").absolute()
-    try:
-        with open(exit_file_path, "w") as ex_file:
-            if var == 0:
-                ex_file.write(message if message is None else 'successful')
-            else:
-                ex_file.write(message if message is None else 'FAIL')
-                logger.error(f"Wrote var {var} to {exit_file_path}.")
-    except IOError:
-        logger.error(f'File {exit_file_path} does not exist.')
+    os.makedirs(exit_file_path.parent, exist_ok=True)
+    with open(exit_file_path, "w") as ex_file:
+        if var == 0:
+            ex_file.write(message if message is None else 'successful')
+        else:
+            ex_file.write(message if message is None else 'FAIL')
+            logger.error(f"Wrote var {var} to {exit_file_path}.")
 
 
 class BuildingspyRegressionCheck:
