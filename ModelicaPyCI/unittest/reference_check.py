@@ -645,8 +645,6 @@ def parse_args():
 
 
 if __name__ == '__main__':
-    import logging
-    logging.basicConfig(level="INFO")
     # todo: Package list bearbeiten.
     # todo: /bin/sh: 1: xdg-settings: not found
     # todo: Template für push hat changed:flag drin, ist falsch

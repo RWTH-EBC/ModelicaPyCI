@@ -60,7 +60,7 @@ class SlackNotification(object):
         """
         try:
             url = f'{self.url}?per_page=100'
-            payload={}
+            payload = {}
             headers = {
                 'Authorization': 'Bearer ' + self.github_token,
                 'Content-Type': 'application/json'
@@ -80,14 +80,14 @@ class SlackNotification(object):
         return l_time
 
     @staticmethod
-    def _get_time( commit):
+    def _get_time(commit):
         date = commit["date"]
         date = date[:date.find("T")]
         time = datetime.strptime(date, '%Y-%m-%d').date()
         return time
 
     @staticmethod
-    def _get_name( commit):
+    def _get_name(commit):
         name = commit["name"]
         return name
 
@@ -124,28 +124,27 @@ class SlackNotification(object):
         for slack_email in slack_mail_id:
             if github_mail.find("@rwth-aachen.de") > -1:
                 if github_mail.replace("@", "@eonerc.").lower() == slack_email.lower():
-                    #print(f'Slack Email: {slack_email}')
+                    # print(f'Slack Email: {slack_email}')
                     id = slack_mail_id[slack_email]
-                    #print(f'Slack id: {id}')
+                    # print(f'Slack id: {id}')
                     return id
         for slack_email in slack_mail_id:
             if github_mail.lower() == slack_email.lower():
-                #print(f'Slack Email: {slack_email}')
+                # print(f'Slack Email: {slack_email}')
                 id = slack_mail_id[slack_email]
-                #print(f'Slack id: {id}')
+                # print(f'Slack id: {id}')
                 return id
         for slack_email in slack_mail_id:
             if github_mail[:github_mail.rfind("@")].lower() == slack_email[:slack_email.rfind("@")].lower():
-                #print(f'Slack Email: {slack_email}')
+                # print(f'Slack Email: {slack_email}')
                 id = slack_mail_id[slack_email]
-                #print(f'Slack id: {id}')
+                # print(f'Slack id: {id}')
                 return id
         print(f'Cannot find Slack ID of user: {name} \nSend Slack message to channel fg-modelica')
         id = "CBZ9FJH27"
-        #id = "C02NXDEL1GD"
+        # id = "C02NXDEL1GD"
         print(f'Slack channel fg-modelica-id: {id}')
         return id
-
 
     def _delete_branch(self, branch):
         url = f'https://api.github.com/repos/{self.github_repo}/git/refs/heads/{branch}'
@@ -154,7 +153,6 @@ class SlackNotification(object):
             'Authorization': 'Bearer ' + self.github_token
         }
         response = requests.request("DELETE", url, headers=headers, data=payload)
-
 
     def _get_pr_number(self, branch):
         url = f'https://api.github.com/repos/{self.github_repo}/pulls'
@@ -185,10 +183,10 @@ class SlackNotification(object):
         return owner[0]
 
     def _comment_issue_without_pr(self, message_text, issue_number):
-        #body = f'\"body\":\"{message_text}\"'
+        # body = f'\"body\":\"{message_text}\"'
 
         url = f'https://api.github.com/repos/{self.github_repo}/issues/{issue_number}/comments'
-        #payload = "{" + body + "}"
+        # payload = "{" + body + "}"
         payload = json.dumps({"body": message_text})
 
         headers = {
@@ -197,10 +195,9 @@ class SlackNotification(object):
         }
         response = requests.request("POST", url, headers=headers, data=payload)
 
-
     def _comment_issue(self, branch, time_dif, issue_number, link_pr):
         message = f' The Branch {branch} has been inactive for more than {time_dif} days. ' \
-               f'A pull request is created and the branch is then deleted. If you want to restore the branch, go to the closed pull requests and restore your branch.\nPull Request URL: {link_pr}'
+                  f'A pull request is created and the branch is then deleted. If you want to restore the branch, go to the closed pull requests and restore your branch.\nPull Request URL: {link_pr}'
         url = f'https://api.github.com/repos/{self.github_repo}/issues/{issue_number}/comments'
         payload = json.dumps({"body": message})
         headers = {
@@ -208,7 +205,6 @@ class SlackNotification(object):
             'Content-Type': 'application/javascript'
         }
         response = requests.request("POST", url, headers=headers, data=payload)
-
 
     def _close_issue(self, issue_number):
         url = f'https://api.github.com/repos/{self.github_repo}/issues/{issue_number}'
@@ -221,7 +217,7 @@ class SlackNotification(object):
         response = requests.request("PATCH", url, headers=headers, data=payload)
 
     def _get_issues(self):
-        issue_list= []
+        issue_list = []
         url = f'https://api.github.com/repos/{self.github_repo}/issues?per_page=100'
         payload = {}
         headers = {
@@ -236,7 +232,6 @@ class SlackNotification(object):
             except KeyError:
                 issue_list.append(issue["number"])
         return issue_list
-
 
     def _open_pr(self, branch, owner, time_dif):
         url = f'https://api.github.com/repos/{self.github_repo}/pulls'
@@ -271,8 +266,8 @@ class SlackNotification(object):
         labels = f'\"labels\":[\"CI\"]'
         payload = "{\r\n" + assignees + ",\r\n" + labels + "\r\n}"
         headers = {
-          'Authorization': 'Bearer ' + self.github_token,
-          'Content-Type': 'application/json'
+            'Authorization': 'Bearer ' + self.github_token,
+            'Content-Type': 'application/json'
         }
         response = requests.request("PATCH", url, headers=headers, data=payload)
         print("User " + assignees_owner + " assignee to pull request Number " + str(pr_number))
@@ -296,8 +291,7 @@ class SlackNotification(object):
         except KeyError:
             print(f'Github Username is unknown.')
 
-
-    def _check_pr_number(self,pr_number):
+    def _check_pr_number(self, pr_number):
         url = f'https://api.github.com/repos/{self.github_repo}/pulls/{pr_number}'
         payload = {}
         headers = {
@@ -312,13 +306,11 @@ class SlackNotification(object):
         except KeyError:
             print(f'Pull Request url is unknown.')
 
-
-
     def _post_message(self, channel_id, message_text):
         import logging
         from slack_sdk import WebClient  # Import WebClient from Python SDK (github.com/slackapi/python-slack-sdk)
         from slack_sdk.errors import SlackApiError
-        #client = WebClient(token=os.environ.get("SLACK_BOT_TOKEN"))
+        # client = WebClient(token=os.environ.get("SLACK_BOT_TOKEN"))
         client = WebClient(token=self.slack_token)  # WebClient instantiates a client that can call API methods
         # When using Bolt, you can use either `app.client` or the `client` passed to listeners.
         logger = logging.getLogger(__name__)
@@ -330,7 +322,6 @@ class SlackNotification(object):
             logger.info(result)
         except SlackApiError as e:
             logger.error(f"Error posting message: {e}")
-
 
 
 def parse_args():
@@ -346,10 +337,10 @@ def parse_args():
     return parser.parse_args()
 
 
-
 if __name__ == '__main__':
     args = parse_args()
-    slack = SlackNotification(github_token=args.github_token, slack_token=args.slack_token, github_repo=args.github_repository, main_branch=args.main_branch)
+    slack = SlackNotification(github_token=args.github_token, slack_token=args.slack_token,
+                              github_repo=args.github_repository, main_branch=args.main_branch)
     slack_user_list = slack._get_user_list()  # Get a list with all slack users
     slack_mail_id = slack._get_slack_mail(slack_user_list)  # Write dictionary with slack_mail: Slack_id
     local_time = slack._local_time()  # get the local time
@@ -359,7 +350,8 @@ if __name__ == '__main__':
     for branch in branch_list:
         if branch == args.main_branch:
             continue
-        data_branch = slack._get_data(branch)  # get Information of branch: {'name': '****', 'email': '****', 'date': '****'}
+        data_branch = slack._get_data(
+            branch)  # get Information of branch: {'name': '****', 'email': '****', 'date': '****'}
         branch_information = data_branch[0]
         assignees_owner = data_branch[1]
         name = branch_information["name"]  # get the name from the last user who pushed to the branch
@@ -374,7 +366,8 @@ if __name__ == '__main__':
                     continue
                 print("******************************")
                 time.sleep(3)
-                channel_id = slack._get_slack_id(github_mail, slack_mail_id, name)  #  get the slack ID from the last user who pushed to the branch, if not found fg-modelica-id
+                channel_id = slack._get_slack_id(github_mail, slack_mail_id,
+                                                 name)  # get the slack ID from the last user who pushed to the branch, if not found fg-modelica-id
                 owner = slack.return_owner()
                 reponse = slack._open_pr(branch, owner, time_dif)  # Open a pull request
 
@@ -391,26 +384,32 @@ if __name__ == '__main__':
                         message_text = f'The branch {branch} has been inactive for more than {time_dif} days. ' \
                                        f'Cannot create a pull request, because there are no commits between {args.main_branch} and {branch}' \
                                        f'\nUser name: {name}'
-                        print(f'\nName: {name}\nBranch: {branch}\nGitHub E-Mail: {github_mail}\nSlack_channel_ID: {channel_id}\n{message_text}')
+                        print(
+                            f'\nName: {name}\nBranch: {branch}\nGitHub E-Mail: {github_mail}\nSlack_channel_ID: {channel_id}\n{message_text}')
                         slack._post_message(channel_id, message_text)  # post message to slack user
 
                         #### Issue
-                        branch_numb_list = (re.findall('[0-9]*', branch))  # write the number of branch (e.g. issue1170_*** -> 1170)
+                        branch_numb_list = (
+                            re.findall('[0-9]*', branch))  # write the number of branch (e.g. issue1170_*** -> 1170)
                         for numb in branch_numb_list:
                             if numb.isdigit() is True:  # get number of branch
                                 for issue_number in issue_number_list:
                                     if str(issue_number) == str(numb):  # issue_number == branch_number
                                         if assignees_owner is not None:
-                                            slack._assignees_issue(assignees_owner, issue_number)  # Add assigneers to the branch
-                                        slack._comment_issue_without_pr(message_text, issue_number)  # comment the issue (delte the branch)
+                                            slack._assignees_issue(assignees_owner,
+                                                                   issue_number)  # Add assigneers to the branch
+                                        slack._comment_issue_without_pr(message_text,
+                                                                        issue_number)  # comment the issue (delte the branch)
                                         time.sleep(5)
                                         slack._close_issue(issue_number)  # close issue
 
                         time.sleep(15)
                         slack._delete_branch(branch)  # delete branch
                         continue
-                    if str(reponse).find(f"'message': 'You have exceeded a secondary rate limit and have been temporarily blocked from content creation. Please retry your request again later.'") > -1:
-                        print(f'\nYou have exceeded a secondary rate limit and have been temporarily blocked from content creation. Please retry your request again later.\n')
+                    if str(reponse).find(
+                            f"'message': 'You have exceeded a secondary rate limit and have been temporarily blocked from content creation. Please retry your request again later.'") > -1:
+                        print(
+                            f'\nYou have exceeded a secondary rate limit and have been temporarily blocked from content creation. Please retry your request again later.\n')
                         exit(1)
 
                 if assignees_owner is not None:
@@ -423,18 +422,23 @@ if __name__ == '__main__':
                                f'\nUser name: {name}' \
                                f'\nBranch URL: {link_branch}' \
                                f'\nPull Request URL: {link_pr}'
-                print(f'\nName: {name}\nBranch: {branch}\nGitHub E-Mail: {github_mail}\nSlack_channel_ID: {channel_id}\n{message_text}')
+                print(
+                    f'\nName: {name}\nBranch: {branch}\nGitHub E-Mail: {github_mail}\nSlack_channel_ID: {channel_id}\n{message_text}')
 
-                artifacts_list.append(f'\n******************************\nName: {name}\nBranch: {branch}\nGitHub E-Mail: {github_mail}\nSlack_channel_ID: {channel_id}\n{message_text}')
+                artifacts_list.append(
+                    f'\n******************************\nName: {name}\nBranch: {branch}\nGitHub E-Mail: {github_mail}\nSlack_channel_ID: {channel_id}\n{message_text}')
                 #### Issue
-                branch_numb_list = (re.findall('[0-9]*', branch))  # write the number of branch (e.g. issue1170_*** -> 1170)
+                branch_numb_list = (
+                    re.findall('[0-9]*', branch))  # write the number of branch (e.g. issue1170_*** -> 1170)
                 for numb in branch_numb_list:
                     if numb.isdigit() is True:  # get number of branch
                         for issue_number in issue_number_list:
                             if str(issue_number) == str(numb):  # issue_number == branch_number
                                 if assignees_owner is not None:
-                                    slack._assignees_issue(assignees_owner, issue_number)  # Add assigneers to the branch
-                                slack._comment_issue(branch, time_dif, issue_number, link_pr)  # comment the issue (delte the branch)
+                                    slack._assignees_issue(assignees_owner,
+                                                           issue_number)  # Add assigneers to the branch
+                                slack._comment_issue(branch, time_dif, issue_number,
+                                                     link_pr)  # comment the issue (delte the branch)
 
                                 time.sleep(15)
                                 slack._close_issue(issue_number)  # close issue
@@ -462,18 +466,22 @@ if __name__ == '__main__':
                                f' A pull request is created and the branch is then deleted. If you want to restore the branch, go to the closed pull requests and restore your branch. ' \
                                f'\nUser name: {name}' \
                                f'\nBranch URL: {link_branch}'
-                print(f'\nName: {name}\nBranch: {branch}\nGitHub E-Mail: {github_mail}\nSlack_channel_ID: {channel_id}\n{message_text}')
+                print(
+                    f'\nName: {name}\nBranch: {branch}\nGitHub E-Mail: {github_mail}\nSlack_channel_ID: {channel_id}\n{message_text}')
                 artifacts_list.append(
                     f'\n******************************\nName: {name}\nBranch: {branch}\nGitHub E-Mail: {github_mail}\nSlack_channel_ID: {channel_id}\n{message_text}')
                 #### Issue
-                branch_numb_list = (re.findall('[0-9]*', branch))  # write the number of branch (e.g. issue1170_*** -> 1170)
+                branch_numb_list = (
+                    re.findall('[0-9]*', branch))  # write the number of branch (e.g. issue1170_*** -> 1170)
                 for numb in branch_numb_list:
                     if numb.isdigit() is True:  # get number of branch
                         for issue_number in issue_number_list:
                             if str(issue_number) == str(numb):  # issue_number == branch_number
                                 if assignees_owner is not None:
-                                    slack._assignees_issue(assignees_owner, issue_number)  # Add assigneers to the branch
-                                slack._comment_issue_without_pr(message_text, issue_number)  # comment the issue (delte the branch)
+                                    slack._assignees_issue(assignees_owner,
+                                                           issue_number)  # Add assigneers to the branch
+                                slack._comment_issue_without_pr(message_text,
+                                                                issue_number)  # comment the issue (delte the branch)
                                 time.sleep(5)
                 time.sleep(15)
                 slack._post_message(channel_id, message_text)
@@ -487,5 +495,3 @@ if __name__ == '__main__':
         file.write(entry)
     file.close()'''
     print("Check finished.")
-
-

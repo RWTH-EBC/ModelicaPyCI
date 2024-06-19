@@ -1,10 +1,8 @@
 import argparse
-import logging
 import math
 import os
 import re
 import shutil
-import sys
 from pathlib import Path
 from typing import List, Union, Dict
 
@@ -550,7 +548,6 @@ def move_output_to_artifacts_and_post_comment(file, args):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level="INFO")
     ARGS = parse_args()
 
     with open(ARGS.config, "r") as FILE:
