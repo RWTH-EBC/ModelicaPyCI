@@ -56,10 +56,3 @@ if __name__ == "__main__":
     clean = CleanModelica()
     clean.delete_files_func()
     clean.delete_dir_func()
-
-
-
-
-
-
-        
