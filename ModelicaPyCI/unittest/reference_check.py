@@ -21,7 +21,7 @@ def write_exit_file(var, message: str = None):
             ex_file.write(message if message is None else 'successful')
         else:
             ex_file.write(message if message is None else 'FAIL')
-            logger.error(f"Wrote var {var} to {exit_file_path}.")
+        logger.info(f"Wrote var {var} to {exit_file_path}.")
 
 
 class BuildingspyRegressionCheck:
@@ -194,12 +194,11 @@ class ReferenceModel:
         Writes a list for feasible regression tests.
         """
         mos_list = self._get_mos_scripts()
-        try:
-            with open(CI_CONFIG.get_file_path("ci_files", "dymola_reference_file"), "w") as whitelist_file:
-                for mos in mos_list:
-                    whitelist_file.write(f'\n{mos}\n')
-        except IOError:
-            logger.error(f'File {CI_CONFIG.get_file_path("ci_files", "dymola_reference_file")} does not exist.')
+        filepath = CI_CONFIG.get_file_path("ci_files", "dymola_reference_file")
+        os.makedirs(filepath.parent, exist_ok=True)
+        with open(filepath, "w") as whitelist_file:
+            for mos in mos_list:
+                whitelist_file.write(f'\n{mos}\n')
 
     def _get_mos_scripts(self):
         """
@@ -259,8 +258,9 @@ def _get_whitelist_package():
     Returns: return files that are not on the reference whitelist
     """
     whitelist_list = []
+    filepath = CI_CONFIG.get_file_path("whitelist", "dymola_reference_file")
     try:
-        with open(CI_CONFIG.get_file_path("whitelist", "dymola_reference_file"), "r") as ref_wh:
+        with open(filepath, "r") as ref_wh:
             lines = ref_wh.readlines()
             for line in lines:
                 if len(line.strip()) == 0:
@@ -274,7 +274,7 @@ def _get_whitelist_package():
                 f'on the whitelist')
         return whitelist_list
     except IOError:
-        logger.error(f'File {CI_CONFIG.get_file_path("whitelist", "dymola_reference_file")} does not exist.')
+        logger.info(f'File {filepath} does not exist, not using any whitelist.')
         return whitelist_list
 
 
@@ -651,6 +651,17 @@ if __name__ == '__main__':
     LIBRARY_PACKAGE_MO = Path(CI_CONFIG.library_root).joinpath(args.library, "package.mo")
     if args.startup_mos is not None:
         STARTUP_MOS = Path(CI_CONFIG.library_root).joinpath(args.startup_mos)
+
+    ref_check = BuildingspyRegressionCheck(
+        pack=args.packages,
+        n_pro=args.number_of_processors,
+        tool=args.tool,
+        batch=args.batch,
+        show_gui=args.show_gui,
+        path=args.path,
+        library=args.library,
+        startup_mos=STARTUP_MOS
+    )
     exit_var = 0
     for package in args.packages:
         if args.validate_html_only:
@@ -680,16 +691,6 @@ if __name__ == '__main__':
             if args.ref_list:
                 ref_model.write_regression_list()
                 exit(0)
-            ref_check = BuildingspyRegressionCheck(
-                pack=args.packages,
-                n_pro=args.number_of_processors,
-                tool=args.tool,
-                batch=args.batch,
-                show_gui=args.show_gui,
-                path=args.path,
-                library=args.library,
-                startup_mos=STARTUP_MOS
-            )
 
             # todo: Liste?
             created_ref_list = list()
