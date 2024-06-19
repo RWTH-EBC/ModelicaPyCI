@@ -16,7 +16,7 @@ def write_exit_file(var, message: str = None):
     """
     exit_file_path = CI_CONFIG.get_file_path("ci_files", "exit_file").absolute()
     os.makedirs(exit_file_path.parent, exist_ok=True)
-    with open(exit_file_path, "w") as ex_file:
+    with open(exit_file_path, "a") as ex_file:
         if var == 0:
             ex_file.write(message if message is not None else 'successful')
         else:
@@ -696,6 +696,19 @@ if __name__ == '__main__':
             created_ref_list = list()
             if args.create_ref:
                 package_list, created_ref_list = ref_model.get_update_model()
+                if not package_list:
+                    logger.info("All regression tests for package %s exist", package)
+                    continue
+                logger.info(f'Start regression Test.\nTest following packages: {package_list}')
+                val = ref_check.check_regression_test(package_list=package_list, create_results=True)
+                if len(created_ref_list) > 0:
+                    for ref in created_ref_list:
+                        config_structure.prepare_data(
+                            source_target_dict={
+                                f'{CI_CONFIG.artifacts.library_ref_results_dir}{os.sep}{ref.replace(".", "_")}.txt':
+                                    CI_CONFIG.get_file_path("result", "regression_dir").joinpath("referencefiles")}
+                        )
+                write_exit_file(var=0, message="GENERATED_NEW_RESULTS")
             elif args.update_ref:
                 ref_list = get_update_ref()
                 ref_model.delete_ref_file(ref_list=ref_list)
@@ -722,31 +735,15 @@ if __name__ == '__main__':
                         package=package
                     )
             # Start regression test
-            val = 0
             if package_list is None or len(package_list) == 0:
-                if args.batch is False:
-                    logger.info(f'All Reference files exist.')
-                    val = 0
-                elif args.changed_flag is False:
-                    logger.error(f'Package is missing! (e.g. Airflow)')
-                    val = 1
+                if args.changed_flag is False:
+                    logger.info('No reference results in package %s', package)
+                    continue
                 elif args.changed_flag is True:
-                    logger.info(f'No changed models in Package {args.packages}')
-                    val = 0
-            elif args.create_ref is True:
-                logger.info(f'Start regression Test.\nTest following packages: {package_list}')
-                val = ref_check.check_regression_test(package_list=package_list, create_results=True)
-                if len(created_ref_list) > 0:
-                    for ref in created_ref_list:
-                        config_structure.prepare_data(
-                            source_target_dict={
-                                f'{CI_CONFIG.artifacts.library_ref_results_dir}{os.sep}{ref.replace(".", "_")}.txt':
-                                    CI_CONFIG.get_file_path("result", "regression_dir").joinpath("referencefiles")}
-                        )
-                write_exit_file(var=0, message="GENERATED_NEW_RESULTS")
-            else:
-                logger.info(f'Start regression Test.\nTest following packages: {package_list}')
-                val = ref_check.check_regression_test(package_list=package_list, create_results=False)
-                write_exit_file(var=val)
+                    logger.info('No changed models in package %s', package)
+                    continue
+            logger.info(f'Start regression Test.\nTest following packages: {package_list}')
+            val = ref_check.check_regression_test(package_list=package_list, create_results=False)
             exit_var = max(exit_var, val)
+    write_exit_file(var=exit_var)
     exit(exit_var)
