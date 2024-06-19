@@ -1,15 +1,12 @@
 import argparse
 import codecs
 
-from ModelicaPyCI.config import ColorConfig
 from ModelicaPyCI.load_global_config import CI_CONFIG
 from ModelicaPyCI.pydyminterface.model_management import ModelManagement
 from ModelicaPyCI.pydyminterface import python_dymola_interface
 from ModelicaPyCI.structure import sort_mo_model as mo
 from ModelicaPyCI.structure import config_structure
 from pathlib import Path
-
-COLORS = ColorConfig()
 
 
 def read_log(library, file):
@@ -24,15 +21,15 @@ def read_log(library, file):
         if line.find("Check ok") > -1 or line.find("Library style check log") > -1 or len(line) == 0:
             continue
         else:
-            print(f'{COLORS.CRED}Error in model: {COLORS.CEND}{line.lstrip()}')
+            logger.error(f'Error in model: {line.lstrip()}')
             error_list.append(line)
     log_file.close()
     config_structure.prepare_data(source_target_dict={file: CI_CONFIG.get_file_path("result", "syntax_dir")})
     if len(error_list) == 0:
-        print(f'{COLORS.green}Style check for library {library} was successful{COLORS.CEND}')
+        logger.info(f'Style check for library {library} was successful')
         return 0
     elif len(error_list) > 0:
-        print(f'{COLORS.CRED}Test failed. Look in {library}_StyleErrorLog.html{COLORS.CEND}')
+        logger.error(f'Test failed. Look in {library}_StyleErrorLog.html')
         return 1
 
 

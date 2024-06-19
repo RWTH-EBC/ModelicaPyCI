@@ -8,7 +8,7 @@ from ModelicaPyCI.utils import logger
 
 
 def check_arguments_settings(**kwargs):
-    print(f'*** --- Argument setting --- ****')
+    logger.info(f'*** --- Argument setting --- ****')
     for var, val in kwargs.items():
         if val is None:
             logger.error(

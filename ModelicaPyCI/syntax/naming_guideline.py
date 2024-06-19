@@ -10,11 +10,9 @@ import toml
 from pydantic import BaseModel
 
 from ModelicaPyCI.api_script.api_github import PullRequestGithub
-from ModelicaPyCI.config import ColorConfig
 from ModelicaPyCI.load_global_config import CI_CONFIG
 from ModelicaPyCI.structure import sort_mo_model as mo
-
-COLORS = ColorConfig()
+from ModelicaPyCI.utils import logger
 
 
 class NamingGuidelineConfig(BaseModel):
@@ -214,7 +212,7 @@ def get_possibly_wrong_code_sections(
                 naming_config=naming_config
             )
         except Exception as err:
-            print(f"{COLORS.CRED} Error: {COLORS.CEND} Can't process file {file} due to error: {err}")
+            logger.error(f"Can't process file {file} due to {err}")
         problematic_expressions = {}
         for expression in expressions[2:]:  # First two expressions are always the model and within statement
             # Extend modifiers include no new names
@@ -416,7 +414,7 @@ def get_documentation_from_line(line: str):
     if not locs:
         return None
     if len(locs) < 2:
-        print(f'{COLORS.CRED} Error: {COLORS.CEND} Only one " in line {line}')
+        logger.error(f'Only one " in line {line}')
         return None
     return line[locs[-2] + 1:locs[-1]]
 
@@ -517,7 +515,7 @@ def convert_csv_to_excel(csv_file, excel_file):
             if line.count(',') == 1:
                 valid_lines.append(line.strip())
             else:
-                print(f"Skipping problematic line: {line.strip()}")
+                logger.info(f"Skipping problematic line: {line.strip()}")
 
     df = pd.DataFrame([line.split(',') for line in valid_lines], columns=["Name", "Frequency"])
 
@@ -536,7 +534,7 @@ def move_output_to_artifacts_and_post_comment(file, args):
     )
     shutil.copy(file, CI_CONFIG.get_file_path("result", "naming_violation_file"))
     page_url = f'{args.gitlab_page}/{args.working_branch}/{CI_CONFIG.result.naming_violation_file}'
-    print(f'Setting gitlab page url: {page_url}')
+    logger.info(f'Setting gitlab page url: {page_url}')
     pr_number = pull_request.get_pr_number()
     message = (f'Naming convention is possibly violated or documentation is missing in changed files. '
                f'Check the output here and either correct the issues or discuss with your reviewer if '
@@ -561,7 +559,7 @@ if __name__ == '__main__':
         changed_flag=ARGS.changed_flag,
         changed_to_branch=ARGS.main_branch
     )
-    print(f"Checking {len(FILES_TO_CHECK)} files")
+    logger.info(f"Checking {len(FILES_TO_CHECK)} files")
     PROBLEMATIC_EXPRESSIONS, FILENAME = get_possibly_wrong_code_sections(
         files=FILES_TO_CHECK,
         library=ARGS.library,

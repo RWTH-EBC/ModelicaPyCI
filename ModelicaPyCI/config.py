@@ -9,29 +9,6 @@ class BaseModelNoExtra(BaseModel):
     model_config = ConfigDict(extra='forbid')
 
 
-class ColorConfig(BaseModelNoExtra):
-    # TODO: Use Logging in all cases.
-    CRED: str = Field(
-        description="Start ANSI escape code for red text",
-        default='\033[91m'
-    )
-    CEND: str = Field(
-        description="End ANSI escape code for colored text",
-        default='\033[0m'
-    )
-    green: str = Field(
-        description="Start ANSI escape code for green text",
-        default='\033[0;32m'
-    )
-    yellow: str = Field(
-        description="Start ANSI escape code for yellow text",
-        default='\033[33m'
-    )
-    blue: str = Field(
-        description="Start ANSI escape code for blue text",
-        default='\033[44m'
-    )
-
 
 class ModelicaPyCIConfig(BaseModelNoExtra):
     url: str = "https://github.com/RWTH-EBC/ModelicaPyCI.git"

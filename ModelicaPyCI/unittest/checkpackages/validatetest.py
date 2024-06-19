@@ -6,13 +6,11 @@ from pathlib import Path
 
 from ebcpy import DymolaAPI
 
-from ModelicaPyCI.config import ColorConfig
 from ModelicaPyCI.load_global_config import CI_CONFIG
 from ModelicaPyCI.structure import sort_mo_model as mo
 from ModelicaPyCI.structure import config_structure
 from ModelicaPyCI.pydyminterface import python_dymola_interface
-
-COLORS = ColorConfig()
+from ModelicaPyCI.utils import logger
 
 
 class CheckPythonDymola:
@@ -51,33 +49,29 @@ class CheckPythonDymola:
         """
         error_model_message_dic = {}
         if len(check_model_list) == 0 or check_model_list is None:
-            print(f'{COLORS.CRED}Error:{COLORS.CEND} Found no models.')
+            logger.error(f'Found no models.')
             exit(0)
         else:
             for dym_model in check_model_list:
                 try:
                     res = self.dymola_api.dymola.checkModel(dym_model, simulate=sim_ex_flag)
                     if res is True:
-                        print(f'{COLORS.green}Successful: {COLORS.CEND} {dym_model}')
+                        logger.info(f'Successful:  {dym_model}')
                     if res is False:
-                        """print(
-                            f'Check for Model {dym_model}{COLORS.CRED} failed!{COLORS.CEND}\n\n{COLORS.CRED}Error:{COLORS.CEND} '
-                            f'{dym_model}\nSecond Check Test for model {dym_model}')"""
                         # Second test for model
                         sec_result = self.dymola_api.dymola.checkModel(dym_model, simulate=sim_ex_flag)
                         if sec_result is True:
-                            print(f'{COLORS.green}Successful: {COLORS.CEND} {dym_model}')
+                            logger.info(f'Successful:  {dym_model}')
                         if sec_result is False:
                             log = self.dymola_api.dymola.getLastError()
                             err_list, warning_list = sort_warnings_from_log(log=log, exception_list=exception_list)
                             if len(err_list) > 0:
-                                print(f'{COLORS.CRED}Error: {COLORS.CEND} {dym_model} \n{err_list}')
+                                logger.error(f' {dym_model} \n{err_list}')
                             if len(warning_list) > 0:
-                                print(
-                                    f'{COLORS.yellow} Warning: {COLORS.CEND} {dym_model} \n{warning_list}')
+                                logger.warning(f'Warning:  {dym_model} \n{warning_list}')
                             error_model_message_dic[dym_model] = log
                 except Exception as ex:
-                    print("Simulation failed: " + str(ex))
+                    logger.error("Simulation failed: " + str(ex))
                     continue
         self.dymola_api.dymola.savelog(f'{self.dymola_log}')
         self.dymola_api.close()
@@ -121,7 +115,7 @@ class CheckPythonDymola:
                                     check_log.write(str(warning) + "\n")
                 return error_log, ch_log
         else:
-            print(f"{COLORS.green}Check was successful.{COLORS.CEND}")
+            logger.info(f"Check was successful.")
             exit(0)
 
     def read_error_log(self, pack: str, err_log: Path, check_log):
@@ -139,17 +133,17 @@ class CheckPythonDymola:
                 if "Error in model" in line:
                     error_log_list.append(line)
                     line = line.strip("\n")
-                    print(f'{COLORS.CRED}{line}{COLORS.CEND}')
+                    logger.error(f'{line}')
 
         config_structure.prepare_data(source_target_dict={
             check_log: Path(CI_CONFIG.get_file_path("result", "check_result_dir"), f'{self.library}.{pack}'),
             err_log: Path(CI_CONFIG.get_file_path("result", "check_result_dir"), f'{self.library}.{pack}')},
             del_flag=True)
         if len(error_log_list) > 0:
-            print(f'{COLORS.CRED}Dymola check failed{COLORS.CEND}')
+            logger.error(f'Dymola check failed')
             return 1
         else:
-            print(f'{COLORS.green}Dymola check was successful{COLORS.CEND}')
+            logger.info(f'Dymola check was successful')
             return 0
 
 
@@ -184,11 +178,11 @@ class CreateWhitelist:
         err_log = Path(Path(self.library_package_mo).parent, f'{self.library}-error_log.txt')
         dymola_log = Path(Path(self.library_package_mo).parent, f'{self.library}-log.txt')
         if model_list is None or len(model_list) == 0:
-            print(f'{COLORS.CRED}Error:{COLORS.CEND} Found no models')
+            logger.error(f'Found no models')
             exit(0)
         try:
             with open(whitelist_files, "w") as whitelist_file, open(err_log, "w") as error_log:
-                print(
+                logger.info(
                     f'Write new whitelist for {self.library} library\n'
                     f'New whitelist was created with the version {version}'
                 )
@@ -196,16 +190,16 @@ class CreateWhitelist:
                 for model in model_list:
                     result = self.dymola_api.dymola.checkModel(model, simulate=simulate_examples)
                     if result is True:
-                        print(f'{COLORS.green}Successful:{COLORS.CEND} {model}')
+                        logger.info(f'Successful: {model}')
                     if result is False:
                         log = self.dymola_api.dymola.getLastError()
-                        print(f'\n{COLORS.CRED}Error:{COLORS.CEND} {model}\n{log}')
+                        logger.error(f'\n{model}\n{log}')
                         error_model_message_dic[model] = log
                         whitelist_file.write(f'\n{model} \n \n')
                         error_log.write(f'\n \n Error in model:  {model} \n{log}')
                 self.dymola_api.dymola.savelog(f'{dymola_log}')
                 self.dymola_api.close()
-            print(f'{COLORS.green}Whitelist check finished.{COLORS.CEND}')
+            logger.info(f'Whitelist check finished.')
             config_structure.prepare_data(source_target_dict={
                 err_log: Path(CI_CONFIG.get_file_path("result", "whitelist_dir")).joinpath(self.library),
                 dymola_log: Path(CI_CONFIG.get_file_path("result", "whitelist_dir")).joinpath(self.library),
@@ -214,7 +208,7 @@ class CreateWhitelist:
             })
             return error_model_message_dic
         except IOError:
-            print(f'Error: File {whitelist_files} or {err_log} does not exist.')
+            logger.error(f'File {whitelist_files} or {err_log} does not exist.')
             exit(1)
 
 
@@ -253,10 +247,10 @@ def return_exit_var(package_results: dict):
     for package, opt_check_dict in package_results.items():
         for opt, value in opt_check_dict.items():
             if value != 0:
-                print(f'{COLORS.CRED}Check {opt} for package {package} failed.{COLORS.CEND}')
+                logger.error(f'Check {opt} for package {package} failed.')
                 var = 1
             else:
-                print(f'{COLORS.green}Check {opt} or package {package} was successful.{COLORS.CEND}')
+                logger.info(f'Check {opt} or package {package} was successful.')
     if var == 1:
         exit(var)
 
@@ -274,7 +268,7 @@ def write_exit_log(vers_check: bool):
             else:
                 exit_file.write(f'successful')
     except IOError:
-        print(f'Error: File {CI_CONFIG.get_file_path("ci_files", "exit_file")} does not exist.')
+        logger.error(f'File {CI_CONFIG.get_file_path("ci_files", "exit_file")} does not exist.')
         exit(1)
 
 
@@ -284,16 +278,15 @@ def read_script_version(library_package_mo):
         version (): return the latest version number of conversion script.
     """
     path = Path(Path.cwd(), Path(library_package_mo).parent, "Resources", "Scripts")
-    print(path)
     filelist = (glob.glob(f'{path}{os.sep}*.mos'))
     if len(filelist) == 0:
-        print(f'Cannot find a Conversion Script in {Path(library_package_mo).parent} repository.')
+        logger.error(f'Cannot find a Conversion Script in {Path(library_package_mo).parent} repository.')
         exit(0)
     else:
         last_conversion_script = natsorted(filelist)[(-1)]
         last_conversion_script = last_conversion_script.split(os.sep)
         vers = (last_conversion_script[len(last_conversion_script) - 1])
-        print(f'Latest {Path(library_package_mo).parent} version: {vers}')
+        logger.info(f'Latest {Path(library_package_mo).parent} version: {vers}')
         return vers
 
 

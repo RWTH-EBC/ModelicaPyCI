@@ -3,13 +3,11 @@ from pathlib import Path
 
 from ebcpy import DymolaAPI
 
-from ModelicaPyCI.config import ColorConfig
 from ModelicaPyCI.load_global_config import CI_CONFIG
 from ModelicaPyCI.pydyminterface.model_management import ModelManagement
 from ModelicaPyCI.structure import config_structure
 from ModelicaPyCI.utils import create_changed_files_file
-
-COLORS = ColorConfig()
+from ModelicaPyCI.utils import logger
 
 
 def get_model_list(
@@ -98,7 +96,7 @@ def get_model_list(
         model_list = filter_whitelist_models(models=model_list,
                                              whitelist_list=whitelist_list_models)
     if len(model_list) == 0 or model_list is None:
-        print(f'Find no models in package {package}')
+        logger.error(f'Find no models in package {package}')
         exit(0)
     else:
         return model_list
@@ -141,10 +139,10 @@ def get_changed_regression_models(
         library=library, package=package,
     )
     if len(changed_list) == 0:
-        print(f'No models to check and cannot start a regression test')
+        logger.info(f'No models to check and cannot start a regression test')
         exit(0)
     else:
-        print(f'Number of checked packages: {str(len(changed_list))}')
+        logger.info(f'Number of checked packages: {str(len(changed_list))}')
         return changed_list
 
 
@@ -156,17 +154,17 @@ def get_extended_model(
 
     simulate_list = list()
     for model in model_list:
-        print(f' **** Check structure of model {model} ****')
+        logger.info(f' **** Check structure of model {model} ****')
         extended_list = mm.get_extended_examples(model=model)
         used_list = mm.get_used_models(model=model)
         extended_list.extend(used_list)
         for ext in extended_list:
-            print(f'Extended model {ext} ')
+            logger.info(f'Extended model {ext} ')
             filepath = f'{ext.replace(".", os.sep)}.mo'
             example_test = _get_icon_example(filepath=filepath,
                                              library=library)
             if example_test is None:
-                print(f'File {filepath} is no example.')
+                logger.info(f'File {filepath} is no example.')
             else:
                 simulate_list.append(model)
                 simulate_list.append(ext)
@@ -219,12 +217,12 @@ def get_whitelist_models(whitelist_file: str,
             model = line.lstrip()
             model = model.strip().replace("\n", "")
             if model.find(f'{library}.{single_package}') > -1:
-                print(f'Dont test {library} model: {model}. Model is on the whitelist.')
+                logger.info(f'Dont test {library} model: {model}. Model is on the whitelist.')
                 whitelist_list_models.append(model)
         whitelist_file.close()
         return whitelist_list_models
     except IOError:
-        print(f'Error: File {whitelist_file} does not exist.')
+        logger.error(f'Error: File {whitelist_file} does not exist.')
         return whitelist_list_models
 
 
@@ -268,7 +266,7 @@ def _get_icon_example(filepath, library):
                 ex_file.close()
                 return example
     except IOError:
-        print(f'Error: File {filepath} does not exist.')
+        logger.error(f'Error: File {filepath} does not exist.')
 
 
 def _model_to_ref_exist(ref_file, library: str, package: str):
@@ -325,14 +323,14 @@ def return_type_list(
     Returns:
     """
     changed_list = []
-    print(f'\n ------The last modified files ------\n')
+    logger.info(f'\n ------The last modified files ------\n')
     if ref_list is not None:
         for ref in ref_list:
             model_file = _model_to_ref_exist(ref_file=ref, library=library, package=package)
             if model_file is not None:
                 model = _mos_script_to_model_exist(model=model_file, library=library, package=package)
                 if model is not None:
-                    print(f'Changed reference files: {ref}')
+                    logger.info(f'Changed reference files: {ref}')
                     changed_list.append(ref[:ref.rfind("_")].replace("_", "."))
     if mos_list is not None:
         for mos in mos_list:
@@ -340,21 +338,21 @@ def return_type_list(
             if mos_script is not None:
                 model = _mos_script_to_model_exist(model=mos_script, library=library, package=package)
                 if model is not None:
-                    print(f'Changed mos script files: {mos}')
+                    logger.info(f'Changed mos script files: {mos}')
                     changed_list.append(mos[:mos.rfind(".")])
     if modelica_list is not None:
         for model in modelica_list:
             model = _mos_script_to_model_exist(model=model, library=library, package=package)
             if model is not None:
-                print(f'Changed model files: {model}')
+                logger.info(f'Changed model files: {model}')
                 changed_list.append(model[:model.rfind(".")])
     if changed_model_list is not None:
         for used_model in changed_model_list:
             model = _mos_script_to_model_exist(model=used_model, library=library, package=package)
             if model is not None:
-                print(f'Changed used model files: {used_model}')
+                logger.info(f'Changed used model files: {used_model}')
                 changed_list.append(used_model[:used_model.rfind(".")])
-    print(f'\n -----------------------------------\n')
+    logger.info(f'\n -----------------------------------\n')
     changed_list = list(set(changed_list))
     return changed_list
 
@@ -404,7 +402,7 @@ def get_changed_models(
                         example_test = _get_icon_example(filepath=model_name,
                                                          library=library)
                         if example_test is None:
-                            print(
+                            logger.info(
                                 f'Model {model_name} is not a simulation example because it '
                                 f'does not contain the following "Modelica.Icons.Example"'
                             )
@@ -423,12 +421,12 @@ def get_changed_models(
                         modelica_models.append(model_name)
                         continue
         if len(modelica_models) == 0:
-            print(f'No models in Package: {single_package}')
+            logger.info(f'No models in Package: {single_package}')
             exit(0)
         file.close()
         return modelica_models, no_example_list
     except IOError:
-        print(f'Error: File {changed_files} does not exist.')
+        logger.error(f'Error: File {changed_files} does not exist.')
         exit(0)
 
 
@@ -456,7 +454,7 @@ def get_models(
                     example_test = _get_icon_example(filepath=filepath,
                                                      library=library)
                     if example_test is None:
-                        print(
+                        logger.info(
                             f'Model {filepath} is not a simulation example because '
                             f'it does not contain the following "Modelica.Icons.Example"')
                         if extended_examples_flag is True:
@@ -472,7 +470,7 @@ def get_models(
                     model = model[model.find(library):model.rfind(".mo")]
                     model_list.append(model)
     if model_list is None or len(model_list) == 0:
-        print(f'No models in package {path}')
+        logger.info(f'No models in package {path}')
         return model_list, no_example_list
 
     else:

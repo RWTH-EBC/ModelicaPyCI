@@ -5,11 +5,7 @@ from pathlib import Path
 
 from ebcpy import DymolaAPI
 
-from ModelicaPyCI.config import ColorConfig
 from ModelicaPyCI.utils import logger
-
-
-COLORS = ColorConfig()
 
 
 def load_dymola_api(packages: list, requires_license: bool = True, startup_mos: str = None) -> DymolaAPI:
@@ -43,8 +39,7 @@ def load_dymola_api(packages: list, requires_license: bool = True, startup_mos: 
         lic_counter = 0
         dym_sta_lic_available = dymola_api.license_is_available()
         while not dym_sta_lic_available:
-            print(f'{COLORS.CRED} No Dymola License is available {COLORS.CEND} \n '
-                  f'Check Dymola license after 180.0 seconds')
+            logger.error('No Dymola License is available. Check Dymola license after 180.0 seconds')
             dymola_api.close()
             time.sleep(180.0)
             dymola_api = _start_dymola_api(
@@ -53,11 +48,10 @@ def load_dymola_api(packages: list, requires_license: bool = True, startup_mos: 
             dym_sta_lic_available = dymola_api.license_is_available()
             lic_counter += 1
             if lic_counter > 10:
-                print(f'There are currently no available Dymola licenses available. Please try again later.')
+                logger.error(f'There are currently no available Dymola licenses available. Please try again later.')
                 dymola_api.close()
                 exit(1)
-        print(f'2: Using Dymola port {str(dymola_api.dymola._portnumber)} \n '
-              f'{COLORS.green} Dymola License is available {COLORS.CEND}')
+        logger.info(f'2: Using Dymola port {str(dymola_api.dymola._portnumber)}. Dymola License is available.')
 
     dymola_api.dymola.ExecuteCommand("Advanced.TranslationInCommandLog:=true;")
     return dymola_api

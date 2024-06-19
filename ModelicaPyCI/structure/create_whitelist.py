@@ -2,10 +2,7 @@ import argparse
 from ModelicaPyCI.structure import config_structure
 from ModelicaPyCI.api_script.api_github import clone_repository
 from ModelicaPyCI.structure import sort_mo_model as mo
-from ModelicaPyCI.config import ColorConfig
 from ModelicaPyCI.load_global_config import CI_CONFIG
-
-COLORS = ColorConfig()
 
 
 def write_whitelist(model_list, library: str, whitelist_library: str):

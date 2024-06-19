@@ -710,5 +710,3 @@ if __name__ == '__main__':
                 html_correct_log=html_tidy_check.html_correct_log
             )
             exit(variable)
-        if args.correct_overwrite_flag is False and args.correct_backup_flag is False and args.log_flag is False and args.correct_view_flag is False:
-            print("please use -h or --help for help")

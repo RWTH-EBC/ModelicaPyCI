@@ -4,10 +4,9 @@ import uuid
 from pathlib import Path
 from typing import Union
 
-from ModelicaPyCI.config import ColorConfig
 from ModelicaPyCI.structure import config_structure
 
-COLORS = ColorConfig()
+
 logger = logging.getLogger("ModelicaPyCI")
 
 
@@ -16,12 +15,18 @@ class ColoredFormatter(logging.Formatter):
 
     def __init__(self, fmt: str):
         super().__init__(fmt=fmt)
+        red: str = '\033[91m'
+        green: str = '\033[0;32m'
+        yellow: str = '\033[33m'
+        blue: str = '\033[44m'
+        end_color: str = '\033[0m'
+
         self.colored_formats = {
-            logging.DEBUG: logging.Formatter(COLORS.yellow + fmt + COLORS.CEND),
-            logging.INFO: logging.Formatter(COLORS.green + fmt + COLORS.CEND),
-            logging.WARNING: logging.Formatter(COLORS.blue + fmt + COLORS.CEND),
-            logging.ERROR: logging.Formatter(COLORS.CRED + fmt + COLORS.CEND),
-            logging.CRITICAL: logging.Formatter(COLORS.CRED + fmt + COLORS.CEND)
+            logging.DEBUG: logging.Formatter(yellow + fmt + end_color),
+            logging.INFO: logging.Formatter(green + fmt + end_color),
+            logging.WARNING: logging.Formatter(blue + fmt + end_color),
+            logging.ERROR: logging.Formatter(red + fmt + end_color),
+            logging.CRITICAL: logging.Formatter(red + fmt + end_color)
         }
 
     def format(self, record):
@@ -38,7 +43,7 @@ def setup_logging():
         )
         logging.info("Logging is set up.")
     else:
-        print("Root logger was already set up with level", root_logger.level)
+        root_logger.info("Root logger was already set up with level", root_logger.level)
 
 
 setup_logging()
@@ -51,8 +56,8 @@ def create_changed_files_file(repo_root: Union[str, Path] = None, to_branch: str
     if repo_root is not None:
         os.chdir(repo_root)
     if not os.path.isdir(Path().joinpath(".git")):
-        print(
-            f"{COLORS.CRED}Error: {COLORS.CEND} Current path {os.getcwd()} is not a "
+        logger.error(
+            f"Current path {os.getcwd()} is not a "
             f"git-directory, can't check changed models: {os.listdir()}"
         )
         exit(1)
