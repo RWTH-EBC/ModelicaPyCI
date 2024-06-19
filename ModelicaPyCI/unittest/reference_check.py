@@ -55,14 +55,14 @@ class BuildingspyRegressionCheck:
             logger.info("Changed MODELICAPATH to: %s", os.environ["MODELICAPATH"])
         self.ut = regression.Tester(tool=self.tool)
 
-    def check_regression_test(self, package_list):
+    def check_regression_test(self, package_list, create_results: bool):
         """
         start regression test for a package
         Args:
             package_list ():
         Returns:
         """
-        self.ut.batchMode(self.batch, createNewReferenceResultsInBatchMode=True)
+        self.ut.batchMode(self.batch, createNewReferenceResultsInBatchMode=create_results)
         self.ut.setLibraryRoot(self.path)
         self.ut.setNumberOfThreads(self.n_pro)
         self.ut.pedanticModelica(False)
@@ -734,7 +734,7 @@ if __name__ == '__main__':
                     val = 0
             elif args.create_ref is True:
                 logger.info(f'Start regression Test.\nTest following packages: {package_list}')
-                val = ref_check.check_regression_test(package_list=package_list)
+                val = ref_check.check_regression_test(package_list=package_list, create_results=True)
                 if len(created_ref_list) > 0:
                     for ref in created_ref_list:
                         config_structure.prepare_data(
@@ -745,7 +745,7 @@ if __name__ == '__main__':
                 write_exit_file(var=0, message="GENERATED_NEW_RESULTS")
             else:
                 logger.info(f'Start regression Test.\nTest following packages: {package_list}')
-                val = ref_check.check_regression_test(package_list=package_list)
+                val = ref_check.check_regression_test(package_list=package_list, create_results=False)
                 write_exit_file(var=val)
             exit_var = max(exit_var, val)
     exit(exit_var)
