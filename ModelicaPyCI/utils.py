@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Union
 
 from ModelicaPyCI.config import ColorConfig
-from ModelicaPyCI.load_global_config import CI_CONFIG
 from ModelicaPyCI.structure import config_structure
 
 COLORS = ColorConfig()
@@ -46,6 +45,8 @@ setup_logging()
 
 
 def create_changed_files_file(repo_root: Union[str, Path] = None, to_branch: str = None):
+    from ModelicaPyCI.load_global_config import CI_CONFIG
+
     old_cwd = os.getcwd()
     if repo_root is not None:
         os.chdir(repo_root)
