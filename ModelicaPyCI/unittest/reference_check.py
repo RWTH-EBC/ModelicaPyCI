@@ -18,9 +18,9 @@ def write_exit_file(var, message: str = None):
     os.makedirs(exit_file_path.parent, exist_ok=True)
     with open(exit_file_path, "w") as ex_file:
         if var == 0:
-            ex_file.write(message if message is None else 'successful')
+            ex_file.write(message if message is not None else 'successful')
         else:
-            ex_file.write(message if message is None else 'FAIL')
+            ex_file.write(message if message is not None else 'FAIL')
         logger.info(f"Wrote var {var} to {exit_file_path}.")
 
 
