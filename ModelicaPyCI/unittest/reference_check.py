@@ -93,7 +93,7 @@ class BuildingspyRegressionCheck:
                         "unitTests-dymola.log": Path(CI_CONFIG.get_file_path("result", "regression_dir"),
                                                      package),
                         "funnel_comp": Path(CI_CONFIG.get_file_path("result", "regression_dir"), package,
-                                            "funnel_comp")})
+                                            "funnel_comp")}, del_flag=True)
                 if response != 0:
                     err_list.append(package)
                     if self.batch is False:
