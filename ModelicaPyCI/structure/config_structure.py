@@ -118,27 +118,6 @@ def delete_files_path(root: str = None, pattern: str = None, subfolder: bool = F
         os.remove(file)
 
 
-def remove_files(file_list: list = None):
-    if file_list is not None:
-        for file in file_list:
-            if os.path.exists(file):
-                if os.path.isfile(file) is True:
-                    os.remove(file)
-                    print(f'Remove file: {file}')
-                else:
-                    print(f'File {file} does not exist')
-
-
-def remove_path(path_list: list = None):
-    if path_list is not None:
-        for path in path_list:
-            if os.path.isdir(path) is True:
-                os.rmdir(path)
-                print(f'Remove folder: {path}')
-            else:
-                print(f'Path {path} does not exist.')
-
-
 def prepare_data(source_target_dict: dict,
                  del_flag: bool = False):
     """
@@ -161,7 +140,7 @@ def prepare_data(source_target_dict: dict,
                 f'was copied to {COLORS.blue}{target}{COLORS.CEND}'
             )
             if del_flag is True:
-                remove_files([source])
+                os.remove(source)
         if os.path.isdir(source) is True:
             distutils.dir_util.copy_tree(source, str(target_path))
             print(
@@ -169,4 +148,4 @@ def prepare_data(source_target_dict: dict,
                 f'was copied to {COLORS.blue}{target_path}{COLORS.CEND}'
             )
             if del_flag is True:
-                remove_path([source])
+                shutil.rmtree(source)

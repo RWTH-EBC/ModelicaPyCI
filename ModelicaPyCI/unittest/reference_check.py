@@ -86,14 +86,13 @@ class BuildingspyRegressionCheck:
                                  f"no valid scripts are available: {err}")
                     continue
                 response = self.ut.run()
-                config_structure.prepare_data(
-                    source_target_dict={
-                        f'simulator-dymola.log': Path(CI_CONFIG.get_file_path("result", "regression_dir"),
-                                                      package),
-                        "unitTests-dymola.log": Path(CI_CONFIG.get_file_path("result", "regression_dir"),
-                                                     package),
-                        "funnel_comp": Path(CI_CONFIG.get_file_path("result", "regression_dir"), package,
-                                            "funnel_comp")}, del_flag=True)
+                result_path = Path(CI_CONFIG.get_file_path("result", "regression_dir"), package)
+                source_target_dict = {}
+                for file in self.ut.get_unit_test_log_files():
+                    source_target_dict[file] = result_path
+                source_target_dict["funnel_comp"] = result_path.joinpath("funnel_comp")
+                config_structure.prepare_data(source_target_dict=source_target_dict, del_flag=True)
+
                 if response != 0:
                     err_list.append(package)
                     if self.batch is False:
