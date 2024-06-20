@@ -166,6 +166,7 @@ class PlotCharts:
             logger.info(f'Plot results from file {new_ref_file}')
         with open(new_ref_file, "r") as file:
             lines = file.readlines()
+        logger.info("File contents: %s", lines)
         reference_list = list()
         for line in lines:
             line = line.strip()
@@ -412,7 +413,7 @@ class PlotCharts:
                 html_file_list.append(file)
         my_template = Template(filename=CI_CONFIG.plots.templates_index_file)
         if len(html_file_list) == 0:
-            logger.info(f'No html files')
+            logger.info(f'No html files in chart path: %s', self.temp_chart_path)
             os.rmdir(self.temp_chart_path)
         else:
             html_chart = my_template.render(html_model=html_file_list)
