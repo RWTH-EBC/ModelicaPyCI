@@ -51,7 +51,7 @@ class BuildingspyRegressionCheck:
             logger.info("Changed MODELICAPATH to: %s", os.environ["MODELICAPATH"])
         self.ut = regression.Tester(tool=self.tool)
 
-    def check_regression_test(self, package_list, create_results: bool):
+    def check_regression_test(self, package_list, create_results: bool, package: str):
         """
         start regression test for a package
         Args:
@@ -69,43 +69,41 @@ class BuildingspyRegressionCheck:
         self.ut.showGUI(self.show_gui)
         err_list = list()
         new_ref_list = list()
-        # if "-y" in sys.argv:
-        if package_list is not None and len(package_list) > 0:
-            for package in package_list:
-                if self.batch is False:
-                    new_ref_list.append(package)
-                    logger.info(f'Generate new reference results for package:  {package}')
-                else:
-                    logger.info(f'Regression test for package: {package}')
-                try:
-                    self.ut.setSinglePackage(package)
-                except ValueError as err:
-                    logger.error(f"Can't perform regression test for package '{package}', "
-                                 f"no valid scripts are available: {err}")
-                    continue
-                response = self.ut.run()
-                result_path = Path(CI_CONFIG.get_file_path("result", "regression_dir"), package)
-                source_target_dict = {}
-                for file in self.ut.get_unit_test_log_files():
-                    source_target_dict[file] = result_path
-                source_target_dict["funnel_comp"] = result_path.joinpath("funnel_comp")
-                config_structure.prepare_data(source_target_dict=source_target_dict, del_flag=True)
+        for package_modelica_name in package_list:
+            if self.batch is False:
+                new_ref_list.append(package_modelica_name)
+                logger.info(f'Generate new reference results for package:  {package_modelica_name}')
+            else:
+                logger.info(f'Regression test for package: {package_modelica_name}')
+            try:
+                self.ut.setSinglePackage(package_modelica_name)
+            except ValueError as err:
+                logger.error(f"Can't perform regression test for package '{package_modelica_name}', "
+                             f"no valid scripts are available: {err}")
+                continue
+            response = self.ut.run()
+            result_path = Path(CI_CONFIG.get_file_path("result", "regression_dir"), package)
+            source_target_dict = {}
+            for file in self.ut.get_unit_test_log_files():
+                source_target_dict[file] = result_path
+            source_target_dict["funnel_comp"] = result_path.joinpath("funnel_comp")
+            config_structure.prepare_data(source_target_dict=source_target_dict, del_flag=True)
 
-                if response != 0:
-                    err_list.append(package)
-                    if self.batch is False:
-                        logger.error(f'Error in package:  {package}')
-                        continue
-                    else:
-                        logger.error(f'Regression test for model {package} was not successfully')
-                        continue
+            if response != 0:
+                err_list.append(package_modelica_name)
+                if self.batch is False:
+                    logger.error(f'Error in package:  {package_modelica_name}')
+                    continue
                 else:
-                    if self.batch is False:
-                        logger.info(f'New reference results in package:  {package}\n')
-                        continue
-                    else:
-                        logger.info(f'Regression test for model {package} was successful ')
-                        continue
+                    logger.error(f'Regression test for model {package_modelica_name} was not successfully')
+                    continue
+            else:
+                if self.batch is False:
+                    logger.info(f'New reference results in package:  {package_modelica_name}\n')
+                    continue
+                else:
+                    logger.info(f'Regression test for model {package_modelica_name} was successful ')
+                    continue
         if self.batch is True:
             if len(err_list) > 0:
                 logger.error(f'The following packages in regression test failed:')
@@ -699,7 +697,7 @@ if __name__ == '__main__':
                     logger.info("All regression tests for package %s exist", package)
                     continue
                 logger.info(f'Start regression Test.\nTest following packages: {package_list}')
-                val = ref_check.check_regression_test(package_list=package_list, create_results=True)
+                val = ref_check.check_regression_test(package_list=package_list, create_results=True, package=package)
                 if len(created_ref_list) > 0:
                     for ref in created_ref_list:
                         config_structure.prepare_data(
@@ -743,7 +741,7 @@ if __name__ == '__main__':
                     logger.info('No changed models in package %s', package)
                     continue
             logger.info(f'Start regression Test.\nTest following packages: {package_list}')
-            val = ref_check.check_regression_test(package_list=package_list, create_results=False)
+            val = ref_check.check_regression_test(package_list=package_list, create_results=False, package=package)
             exit_var = max(exit_var, val)
     write_exit_file(message="FAIL" if exit_var == 1 else "Successfull")
     exit(exit_var)
