@@ -549,7 +549,8 @@ if __name__ == '__main__':
     for package in args.packages:
         result_path = Path(CI_CONFIG.get_file_path("result", "regression_dir"), package)
         if not os.path.isdir(result_path):
-            logger.info("Package %s has no regression directory, no plots to prepare.", package)
+            logger.info("Package %s has no regression directory (%s), no plots to prepare.",
+                        package, result_path)
             continue
         charts = PlotCharts(result_path=result_path,
                             library=args.library)
