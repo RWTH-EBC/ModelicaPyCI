@@ -31,6 +31,8 @@ class PlotCharts:
         Returns:
         """
         update_ref_list = list()
+        logger.error(os.listdir())
+        logger.error(os.getcwd())
         for reference_file in reference_file_list:
             if os.path.isfile(reference_file) is False:
                 logger.error(f'File {reference_file} does not exist.')
@@ -140,7 +142,7 @@ class PlotCharts:
         Returns:
         """
         if os.path.isfile(CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)) is False:
-            logger.error(f'File {CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)} directory does not exist.')
+            logger.error(f'File {CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)} does not exist.')
             exit(0)
         else:
             logger.info(f'Plot results from file {CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)}')
@@ -431,19 +433,10 @@ class PlotCharts:
         return folders
 
     def delete_folder(self):
-        """
-
-        """
-        if os.path.isdir(CI_CONFIG.plots.chart_dir) is False:
+        if not os.path.isdir(CI_CONFIG.plots.chart_dir):
             logger.error(f'Directory {CI_CONFIG.plots.chart_dir} does not exist.')
         else:
-            folder_list = os.listdir(CI_CONFIG.plots.chart_dir)
-            for folders in folder_list:
-                if folders.find(".html") > -1:
-                    os.remove(f'{CI_CONFIG.plots.chart_dir}{os.sep}{folders}')
-                    continue
-                else:
-                    shutil.rmtree(f'{CI_CONFIG.plots.chart_dir}{os.sep}{folders}')
+            shutil.rmtree(CI_CONFIG.plots.chart_dir)
 
 
 def create_layout(temp_dir: Path, layout_html_file: Path):
