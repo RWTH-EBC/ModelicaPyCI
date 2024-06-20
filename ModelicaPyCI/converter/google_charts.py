@@ -50,7 +50,6 @@ class PlotCharts:
             self._mako_line_html_new_chart(reference_file=reference_file,
                                            value_list=results[0],
                                            legend_list=results[1])
-            continue
 
     def read_show_reference(self):
         """
@@ -159,12 +158,13 @@ class PlotCharts:
         """
         Returns:
         """
-        if os.path.isfile(CI_CONFIG.get_file_path("ci_files", "new_create_ref_file")) is False:
-            logger.error(f'File {CI_CONFIG.get_file_path("ci_files", "new_create_ref_file")} directory does not exist.')
+        new_ref_file = CI_CONFIG.get_file_path("ci_files", "new_create_ref_file")
+        if os.path.isfile(new_ref_file) is False:
+            logger.error(f'File {new_ref_file} does not exist.')
             exit(0)
         else:
-            logger.info(f'Plot results from file {CI_CONFIG.get_file_path("ci_files", "new_create_ref_file")}')
-        with open(CI_CONFIG.get_file_path("ci_files", "new_create_ref_file"), "r") as file:
+            logger.info(f'Plot results from file {new_ref_file}')
+        with open(new_ref_file, "r") as file:
             lines = file.readlines()
         reference_list = list()
         for line in lines:
@@ -172,6 +172,7 @@ class PlotCharts:
             if line.find(".txt") > -1 and line.find("_"):
                 reference_list.append(f'{line.strip()}')
                 continue
+        logger.info("Plotting reference files: %s", reference_list)
         return reference_list
 
     @staticmethod
