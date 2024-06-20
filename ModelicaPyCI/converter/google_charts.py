@@ -171,7 +171,6 @@ class PlotCharts:
             line = line.strip()
             if line.find(".txt") > -1 and line.find("_"):
                 reference_list.append(f'{line.strip()}')
-                continue
         logger.info("Plotting reference files: %s", reference_list)
         return reference_list
 
@@ -415,7 +414,6 @@ class PlotCharts:
         if len(html_file_list) == 0:
             logger.info(f'No html files')
             os.rmdir(self.temp_chart_path)
-            exit(0)
         else:
             html_chart = my_template.render(html_model=html_file_list)
             with open(CI_CONFIG.plots.templates_index_file, "w") as file_tmp:
@@ -459,7 +457,6 @@ def create_layout(temp_dir: Path, layout_html_file: Path):
             package_list.append(folders)
     if len(package_list) == 0:
         logger.info(f'No html files')
-        exit(0)
     else:
         logger.info(package_list)
         my_template = Template(filename=CI_CONFIG.plots.templates_layout_file)
@@ -485,10 +482,6 @@ def parse_args():
         help="URL to MoCITempGen repository"
     )
     # [ bool - flag]
-    unit_test_group.add_argument("--line-html-flag",
-                                 help='plot a google html chart in line form',
-                                 default=True,
-                                 action="store_true")
     unit_test_group.add_argument("--error-flag",
                                  default=True,
                                  help='Plot only model with errors',
@@ -496,10 +489,6 @@ def parse_args():
     unit_test_group.add_argument("--funnel-comp-flag",
                                  default=True,
                                  help="Take the datas from funnel_comp",
-                                 action="store_true")
-    unit_test_group.add_argument("--create-layout-flag",
-                                 default=True,
-                                 help='Create a layout with a plots',
                                  action="store_true")
     unit_test_group.add_argument("--line-matplot-flag",
                                  help='plot a matlab chart ',
@@ -555,53 +544,45 @@ if __name__ == '__main__':
             continue
         charts = PlotCharts(result_path=result_path,
                             library=args.library)
-        if args.line_html_flag is True:
-            charts.delete_folder()
-            charts.check_folder_path()
-            if args.error_flag is True:
-                model_var_list = charts.read_unit_test_log()
-                logger.info(f'Plot line chart with different reference results.\n')
-                for model_variable in model_var_list:
-                    model_variable = model_variable.split(":")
-                    if args.funnel_comp_flag is True:
-                        charts.mako_line_html_chart(model=model_variable[0],
-                                                    var=model_variable[1])
-                    if args.ref_txt_flag is True:
-                        ref_file = charts.get_ref_file(model=model_variable[0])
-                        if ref_file is None:
-                            logger.error(f'Reference file for model {model_variable[0]} does not exist.')
-                            continue
-                        else:
-                            result = charts.get_values(reference_list=ref_file)
-                            charts.mako_line_ref_chart(model=model_variable[0],
-                                                       var=model_variable[1])
-            if args.new_ref_flag is True:
-                ref_list = charts.get_new_reference_files()
-                charts.write_html_plot_templates(reference_file_list=ref_list)
-            if args.update_ref_flag is True:
-                ref_list = charts.get_updated_reference_files()
-                charts.write_html_plot_templates(reference_file_list=ref_list)
-            if args.show_ref_flag is True:
-                ref_list = charts.read_show_reference()
-                charts.write_html_plot_templates(reference_file_list=ref_list)
-            if args.show_package_flag is True:
-                folder = charts.get_funnel_comp()
-                for ref in folder:
-                    if args.funnel_comp_flag is True:
-                        charts.mako_line_html_chart(model=ref[:ref.find(".mat")],
-                                                    var=ref[ref.rfind(".mat") + 5:])
-            charts.create_index_layout()
-            create_layout(temp_dir=Path(CI_CONFIG.plots.chart_dir),
-                          layout_html_file=Path(CI_CONFIG.plots.chart_dir).joinpath("index.html"))
-            config_structure.prepare_data(
-                source_target_dict={
-                    CI_CONFIG.plots.chart_dir: CI_CONFIG.get_file_path("result", "plot_dir").joinpath(args.packages)
-                }
-            )
-
-        if args.create_layout_flag is True:
-            config_structure.create_path(Path(CI_CONFIG.get_file_path("result", "plot_dir")))
-            create_layout(
-                temp_dir=Path(CI_CONFIG.get_file_path("result", "plot_dir")),
-                layout_html_file=CI_CONFIG.get_file_path("result", "plot_dir").joinpath("index.html")
-            )
+        charts.delete_folder()
+        charts.check_folder_path()
+        if args.error_flag is True:
+            model_var_list = charts.read_unit_test_log()
+            logger.info(f'Plot line chart with different reference results.\n')
+            for model_variable in model_var_list:
+                model_variable = model_variable.split(":")
+                if args.funnel_comp_flag is True:
+                    charts.mako_line_html_chart(model=model_variable[0],
+                                                var=model_variable[1])
+                if args.ref_txt_flag is True:
+                    ref_file = charts.get_ref_file(model=model_variable[0])
+                    if ref_file is None:
+                        logger.error(f'Reference file for model {model_variable[0]} does not exist.')
+                        continue
+                    else:
+                        result = charts.get_values(reference_list=ref_file)
+                        charts.mako_line_ref_chart(model=model_variable[0],
+                                                   var=model_variable[1])
+        if args.new_ref_flag is True:
+            ref_list = charts.get_new_reference_files()
+            charts.write_html_plot_templates(reference_file_list=ref_list)
+        if args.update_ref_flag is True:
+            ref_list = charts.get_updated_reference_files()
+            charts.write_html_plot_templates(reference_file_list=ref_list)
+        if args.show_ref_flag is True:
+            ref_list = charts.read_show_reference()
+            charts.write_html_plot_templates(reference_file_list=ref_list)
+        if args.show_package_flag is True:
+            folder = charts.get_funnel_comp()
+            for ref in folder:
+                if args.funnel_comp_flag is True:
+                    charts.mako_line_html_chart(model=ref[:ref.find(".mat")],
+                                                var=ref[ref.rfind(".mat") + 5:])
+        charts.create_index_layout()
+        create_layout(temp_dir=Path(CI_CONFIG.plots.chart_dir),
+                      layout_html_file=Path(CI_CONFIG.plots.chart_dir).joinpath("index.html"))
+        config_structure.prepare_data(
+            source_target_dict={
+                CI_CONFIG.plots.chart_dir: CI_CONFIG.get_file_path("result", "plot_dir").joinpath(args.packages)
+            }
+        )
