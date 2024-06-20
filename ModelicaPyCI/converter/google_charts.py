@@ -310,11 +310,11 @@ class PlotCharts:
             logger.error(f'Funnel directory does not exist.')
         else:
             logger.info(f'Search for reference result in {self.funnel_path}')
+        if os.path.isdir(CI_CONFIG.plots.chart_dir) is False:
+            os.mkdir(CI_CONFIG.plots.chart_dir)
         if os.path.isdir(self.temp_chart_path) is False:
             os.mkdir(self.temp_chart_path)
             logger.info(f'Save plot in {self.temp_chart_path}')
-        if os.path.isdir(CI_CONFIG.plots.chart_dir) is False:
-            os.mkdir(CI_CONFIG.plots.chart_dir)
 
     def mako_line_html_chart(self, model, var):
         """
