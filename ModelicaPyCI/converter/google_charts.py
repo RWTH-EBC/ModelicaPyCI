@@ -31,9 +31,6 @@ class PlotCharts:
         Returns:
         """
         update_ref_list = list()
-        logger.error(os.listdir("BESMod/Resources"))
-        logger.error(os.listdir("BESMod/Resources/ReferenceResults"))
-        logger.error(os.listdir("BESMod/Resources/ReferenceResults/Dymola"))
         for reference_file in reference_file_list:
             if os.path.isfile(reference_file) is False:
                 logger.error(f'File {reference_file} does not exist.')
@@ -168,13 +165,14 @@ class PlotCharts:
         else:
             logger.info(f'Plot results from file {new_ref_file}')
         with open(new_ref_file, "r") as file:
-            lines = file.readlines()
+            lines = file.read()
         logger.info("File contents: %s", lines)
+        lines = lines.replace("\n", "").split(" ")
         reference_list = list()
         for line in lines:
             line = line.strip()
             if line.find(".txt") > -1 and line.find("_"):
-                reference_list.append(f'{line.strip()}')
+                reference_list.append(line)
         logger.info("Plotting reference files: %s", reference_list)
         return reference_list
 
