@@ -31,8 +31,9 @@ class PlotCharts:
         Returns:
         """
         update_ref_list = list()
-        logger.error(os.listdir())
-        logger.error(os.getcwd())
+        logger.error(os.listdir("BESMod/Resources"))
+        logger.error(os.listdir("BESMod/Resources/ReferenceResults"))
+        logger.error(os.listdir("BESMod/Resources/ReferenceResults/Dymola"))
         for reference_file in reference_file_list:
             if os.path.isfile(reference_file) is False:
                 logger.error(f'File {reference_file} does not exist.')
