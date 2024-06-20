@@ -10,19 +10,17 @@ from ModelicaPyCI.load_global_config import CI_CONFIG
 from ModelicaPyCI.utils import create_changed_files_file, logger
 
 
-def write_exit_file(var, message: str = None):
+def write_exit_file(message: str = None):
     """
     write an exit file, use for gitlab ci.
     """
     exit_file_path = CI_CONFIG.get_file_path("ci_files", "exit_file").absolute()
     os.makedirs(exit_file_path.parent, exist_ok=True)
     with open(exit_file_path, "a") as ex_file:
-        if var == 0:
-            ex_file.write(message if message is not None else 'successful')
-        else:
-            ex_file.write(message if message is not None else 'FAIL')
-        logger.info(f"Wrote var {var} to {exit_file_path}.")
-
+        ex_file.write(message)
+        logger.info(f"Wrote content {message} {exit_file_path}.")
+    with open(exit_file_path, "r") as ex_file:
+        logger.info(f"Exit file contents: {ex_file.read()}")
 
 class BuildingspyRegressionCheck:
 
@@ -448,8 +446,12 @@ class CustomTester(regression.Tester):
                         all_examples.append(os.path.abspath(
                             os.path.join(dirpath, filename))
                         )
-
-        coverage = round(len(temp_data) / len(all_examples), 2) * 100
+        n_tested_examples = len(temp_data)
+        n_examples = len(all_examples)
+        if n_examples > 0:
+            coverage = round(n_tested_examples / n_examples, 2) * 100
+        else:
+            coverage = 100
 
         tested_model_names = [
             nam['ScriptFile'].split(os.sep)[-1][:-1] for nam in temp_data
@@ -460,8 +462,6 @@ class CustomTester(regression.Tester):
                 xs in i for xs in tested_model_names)
         ]
 
-        n_tested_examples = len(temp_data)
-        n_examples = len(all_examples)
         return coverage, n_tested_examples, n_examples, missing_examples, packages
 
     def printCoverage(
@@ -707,7 +707,8 @@ if __name__ == '__main__':
                                 f'{CI_CONFIG.artifacts.library_ref_results_dir}{os.sep}{ref.replace(".", "_")}.txt':
                                     CI_CONFIG.get_file_path("result", "regression_dir").joinpath("referencefiles")}
                         )
-                write_exit_file(var=0, message="GENERATED_NEW_RESULTS")
+                    exit_var = max(exit_var, 1)
+                write_exit_file(message="GENERATED_NEW_RESULTS")
             elif args.update_ref:
                 ref_list = get_update_ref()
                 ref_model.delete_ref_file(ref_list=ref_list)
@@ -744,5 +745,5 @@ if __name__ == '__main__':
             logger.info(f'Start regression Test.\nTest following packages: {package_list}')
             val = ref_check.check_regression_test(package_list=package_list, create_results=False)
             exit_var = max(exit_var, val)
-    write_exit_file(var=exit_var)
+    write_exit_file(message="FAIL" if exit_var == 1 else "Successfull")
     exit(exit_var)

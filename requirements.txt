@@ -2,7 +2,7 @@ natsort
 requests
 pandas
 mako
-matplot
+#matplot
 templates
 argparse
 jsons
@@ -17,12 +17,11 @@ GitPython
 pytidylib
 OMPython
 ebcpy>=0.4.1
-tomli_w
 numpy
-scipy
+#scipy
 matplotlib
 lib-platform
 toml
-tomli_w
+#tomli_w
 buildingspy>=5.1.0
 requests
