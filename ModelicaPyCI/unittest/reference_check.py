@@ -651,6 +651,8 @@ if __name__ == '__main__':
     LIBRARY_PACKAGE_MO = Path(CI_CONFIG.library_root).joinpath(args.library, "package.mo")
     if args.startup_mos is not None:
         STARTUP_MOS = Path(CI_CONFIG.library_root).joinpath(args.startup_mos)
+    else:
+        STARTUP_MOS = None
 
     ref_check = BuildingspyRegressionCheck(
         pack=args.packages,
