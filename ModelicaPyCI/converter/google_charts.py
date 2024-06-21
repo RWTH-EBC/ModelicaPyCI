@@ -576,6 +576,6 @@ if __name__ == '__main__':
                       layout_html_file=Path(CI_CONFIG.plots.chart_dir).joinpath("index.html"))
         config_structure.prepare_data(
             source_target_dict={
-                CI_CONFIG.plots.chart_dir: CI_CONFIG.get_file_path("result", "plot_dir").joinpath(args.packages)
+                CI_CONFIG.plots.chart_dir: CI_CONFIG.get_file_path("result", "plot_dir").joinpath(package)
             }
         )
