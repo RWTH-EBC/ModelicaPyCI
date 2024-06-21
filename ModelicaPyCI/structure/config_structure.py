@@ -105,17 +105,6 @@ def delete_spec_file(root: str = None, pattern: str = None):
                 os.remove(file)
 
 
-# TODO: Check unused methods
-def delete_files_path(root: str = None, pattern: str = None, subfolder: bool = False):
-    if subfolder is True:
-        files = glob.glob(f'{root}/**/*{pattern}', recursive=True)
-    else:
-        files = glob.glob(f'{root}/**/*{pattern}')
-    logger.info(f'Remove files path {root} with {pattern}')
-    for file in files:
-        os.remove(file)
-
-
 def prepare_data(source_target_dict: dict,
                  del_flag: bool = False):
     """

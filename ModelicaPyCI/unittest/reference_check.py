@@ -388,7 +388,12 @@ class BuildingspyValidateTest:
         ut.batchMode(batch)
         ut.setLibraryRoot(self.path)
         if package is not None:
-            ut.setSinglePackage(package)
+            try:
+                ut.setSinglePackage(package)
+            except ValueError as err:
+                logger.error("Package %s has no regression scripts, can't get coverage: %s",
+                             package, err)
+                return
         coverage_result = ut.getCoverage()
         ut.printCoverage(*coverage_result, printer=print)
 
@@ -640,9 +645,7 @@ def parse_args():
 
 
 if __name__ == '__main__':
-    # todo: Package list bearbeiten.
     # todo: /bin/sh: 1: xdg-settings: not found
-    # todo: Template für push hat changed:flag drin, ist falsch
     args = parse_args()
     CI_CONFIG.library_root = args.library_root
     LIBRARY_PACKAGE_MO = Path(CI_CONFIG.library_root).joinpath(args.library, "package.mo")
@@ -689,8 +692,6 @@ if __name__ == '__main__':
                 ref_model.write_regression_list()
                 exit(0)
 
-            # todo: Liste?
-            created_ref_list = list()
             if args.create_ref:
                 package_list, created_ref_list = ref_model.get_update_model()
                 if not package_list:
