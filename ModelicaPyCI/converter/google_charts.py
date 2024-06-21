@@ -418,7 +418,7 @@ class PlotCharts:
             os.rmdir(self.temp_chart_path)
         else:
             html_chart = my_template.render(html_model=html_file_list)
-            with open(CI_CONFIG.plots.templates_index_file, "w") as file_tmp:
+            with open(self.index_html_file, "w") as file_tmp:
                 file_tmp.write(html_chart)
             logger.info(f'Create html file with reference results.')
 
@@ -451,7 +451,7 @@ def create_layout(temp_dir: Path, layout_html_file: Path):
     if len(package_list) == 0:
         logger.info(f'No html files')
     else:
-        logger.info(package_list)
+        logger.info("Found files", package_list)
         my_template = Template(filename=CI_CONFIG.plots.templates_layout_file)
         html_chart = my_template.render(packages=package_list)
         with open(layout_html_file, "w") as file_tmp:
@@ -572,10 +572,10 @@ if __name__ == '__main__':
                     charts.mako_line_html_chart(model=ref[:ref.find(".mat")],
                                                 var=ref[ref.rfind(".mat") + 5:])
         charts.create_index_layout()
-        create_layout(temp_dir=Path(CI_CONFIG.plots.chart_dir),
-                      layout_html_file=Path(CI_CONFIG.plots.chart_dir).joinpath("index.html"))
-        config_structure.prepare_data(
-            source_target_dict={
-                CI_CONFIG.plots.chart_dir: CI_CONFIG.get_file_path("result", "plot_dir").joinpath(package)
-            }
-        )
+    create_layout(temp_dir=Path(CI_CONFIG.plots.chart_dir),
+                  layout_html_file=Path(CI_CONFIG.plots.chart_dir).joinpath("index.html"))
+    config_structure.prepare_data(
+        source_target_dict={
+            CI_CONFIG.plots.chart_dir: CI_CONFIG.get_file_path("result", "plot_dir")
+        }
+    )
