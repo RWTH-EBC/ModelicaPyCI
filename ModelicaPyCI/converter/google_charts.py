@@ -449,9 +449,9 @@ def create_layout(temp_dir: Path, layout_html_file: Path):
         else:
             package_list.append(folders)
     if len(package_list) == 0:
-        logger.info(f'No html files')
+        logger.info('No html files')
     else:
-        logger.info("Found files", package_list)
+        logger.info("Found files %s", package_list)
         my_template = Template(filename=CI_CONFIG.plots.templates_layout_file)
         html_chart = my_template.render(packages=package_list)
         with open(layout_html_file, "w") as file_tmp:
@@ -541,7 +541,7 @@ if __name__ == '__main__':
         charts.check_folder_path()
         if args.error_flag is True:
             model_var_list = charts.read_unit_test_log()
-            logger.info(f'Plot line chart with different reference results.\n')
+            logger.info('Plot line chart with different reference results. ')
             for model_variable in model_var_list:
                 model_variable = model_variable.split(":")
                 if args.funnel_comp_flag is True:
