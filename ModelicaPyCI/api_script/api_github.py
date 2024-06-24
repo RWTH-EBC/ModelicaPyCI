@@ -94,13 +94,14 @@ class PullRequestGithub(object):
             logger.error(response.text)
             if "A pull request already exists" in str(response.text):
                 logger.info("The pull-request seems to already exist, won't update it.")
-                exit(0)
+                return
             exit(1)
         else:
             logger.info(response.text)
         return response
 
-    def update_pull_request_assignees(self, pull_request_number, assignees_owner, label_name):
+    def update_pull_request_assignees(self, assignees_owner, label_name):
+        pull_request_number = pull_request.get_pr_number()
         url = f'https://api.github.com/repos/{self.github_repo}/issues/{str(pull_request_number)}'
         assignees = f'\"assignees\":[\"{assignees_owner}\"]'
         labels = f'\"labels\":[\"CI\", \"{label_name}\"]'
@@ -200,23 +201,23 @@ if __name__ == '__main__':
     if args.post_pr_comment_flag is True:
         if not os.path.isdir(CI_CONFIG.get_file_path("result", "plot_dir")):
             logger.info("No results to report, won't post PR comment")
-            exit(0)
-        page_url = f'{args.gitlab_page}/{args.working_branch}/{CI_CONFIG.result.plot_dir}'
-        logger.info(f'Setting gitlab page url: {page_url}')
-        pr_number = pull_request.get_pr_number()
-        if args.prepare_plot_flag is True:
-            message = (f'Errors in regression test. '
-                       f'Compare the results on the following page\\n {page_url}')
-        elif args.show_plot_flag is True:
-            message = (f'Reference results have been displayed graphically '
-                       f'and are created under the following page {page_url}')
         else:
-            raise TypeError("No message option requested, either show_plot_flag "
-                            "or prepare_plot_flag is required.")
-        pull_request.post_pull_request_comment(
-            pull_request_number=pr_number,
-            post_message=message
-        )
+            page_url = f'{args.gitlab_page}/{args.working_branch}/{CI_CONFIG.result.plot_dir}'
+            logger.info(f'Setting gitlab page url: {page_url}')
+            pr_number = pull_request.get_pr_number()
+            if args.prepare_plot_flag is True:
+                message = (f'Errors in regression test. '
+                           f'Compare the results on the following page\\n {page_url}')
+            elif args.show_plot_flag is True:
+                message = (f'Reference results have been displayed graphically '
+                           f'and are created under the following page {page_url}')
+            else:
+                raise TypeError("No message option requested, either show_plot_flag "
+                                "or prepare_plot_flag is required.")
+            pull_request.post_pull_request_comment(
+                pull_request_number=pr_number,
+                post_message=message
+            )
     if args.create_pr_flag is True:
         working_branch = str
         main_branch = str
@@ -264,9 +265,8 @@ if __name__ == '__main__':
 
         assignees_owner = pull_request.get_github_username(branch=working_branch)
         owner = pull_request.return_owner()
-        pr_response = pull_request.post_pull_request(owner=owner, main_branch=main_branch,
-                                                     pull_request_title=pull_request_title,
-                                                     pull_request_message=message)
-        pr_number = pull_request.get_pr_number()
-        pull_request.update_pull_request_assignees(pull_request_number=pr_number, assignees_owner=assignees_owner,
+        pull_request.post_pull_request(owner=owner, main_branch=main_branch,
+                                       pull_request_title=pull_request_title,
+                                       pull_request_message=message)
+        pull_request.update_pull_request_assignees(assignees_owner=assignees_owner,
                                                    label_name=label_name)

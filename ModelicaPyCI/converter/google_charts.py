@@ -57,23 +57,20 @@ class PlotCharts:
         """
         if os.path.isfile(CI_CONFIG.interact.get_path(CI_CONFIG.interact.show_ref_file)) is False:
             logger.error(f'File {CI_CONFIG.interact.get_path(CI_CONFIG.interact.show_ref_file)} does not exist.')
-            exit(0)
-        else:
-            logger.info(f'Plot results from file {CI_CONFIG.interact.get_path(CI_CONFIG.interact.show_ref_file)}')
-            with open(CI_CONFIG.interact.get_path(CI_CONFIG.interact.show_ref_file), "r") as file:
-                lines = file.readlines()
-            reference_file_list = list()
-            for line in lines:
-                if len(line) != 0:
-                    reference_file_list.append(f'{self.ref_path}{os.sep}{line.strip()}')
-                    continue
-            if len(reference_file_list) == 0:
-                logger.info(
-                    f'No reference files in file {CI_CONFIG.interact.get_path(CI_CONFIG.interact.show_ref_file)}. Please add here your reference files you want to '
-                    f'update')
-                exit(0)
-            else:
-                return reference_file_list
+            return []
+        logger.info(f'Plot results from file {CI_CONFIG.interact.get_path(CI_CONFIG.interact.show_ref_file)}')
+        with open(CI_CONFIG.interact.get_path(CI_CONFIG.interact.show_ref_file), "r") as file:
+            lines = file.readlines()
+        reference_file_list = list()
+        for line in lines:
+            if len(line) != 0:
+                reference_file_list.append(f'{self.ref_path}{os.sep}{line.strip()}')
+                continue
+        if len(reference_file_list) == 0:
+            logger.info(
+                f'No reference files in file {CI_CONFIG.interact.get_path(CI_CONFIG.interact.show_ref_file)}. Please add here your reference files you want to '
+                f'update')
+        return []
 
     @staticmethod
     def _read_data(reference_file):
@@ -141,9 +138,8 @@ class PlotCharts:
         """
         if os.path.isfile(CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)) is False:
             logger.error(f'File {CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)} does not exist.')
-            exit(0)
-        else:
-            logger.info(f'Plot results from file {CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)}')
+            return []
+        logger.info(f'Plot results from file {CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)}')
         with open(CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file), "r") as file:
             lines = file.readlines()
         reference_list = list()
@@ -161,9 +157,8 @@ class PlotCharts:
         new_ref_file = CI_CONFIG.get_file_path("ci_files", "new_create_ref_file")
         if os.path.isfile(new_ref_file) is False:
             logger.error(f'File {new_ref_file} does not exist.')
-            exit(0)
-        else:
-            logger.info(f'Plot results from file {new_ref_file}')
+            return []
+        logger.info(f'Plot results from file {new_ref_file}')
         with open(new_ref_file, "r") as file:
             lines = file.read()
         logger.info("File contents: %s", lines)

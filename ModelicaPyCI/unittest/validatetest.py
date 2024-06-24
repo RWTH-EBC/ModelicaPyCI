@@ -50,36 +50,35 @@ class CheckPythonDymola:
         error_model_message_dic = {}
         if len(check_model_list) == 0 or check_model_list is None:
             logger.error(f'Found no models.')
-            exit(0)
-        else:
-            for dym_model in check_model_list:
-                try:
-                    res = self.dymola_api.dymola.checkModel(dym_model, simulate=sim_ex_flag)
-                    if res is True:
+            return error_model_message_dic
+
+        for dym_model in check_model_list:
+            try:
+                res = self.dymola_api.dymola.checkModel(dym_model, simulate=sim_ex_flag)
+                if res is True:
+                    logger.info(f'Successful:  {dym_model}')
+                if res is False:
+                    # Second test for model
+                    sec_result = self.dymola_api.dymola.checkModel(dym_model, simulate=sim_ex_flag)
+                    if sec_result is True:
                         logger.info(f'Successful:  {dym_model}')
-                    if res is False:
-                        # Second test for model
-                        sec_result = self.dymola_api.dymola.checkModel(dym_model, simulate=sim_ex_flag)
-                        if sec_result is True:
-                            logger.info(f'Successful:  {dym_model}')
-                        if sec_result is False:
-                            log = self.dymola_api.dymola.getLastError()
-                            err_list, warning_list = sort_warnings_from_log(log=log, exception_list=exception_list)
-                            if len(err_list) > 0:
-                                logger.error(f' {dym_model} \n{err_list}')
-                            if len(warning_list) > 0:
-                                logger.warning(f'Warning:  {dym_model} \n{warning_list}')
-                            error_model_message_dic[dym_model] = log
-                except Exception as ex:
-                    logger.error("Simulation failed: " + str(ex))
-                    continue
+                    if sec_result is False:
+                        log = self.dymola_api.dymola.getLastError()
+                        err_list, warning_list = sort_warnings_from_log(log=log, exception_list=exception_list)
+                        if len(err_list) > 0:
+                            logger.error(f' {dym_model} \n{err_list}')
+                        if len(warning_list) > 0:
+                            logger.warning(f'Warning:  {dym_model} \n{warning_list}')
+                        error_model_message_dic[dym_model] = log
+            except Exception as ex:
+                logger.error("Simulation failed: " + str(ex))
+                continue
         self.dymola_api.dymola.savelog(f'{self.dymola_log}')
-        self.dymola_api.close()
         return error_model_message_dic
 
     def write_error_log(self,
-                        pack: str = None,
-                        error_dict: dict = None,
+                        pack: str,
+                        error_dict: dict,
                         exception_list: list = None):
         """
         Write an error log with all models, that don´t pass the check.
@@ -88,35 +87,33 @@ class CheckPythonDymola:
             exception_list (): Exceptions like certain warnings that are not recognized as errors.
             error_dict (): Dictionary of models with log message, that does not pass the check.
         """
-        if error_dict is not None:
-            if pack is not None:
-                ch_log = Path(CI_CONFIG.get_file_path("result", "check_result_dir"),
-                              f'{self.library}.{pack}-check_log.txt')
-                error_log = Path(CI_CONFIG.get_file_path("result", "check_result_dir"),
-                                 f'{self.library}.{pack}-error_log.txt')
-                os.makedirs(Path(ch_log).parent, exist_ok=True)
-                with open(ch_log, 'w') as check_log, open(error_log, "w") as err_log:
-                    for error_model in error_dict:
-                        err_list, warning_list = sort_warnings_from_log(log=error_dict[error_model],
-                                                                        exception_list=exception_list)
-                        if len(err_list) > 0:
-                            check_log.write(f'\nError in model:  {error_model} \n')
-                            err_log.write(f'\nError in model:  {error_model} \n')
-                            for err in err_list:
-                                check_log.write(str(err) + "\n")
-                                err_log.write(str(err) + "\n")
-                            if len(warning_list) > 0:
-                                for warning in warning_list:
-                                    check_log.write(str(warning) + "\n")
-                        else:
-                            if len(warning_list) > 0:
-                                check_log.write(f'\n\nWarning in model:  {error_model} \n')
-                                for warning in warning_list:
-                                    check_log.write(str(warning) + "\n")
-                return error_log, ch_log
-        else:
+        if not error_dict:
             logger.info(f"Check was successful.")
-            exit(0)
+            return
+        ch_log = Path(CI_CONFIG.get_file_path("result", "check_result_dir"),
+                      f'{self.library}.{pack}-check_log.txt')
+        error_log = Path(CI_CONFIG.get_file_path("result", "check_result_dir"),
+                         f'{self.library}.{pack}-error_log.txt')
+        os.makedirs(Path(ch_log).parent, exist_ok=True)
+        with open(ch_log, 'w') as check_log, open(error_log, "w") as err_log:
+            for error_model in error_dict:
+                err_list, warning_list = sort_warnings_from_log(log=error_dict[error_model],
+                                                                exception_list=exception_list)
+                if len(err_list) > 0:
+                    check_log.write(f'\nError in model:  {error_model} \n')
+                    err_log.write(f'\nError in model:  {error_model} \n')
+                    for err in err_list:
+                        check_log.write(str(err) + "\n")
+                        err_log.write(str(err) + "\n")
+                    if len(warning_list) > 0:
+                        for warning in warning_list:
+                            check_log.write(str(warning) + "\n")
+                else:
+                    if len(warning_list) > 0:
+                        check_log.write(f'\n\nWarning in model:  {error_model} \n')
+                        for warning in warning_list:
+                            check_log.write(str(warning) + "\n")
+        return error_log, ch_log
 
     def read_error_log(self, pack: str, err_log: Path, check_log):
         """
@@ -179,7 +176,7 @@ class CreateWhitelist:
         dymola_log = Path(Path(self.library_package_mo).parent, f'{self.library}-log.txt')
         if model_list is None or len(model_list) == 0:
             logger.error(f'Found no models')
-            exit(0)
+            return {}
         try:
             with open(whitelist_files, "w") as whitelist_file, open(err_log, "w") as error_log:
                 logger.info(
@@ -281,7 +278,7 @@ def read_script_version(library_package_mo):
     filelist = (glob.glob(f'{path}{os.sep}*.mos'))
     if len(filelist) == 0:
         logger.error(f'Cannot find a Conversion Script in {Path(library_package_mo).parent} repository.')
-        exit(0)
+        exit(1)
     else:
         last_conversion_script = natsorted(filelist)[(-1)]
         last_conversion_script = last_conversion_script.split(os.sep)

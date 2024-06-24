@@ -316,11 +316,11 @@ def get_update_ref():
     get a model to update
     Returns:
     """
+    update_ref_list = []
     filepath = CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)
     try:
         with open(filepath, "r") as file:
             lines = file.readlines()
-        update_ref_list = []
         for line in lines:
             if len(line) == 0:
                 continue
@@ -331,11 +331,10 @@ def get_update_ref():
                 f'No reference files in file {CI_CONFIG.interact.get_path(CI_CONFIG.interact.update_ref_file)}. '
                 f'Please add here your reference files you '
                 f'want to update')
-            exit(0)
         return update_ref_list
     except FileNotFoundError:
         logger.error(f'File {filepath} does not exist.')
-        exit(0)
+    return update_ref_list
 
 
 class BuildingspyValidateTest:
@@ -692,7 +691,6 @@ if __name__ == '__main__':
             package_list = []
             if args.ref_list:
                 ref_model.write_regression_list()
-                exit(0)
 
             if args.create_ref:
                 package_list, created_ref_list = ref_model.get_update_model()

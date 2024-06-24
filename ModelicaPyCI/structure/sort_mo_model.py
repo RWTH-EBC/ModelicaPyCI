@@ -132,11 +132,10 @@ def get_changed_regression_models(
         library=library, package=package,
     )
     if len(changed_list) == 0:
-        logger.info(f'No models to check and cannot start a regression test')
-        exit(0)
+        logger.info(f'No models to check')
     else:
         logger.info(f'Number of checked packages: {str(len(changed_list))}')
-        return changed_list
+    return changed_list
 
 
 def get_extended_model(

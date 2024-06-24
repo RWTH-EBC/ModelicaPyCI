@@ -153,7 +153,6 @@ class CheckOpenModelica:
             return error_model
         else:
             logger.info(f'No examples to check. ')
-            exit(0)
 
     def check_models(self,
                      model_list: list = None,
@@ -197,7 +196,6 @@ class CheckOpenModelica:
             return error_model
         else:
             logger.info(f'No models to check')
-            exit(0)
 
     def close_OM(self):
         """
@@ -273,7 +271,6 @@ class CheckOpenModelica:
                 exit(1)
         else:
             logger.info(f"Check was successful.")
-            exit(0)
 
     def _read_error_log(self, pack: str, err_log, check_log, options: str = None):
         """
@@ -386,7 +383,6 @@ class CheckOpenModelica:
                 del_flag=True)
         else:
             logger.info(f'No examples to check. ')
-            exit(0)
 
     def compare_dym_to_om(self,
                           example_list: list = None,
@@ -498,7 +494,6 @@ class CheckOpenModelica:
             return errors, stats
         else:
             logger.info(f'No Models to compare.')
-            exit(0)
 
 
 def parse_args():
