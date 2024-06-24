@@ -43,63 +43,58 @@ def get_model_list(
     config_structure.check_path_setting(root_package=root_package)
     if extended_examples_flag is True and dymola_api is None:
         raise ValueError("Can't get extended model without dymola_api")
+
+    # Get models on whitelist
+    whitelist_list_models = []
+    config_structure.check_path_setting(whitelist=CI_CONFIG.get_dir_path("whitelist"), create_flag=True)
+    ci_whitelist_ibpsa_file = CI_CONFIG.get_file_path("whitelist", "ibpsa_file")
+    if os.path.exists(ci_whitelist_ibpsa_file):
+        whitelist_list_models.extend(
+            get_whitelist_models(
+                whitelist_file=ci_whitelist_ibpsa_file, library=library, single_package=package
+            )
+        )
+    if filter_whitelist_flag is True:
+        if simulate_flag is True:
+            ci_whitelist_file = CI_CONFIG.get_file_path("whitelist", f"{tool}_simulate_file")
+        else:
+            ci_whitelist_file = CI_CONFIG.get_file_path("whitelist", f"{tool}_check_file")
+        whitelist_list_models.extend(
+            get_whitelist_models(
+                whitelist_file=ci_whitelist_file, library=library, single_package=package
+            )
+        )
+    # Remove possible duplicates
+    whitelist_list_models = list(set(whitelist_list_models))
+
+    # Get all models
+    model_list = get_models(
+        path=root_package,
+        library=library,
+        simulate_flag=simulate_flag,
+        extended_examples_flag=extended_examples_flag
+    )
+    if extended_examples_flag is True:
+        simulate_list = get_extended_model(dymola_api=dymola_api,
+                                           model_list=model_list,
+                                           library=library)
+        model_list.extend(simulate_list)
+        model_list = list(set(model_list))
+    model_list = filter_whitelist_models(
+        model_list=model_list,
+        whitelist_list=whitelist_list_models
+    )
     if changed_flag is True:
+        # Get only those which are changed
         changed_files_file = create_changed_files_file(to_branch=changed_to_branch)
+        changed_models = get_changed_models(
+            changed_files=changed_files_file,
+            library=library,
+            single_package=package
+        )
+        model_list = list(set(model_list).intersection(changed_models))
 
-        result = get_changed_models(changed_files=changed_files_file,
-                                    library=library,
-                                    single_package=package,
-                                    simulate_examples=simulate_flag)
-        model_list = result[0]
-        if extended_examples_flag is True:
-            simulate_list = get_extended_model(dymola_api=dymola_api,
-                                               model_list=result[1],
-                                               library=library)
-            model_list.extend(simulate_list)
-            model_list = list(set(model_list))
-    else:
-        whitelist_list_models = []
-        config_structure.check_path_setting(whitelist=CI_CONFIG.get_dir_path("whitelist"), create_flag=True)
-
-        ci_whitelist_ibpsa_file = CI_CONFIG.get_file_path("whitelist", "ibpsa_file")
-        if os.path.exists(ci_whitelist_ibpsa_file):
-            whitelist_list_models.extend(
-                get_whitelist_models(
-                    whitelist_file=ci_whitelist_ibpsa_file, library=library, single_package=package
-                )
-            )
-        if filter_whitelist_flag is True:
-            if simulate_flag is True:
-                ci_whitelist_file = CI_CONFIG.get_file_path("whitelist", f"{tool}_simulate_file")
-            else:
-                ci_whitelist_file = CI_CONFIG.get_file_path("whitelist", f"{tool}_check_file")
-
-            whitelist_list_models.extend(
-                get_whitelist_models(
-                    whitelist_file=ci_whitelist_file, library=library, single_package=package
-                )
-            )
-        # Remove possible duplicates
-        whitelist_list_models = list(set(whitelist_list_models))
-
-        result = get_models(path=root_package,
-                            library=library,
-                            simulate_flag=simulate_flag,
-                            extended_examples_flag=extended_examples_flag)
-        model_list = result[0]
-        if extended_examples_flag is True:
-            simulate_list = get_extended_model(dymola_api=dymola_api,
-                                               model_list=result[1],
-                                               library=library)
-            model_list.extend(simulate_list)
-            model_list = list(set(model_list))
-        model_list = filter_whitelist_models(models=model_list,
-                                             whitelist_list=whitelist_list_models)
-    if len(model_list) == 0 or model_list is None:
-        logger.error(f'Find no models in package {package}')
-        exit(0)
-    else:
-        return model_list
+    return model_list
 
 
 def get_changed_regression_models(
@@ -119,10 +114,10 @@ def get_changed_regression_models(
     modelica_model_list = get_changed_model(changed_lines=changed_lines, library=library, package=package)
     reference_list = changed_reference_files(changed_lines=changed_lines, library=library, package=package)
     # get all models from page package
-    model_list, no_example_list = get_models(path=root_package,
-                                             library=library,
-                                             simulate_flag=True,
-                                             extended_examples_flag=False)
+    model_list = get_models(path=root_package,
+                            library=library,
+                            simulate_flag=True,
+                            extended_examples_flag=False)
     extended_list = get_extended_model(dymola_api=dymola_api,
                                        model_list=model_list,
                                        library=library)
@@ -226,26 +221,15 @@ def get_whitelist_models(whitelist_file: str,
         return whitelist_list_models
 
 
-def filter_whitelist_models(models, whitelist_list):
+def filter_whitelist_models(model_list, whitelist_list):
     """
     Args:
-        models (): models from library.
+        model_list (): models from library.
         whitelist_list (): model from whitelist.
     Returns:
         return models from library who are not on the whitelist.
     """
-    whitelist_list_mo = list()
-    if len(models) == 0:
-        exit(0)
-    else:
-        for element in models:
-            for sub_element in whitelist_list:
-                if element == sub_element:
-                    whitelist_list_mo.append(element)
-        whitelist_list_mo = list(set(whitelist_list_mo))
-        for example in whitelist_list_mo:
-            models.remove(example)
-        return models
+    return list(set(model_list).difference(whitelist_list))
 
 
 def _get_icon_example(filepath, library):
@@ -378,63 +362,34 @@ def get_changed_used_model(changed_lines: list, extended_list: list, library: st
 def get_changed_models(
         changed_files: Path,
         library: str,
-        single_package: str,
-        simulate_examples: bool = False,
-        extended_examples_flag: bool = False):
+        single_package: str
+):
     """
     Returns: return a list with changed models.
     """
-    try:
-        file = open(changed_files, "r", encoding='utf8', errors='ignore')
+    with open(changed_files, "r", encoding='utf8', errors='ignore') as file:
         lines = file.readlines()
-        modelica_models = []
-        no_example_list = []
-        for line in lines:
-            line = line.lstrip()
-            line = line.strip().replace("\n", "")
-            if line.rfind(".mo") > -1 and line.find("package") == -1:
-                if (
-                        line.find(Path(library).joinpath(single_package).as_posix()) > -1 and
-                        not line.startswith(Path(library).joinpath("Resources").as_posix())
-                ):
-                    if simulate_examples is True:
-                        model_name = line[line.rfind(library):line.rfind('.mo') + 3]
-                        example_test = _get_icon_example(filepath=model_name,
-                                                         library=library)
-                        if example_test is None:
-                            logger.info(
-                                f'Model {model_name} is not a simulation example because it '
-                                f'does not contain the following "Modelica.Icons.Example"'
-                            )
-                            if extended_examples_flag is True:
-                                no_example = line.replace(os.sep, ".")
-                                no_example = no_example[no_example.rfind(library):no_example.rfind(".mo")]
-                                no_example_list.append(no_example)
-                            continue
-                        else:
-                            modelica_models.append(example_test)
-                            continue
-                    else:
-                        model_name = line[line.rfind(library):line.rfind('.mo')]
-                        model_name = model_name.replace(os.sep, ".")
-                        model_name = model_name.replace('/', ".")
-                        modelica_models.append(model_name)
-                        continue
-        if len(modelica_models) == 0:
-            logger.info(f'No models in Package: {single_package}')
-            exit(0)
-        file.close()
-        return modelica_models, no_example_list
-    except IOError:
-        logger.error(f'Error: File {changed_files} does not exist.')
-        exit(0)
+    modelica_models = []
+    no_example_list = []
+    for line in lines:
+        line = line.lstrip()
+        line = line.strip().replace("\n", "")
+        if line.rfind(".mo") > -1 and line.find("package") == -1:
+            if (
+                    line.find(Path(library).joinpath(single_package).as_posix()) > -1 and
+                    not line.startswith(Path(library).joinpath("Resources").as_posix())
+            ):
+                model_name = line[line.rfind(library):line.rfind('.mo')]
+                model_name = model_name.replace(os.sep, ".")
+                model_name = model_name.replace('/', ".")
+                modelica_models.append(model_name)
+    return modelica_models, no_example_list
 
 
 def get_models(
         path: Path,
         library: str = "AixLib",
-        simulate_flag: bool = False,
-        extended_examples_flag: bool = False):
+        simulate_flag: bool = False):
     """
         Args:
             simulate_flag ():
@@ -445,7 +400,6 @@ def get_models(
             model_list (): return a list with models to check.
     """
     model_list = list()
-    no_example_list = list()
     for subdir, dirs, files in os.walk(path):
         for file in files:
             filepath = subdir + os.sep + file
@@ -457,21 +411,12 @@ def get_models(
                         logger.info(
                             f'Model {filepath} is not a simulation example because '
                             f'it does not contain the following "Modelica.Icons.Example"')
-                        if extended_examples_flag is True:
-                            no_example = filepath.replace(os.sep, ".")
-                            no_example = no_example[no_example.rfind(library):no_example.rfind(".mo")]
-                            no_example_list.append(no_example)
-                        continue
                     else:
                         model_list.append(example_test)
-                        continue
                 else:
                     model = filepath.replace(os.sep, ".")
                     model = model[model.find(library):model.rfind(".mo")]
                     model_list.append(model)
     if model_list is None or len(model_list) == 0:
         logger.info(f'No models in package {path}')
-        return model_list, no_example_list
-
-    else:
-        return model_list, no_example_list
+    return model_list

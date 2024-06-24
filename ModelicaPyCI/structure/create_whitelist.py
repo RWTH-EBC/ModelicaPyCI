@@ -35,10 +35,11 @@ if __name__ == '__main__':
     config_structure.create_path(CI_CONFIG.get_dir_path("whitelist"))
     config_structure.create_files(CI_CONFIG.get_file_path("whitelist", "ibpsa_file"))
     clone_repository(clone_into_folder=args.root_whitelist_library, git_url=args.git_url)
-    MODEL_LIST, _ = mo.get_models(library=args.whitelist_library,
-                                  path=args.root_whitelist_library,
-                                  simulate_flag=False,
-                                  extended_examples_flag=False)
+    MODEL_LIST = mo.get_models(
+        library=args.whitelist_library,
+        path=args.root_whitelist_library,
+        simulate_flag=False,
+        extended_examples_flag=False)
     write_whitelist(model_list=MODEL_LIST, library=args.library, whitelist_library=args.whitelist_library)
     config_structure.prepare_data(
         source_target_dict={
