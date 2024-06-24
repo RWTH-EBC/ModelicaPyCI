@@ -2,18 +2,17 @@ from pathlib import Path
 from typing import Union
 
 import toml
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict
 
 
 class BaseModelNoExtra(BaseModel):
     model_config = ConfigDict(extra='forbid')
 
 
-
 class ModelicaPyCIConfig(BaseModelNoExtra):
     url: str = "https://github.com/RWTH-EBC/ModelicaPyCI.git"
     OM_python_check_model_module: str = "ModelicaPyCI.unittest.om_check"
-    test_validate_module: str = "ModelicaPyCI.unittest.checkpackages.validatetest"
+    test_validate_module: str = "ModelicaPyCI.unittest.validatetest"
     test_reference_module: str = "ModelicaPyCI.unittest.reference_check"
     google_chart_module: str = "ModelicaPyCI.converter.google_charts"
     api_github_module: str = "ModelicaPyCI.api_script.api_github"

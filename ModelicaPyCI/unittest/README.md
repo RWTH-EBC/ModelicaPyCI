@@ -18,9 +18,9 @@ Check and simulate dymola models with dymola-python-interface.
 | --git-url | url repository of whitelist library"        |
 
 #### Example: Execution on gitlab runner (linux)
-    xvfb-run -n 77 python modelicapyci_tests/CITests/UnitTests/CheckPackages/validatetest.py  --single-package Airflow --library AixLib -DS 2022 --whitelist-library IBPSA --filter-whitelist
-    xvfb-run -n 77 python modelicapyci_tests/CITests/UnitTests/CheckPackages/validatetest.py --single-package Airflow --library AixLib -DS 2022 -CM
-    xvfb-run -n 77 python modelicapyci_tests/CITests/UnitTests/CheckPackages/validatetest.py -DS 2022 --repo-dir IBPSA --git-url https://github.com/ibpsa/modelica-ibpsa.git  --library AixLib --whitelist-library IBPSA --whitelist
+    xvfb-run -n 77 python modelicapyci_tests/CITests/UnitTests/validatetest.py  --single-package Airflow --library AixLib -DS 2022 --whitelist-library IBPSA --filter-whitelist
+    xvfb-run -n 77 python modelicapyci_tests/CITests/UnitTests/validatetest.py --single-package Airflow --library AixLib -DS 2022 -CM
+    xvfb-run -n 77 python modelicapyci_tests/CITests/UnitTests/validatetest.py -DS 2022 --repo-dir IBPSA --git-url https://github.com/ibpsa/modelica-ibpsa.git  --library AixLib --whitelist-library IBPSA --whitelist
 For the implementation in gitlab-yaml go to the following [link](https://git.rwth-aachen.de/EBC/EBC_all/gitlab_ci/templates/-/tree/AixLib/dymola-ci-tests/ci_templates).
 
 

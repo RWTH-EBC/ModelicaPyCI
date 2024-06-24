@@ -346,7 +346,8 @@ def validate_only(args, dymola_api, library_package_mo):
                 extended_examples_flag=args.extended_examples,
                 simulate_flag=simulate_flag,
                 filter_whitelist_flag=args.filter_whitelist_flag,
-                library_package_mo=library_package_mo)
+                library_package_mo=library_package_mo
+            )
 
             error_model_dict = check_python_dymola.check_dymola_model(
                 check_model_list=model_list,
