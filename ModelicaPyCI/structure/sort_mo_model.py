@@ -71,8 +71,7 @@ def get_model_list(
     model_list = get_models(
         path=root_package,
         library=library,
-        simulate_flag=simulate_flag,
-        extended_examples_flag=extended_examples_flag
+        simulate_flag=simulate_flag
     )
     if extended_examples_flag is True:
         simulate_list = get_extended_model(dymola_api=dymola_api,
@@ -116,8 +115,7 @@ def get_changed_regression_models(
     # get all models from page package
     model_list = get_models(path=root_package,
                             library=library,
-                            simulate_flag=True,
-                            extended_examples_flag=False)
+                            simulate_flag=True)
     extended_list = get_extended_model(dymola_api=dymola_api,
                                        model_list=model_list,
                                        library=library)
