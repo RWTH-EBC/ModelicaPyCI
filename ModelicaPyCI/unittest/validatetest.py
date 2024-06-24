@@ -87,9 +87,6 @@ class CheckPythonDymola:
             exception_list (): Exceptions like certain warnings that are not recognized as errors.
             error_dict (): Dictionary of models with log message, that does not pass the check.
         """
-        if not error_dict:
-            logger.info(f"Check was successful.")
-            return
         ch_log = Path(CI_CONFIG.get_file_path("result", "check_result_dir"),
                       f'{self.library}.{pack}-check_log.txt')
         error_log = Path(CI_CONFIG.get_file_path("result", "check_result_dir"),
@@ -351,6 +348,9 @@ def validate_only(args, dymola_api, library_package_mo):
                 exception_list=None,
                 sim_ex_flag=simulate_flag
             )
+            if not error_model_dict:
+                logger.info(f"Check was successful.")
+                continue
             error_log, ch_log = check_python_dymola.write_error_log(
                 pack=package,
                 error_dict=error_model_dict,
