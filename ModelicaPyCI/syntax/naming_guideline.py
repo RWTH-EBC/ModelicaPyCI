@@ -200,6 +200,7 @@ def get_possibly_wrong_code_sections(
         files: list, library: str, naming_config: NamingGuidelineConfig
 ):
     output = ""
+    all_problematic_expressions = {}
     for model_name in files:
         parts = model_name.split(".")
         parts[-1] += ".mo"
@@ -244,6 +245,7 @@ def get_possibly_wrong_code_sections(
                 f"{i + 1}: {problematic_expressions[key]}. "
                 f"Affected line: {key}" for i, key in enumerate(problematic_expressions)
             ])
+            all_problematic_expressions.update(problematic_expressions)
 
     filename = f"wrong_code_parts_{library}.txt"
     with open(filename, "w+", encoding="utf-8") as file:
@@ -255,7 +257,7 @@ def get_possibly_wrong_code_sections(
     #     for key in dict_problematic_expressions.keys():
     #         f.write("%s,%s\n" % (key, dict_problematic_expressions[key]))
 
-    return problematic_expressions, filename
+    return all_problematic_expressions, filename
 
 
 def get_expressions(filepath_model: str, naming_config: NamingGuidelineConfig):
