@@ -367,7 +367,6 @@ def get_changed_models(
     with open(changed_files, "r", encoding='utf8', errors='ignore') as file:
         lines = file.readlines()
     modelica_models = []
-    no_example_list = []
     for line in lines:
         line = line.lstrip()
         line = line.strip().replace("\n", "")
@@ -380,7 +379,7 @@ def get_changed_models(
                 model_name = model_name.replace(os.sep, ".")
                 model_name = model_name.replace('/', ".")
                 modelica_models.append(model_name)
-    return modelica_models, no_example_list
+    return modelica_models
 
 
 def get_models(
