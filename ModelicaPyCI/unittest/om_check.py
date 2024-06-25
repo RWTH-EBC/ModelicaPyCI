@@ -12,6 +12,7 @@ from ebcpy.utils.statistics_analyzer import StatisticsAnalyzer
 from ModelicaPyCI.load_global_config import CI_CONFIG
 from ModelicaPyCI.structure import config_structure
 from ModelicaPyCI.structure import sort_mo_model as mo
+from ModelicaPyCI.pydyminterface import python_dymola_interface
 from ModelicaPyCI.utils import logger
 
 
@@ -66,17 +67,14 @@ class CheckOpenModelica:
     def __init__(self,
                  library: str,
                  library_package_mo: Path,
-                 additional_libraries_to_load: dict = None,
                  working_path: Path = Path(Path.cwd())):
         """
         Args:
             working_path:
-            additional_libraries_to_load ():
             library ():
             library_package_mo ():
         """
         self.library_package_mo = library_package_mo
-        self.additional_libraries_to_load = additional_libraries_to_load
         self.working_path = working_path
 
         self.library = library
@@ -90,14 +88,8 @@ class CheckOpenModelica:
         logger.info(f'OpenModelica Version number: {self.omc.sendExpression("getVersion()")}')
         # [start dymola api]
         self.dym_api = None
-
-    def __call__(self):
-        """
-
-        """
         self.load_library(library_package_mo=self.library_package_mo,
-                          library=self.library,
-                          additional_libraries_to_load=self.additional_libraries_to_load)
+                          library=self.library)
 
     def simulate_models(self, model_list: list = None, exception_list: list = None):
         """
@@ -329,8 +321,7 @@ class CheckOpenModelica:
                     exit(1)
         logger.error(self.omc.sendExpression("getErrorString()"))
 
-    def load_library(self, library_package_mo: Path = None, library: str = None,
-                     additional_libraries_to_load: dict = None):
+    def load_library(self, library_package_mo: Path = None, library: str = None):
         if library_package_mo is not None:
             load_bib = self.omc.sendExpression(f'loadFile("{library_package_mo}")')
             if load_bib is True:
@@ -341,15 +332,6 @@ class CheckOpenModelica:
         else:
             logger.info(f'Library path is not set.')
             exit(1)
-        if additional_libraries_to_load is not None:
-            for lib in additional_libraries_to_load:
-                lib_path = Path(additional_libraries_to_load[lib], lib, "package.mo")
-                load_add_bib = self.omc.sendExpression(f'loadFile("{lib_path}")')
-                if load_add_bib is True:
-                    logger.info(f'Load library {lib}: {lib_path}')
-                else:
-                    logger.error(f'Error: Load of library {lib} with path {lib_path} failed!')
-                    exit(1)
         logger.error(self.omc.sendExpression("getErrorString()"))
 
     def sim_with_dymola(self, pack: str = None, example_list: list = None):
@@ -517,6 +499,12 @@ def parse_args():
     check_test_group.add_argument("--filter-whitelist-flag",
                                   default=False,
                                   action="store_true")
+    unit_test_group.add_argument(
+        "--startup-mos",
+        default=None,
+        help="Possible startup-mos script to e.g. load additional libraries"
+    )
+
     # TODO: Requires ModelManagent, not supported on OpenModelica-Image
     # check_test_group.add_argument("--extended-examples",
     #                               default=False,
@@ -531,23 +519,17 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    # [Settings]
-    except_list = None
-    additional_libraries_to_load = []
     # [Check arguments, files, path]
     LIBRARY_PACKAGE_MO = Path(CI_CONFIG.library_root).joinpath(args.library, "package.mo")
+    if args.startup_mos is not None:
+        STARTUP_MOS = Path(CI_CONFIG.library_root).joinpath(args.startup_mos)
+        python_dymola_interface.add_libraries_to_load_from_mos_to_modelicapath(STARTUP_MOS)
 
     config_structure.check_arguments_settings(library=args.library, packages=args.packages)
     config_structure.check_file_setting(LIBRARY_PACKAGE_MO=LIBRARY_PACKAGE_MO)
-    if additional_libraries_to_load is not None:
-        for lib in additional_libraries_to_load:
-            add_lib_path = Path(additional_libraries_to_load[lib], lib, "package.mo")
-            config_structure.check_file_setting(add_lib_path=add_lib_path)
 
     OM = CheckOpenModelica(library=args.library,
-                           library_package_mo=LIBRARY_PACKAGE_MO,
-                           additional_libraries_to_load=additional_libraries_to_load)
-    OM()
+                           library_package_mo=LIBRARY_PACKAGE_MO)
     get_model_list_kwargs = dict(
         library=args.library,
         changed_flag=args.changed_flag,
@@ -573,11 +555,12 @@ if __name__ == '__main__':
             )
             error_model_dict = func(
                 model_list=model_list,
-                exception_list=except_list)
+                exception_list=None
+            )
             exit_var = OM.write_errorlog(
                 pack=package,
                 error_dict=error_model_dict,
-                exception_list=except_list,
+                exception_list=None,
                 options=options)
 
             if options == "DYMOLA_SIM":

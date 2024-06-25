@@ -84,7 +84,7 @@ def _start_dymola_api(packages: list, startup_mos: str = None) -> DymolaAPI:
     )
 
 
-def get_libraries_to_load_from_mos(startup_mos_path):
+def add_libraries_to_load_from_mos_to_modelicapath(startup_mos_path):
     libraries_to_load = []
     with open(startup_mos_path, "r") as file:
         lines = file.readlines()
@@ -95,4 +95,9 @@ def get_libraries_to_load_from_mos(startup_mos_path):
             line = line.replace(delete_string, "")
         path = Path(line.split(",")[0])
         libraries_to_load.append(path.parents[1].as_posix())
+
+    if "MODELICAPATH" in os.environ:
+        libraries_to_load.append(os.environ["MODELICAPATH"])
+    os.environ["MODELICAPATH"] = ":".join(libraries_to_load)
+    logger.info("Changed MODELICAPATH to: %s", os.environ["MODELICAPATH"])
     return libraries_to_load

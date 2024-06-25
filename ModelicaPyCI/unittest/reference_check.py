@@ -44,11 +44,7 @@ class BuildingspyRegressionCheck:
         self.path = path
         self.library = library
         if startup_mos is not None:
-            libraries_to_load = python_dymola_interface.get_libraries_to_load_from_mos(STARTUP_MOS)
-            if "MODELICAPATH" in os.environ:
-                libraries_to_load.append(os.environ["MODELICAPATH"])
-            os.environ["MODELICAPATH"] = ":".join(libraries_to_load)
-            logger.info("Changed MODELICAPATH to: %s", os.environ["MODELICAPATH"])
+            libraries_to_load = python_dymola_interface.add_libraries_to_load_from_mos_to_modelicapath(startup_mos)
         self.ut = regression.Tester(tool=self.tool)
 
     def check_regression_test(self, package_list, create_results: bool, package: str):
