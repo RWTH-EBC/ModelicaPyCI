@@ -136,7 +136,7 @@ class PullRequestGithub(object):
         return response.json()
 
 
-def post_pr_guideline(pull_request: PullRequestGithub, library: str, page_url: str):
+def post_pr_guideline(pull_request: PullRequestGithub, library: str, page_url: str, github_repository: str):
     comments = pull_request.get_pull_request_comments()
     for comment in comments:
         if "Our CI pipeline will help you finalize your contribution" in comment['body']:
@@ -161,9 +161,9 @@ If HTML errors occur, I will fix the issues using a separate pull request.
 For the other checks, I will post the results here: {page_url}/index.html
 
 Tips to fix possible naming violations:
-- Stick to the naming guidelines, e.g. [Namespace Requirements](https://github.com/RWTH-EBC/AixLib/wiki/Namespaces)
+- Stick to the naming guidelines, e.g. [Namespace Requirements](https://github.com/{github_repository}/wiki/Namespaces)
 - Do all paramaters, variables, models, etc. have a description?
-- Use absolute paths to classes! -> AixLib.Fluid.HeatExchangers.Radiator - Avoid: HeatExchangers.Radiator
+- Use absolute paths to classes! -> {library}.Fluid.HeatExchangers.Radiator - Avoid: HeatExchangers.Radiator
 
 If all CI stages pass and you have addressed possible naming violations, please consider the following:
 
@@ -171,8 +171,8 @@ If all CI stages pass and you have addressed possible naming violations, please 
 - Use units consistently.
 - Instantiate the replaceable medium package as:
 replaceable package Medium = Modelica.Media.Interfaces.PartialMedium "Medium model";
-instead of using a full media model like `AixLib.Media.Water` directly.
-- Never using absolute paths to files (e.g., `C:` or `D:`). Replace them with `modelica://AixLib/...`.
+instead of using a full media model like `{library}.Media.Water` directly.
+- Never using absolute paths to files (e.g., `C:` or `D:`). Replace them with `modelica://{library}/...`.
 - Ensure your documentation is helpful and concise.
 - Make sure icons are clear. Please avoid using images!
 - Stick to 80 characters per line, as long as it makes sense.
@@ -215,6 +215,10 @@ def parse_args():
     check_test_group.add_argument(
         "--github-repository",
         help="Environment Variable owner/RepositoryName"
+    )
+    check_test_group.add_argument(
+        "--library",
+        help="Library to test"
     )
     check_test_group.add_argument(
         "--working-branch",
@@ -300,7 +304,10 @@ if __name__ == '__main__':
             )
 
     if args.post_initial_pr_comment is True:
-        post_pr_guideline(pull_request=pull_request, library=args.library, page_url=page_url)
+        post_pr_guideline(
+            pull_request=pull_request, library=args.library,
+            page_url=page_url, github_repository=github_repository
+        )
     if args.correct_html_flag is True:
         MESSAGE = (
             f'Merge the corrected HTML Code. '
@@ -320,15 +327,15 @@ if __name__ == '__main__':
         MESSAGE = (
             f'**Following you will find the instructions for the IBPSA merge:**\\n  '
             f'1. Please pull this branch ibpsamerge to your local repository.\\n '
-            f'2. As an additional safety check please open the AixLib library in '
+            f'2. As an additional safety check please open the {args.library} library in '
             f'dymola and check whether errors due to false package orders may have occurred. '
             f'You do not need to translate the whole library or simulate any models. '
             f'This was already done by the CI.\\n '
-            f'3. If you need to fix bugs or perform changes to the models of the AixLib, '
+            f'3. If you need to fix bugs or perform changes to the models of the {args.library}, '
             f'push these changes using this commit message to prevent to run the automatic '
             f'IBPSA merge again: **`fix errors manually`**. \\n '
             f'4. You can also output the different reference files between the IBPSA and '
-            f'the AixLib using the CI or perform an automatic update of the referent files '
+            f'the {args.library} using the CI or perform an automatic update of the referent files '
             f'which lead to problems. To do this, use one of the following commit messages '
             f'\\n **`ci_dif_ref`** \\n  **`ci_update_ref`** \\n '
             f'The CI outputs the reference files as artifacts in GitLab. '
