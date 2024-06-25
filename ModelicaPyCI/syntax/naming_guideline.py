@@ -483,27 +483,7 @@ def parse_args():
         "--main-branch",
         help="your base branch (main)"
     )
-    check_test_group.add_argument(
-        "--github-repository",
-        help="Environment Variable owner/RepositoryName"
-    )
-    check_test_group.add_argument(
-        "--working-branch",
-        help="Your current working Branch",
-        default="$CI_COMMIT_BRANCH"
-    )
-    check_test_group.add_argument(
-        "--github-token",
-        default="${GITHUB_API_TOKEN}",
-        help="Your Set GITHUB Token"
-    )
-    check_test_group.add_argument(
-        "--gitlab-page",
-        default="${GITLAB_Page}",
-        help="Set your gitlab page url"
-    )
     check_test_group.add_argument("--changed-flag", action="store_true")
-
 
     return parser.parse_args()
 
@@ -528,25 +508,6 @@ def convert_csv_to_excel(csv_file, excel_file):
         df.to_excel(writer, index=False)
 
 
-def move_output_to_artifacts_and_post_comment(file, args):
-    pull_request = PullRequestGithub(
-        github_repo=args.github_repository,
-        working_branch=args.working_branch,
-        github_token=args.github_token
-    )
-    shutil.copy(file, CI_CONFIG.get_file_path("result", "naming_violation_file"))
-    page_url = f'{args.gitlab_page}/{args.working_branch}/{CI_CONFIG.result.naming_violation_file}'
-    logger.info(f'Setting gitlab page url: {page_url}')
-    pr_number = pull_request.get_pr_number()
-    message = (f'Naming convention is possibly violated or documentation is missing in changed files. '
-               f'Check the output here and either correct the issues or discuss with your reviewer if '
-               f'an exception should be added to the naming-guideline. File: \\n {page_url}')
-    pull_request.post_pull_request_comment(
-        pull_request_number=pr_number,
-        post_message=message
-    )
-
-
 if __name__ == '__main__':
     ARGS = parse_args()
 
@@ -567,7 +528,5 @@ if __name__ == '__main__':
         library=ARGS.library,
         naming_config=NAMING_CONFIG
     )
-    if PROBLEMATIC_EXPRESSIONS:
-        move_output_to_artifacts_and_post_comment(
-            file=FILENAME, args=ARGS
-        )
+    # move_output_to_artifacts
+    shutil.copy(FILENAME, CI_CONFIG.get_file_path("result", "naming_violation_file"))
