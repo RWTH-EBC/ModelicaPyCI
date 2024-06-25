@@ -499,7 +499,7 @@ def parse_args():
     check_test_group.add_argument("--filter-whitelist-flag",
                                   default=False,
                                   action="store_true")
-    unit_test_group.add_argument(
+    check_test_group.add_argument(
         "--startup-mos",
         default=None,
         help="Possible startup-mos script to e.g. load additional libraries"
