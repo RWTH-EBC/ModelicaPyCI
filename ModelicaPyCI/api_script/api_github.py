@@ -306,7 +306,7 @@ if __name__ == '__main__':
     if args.post_initial_pr_comment is True:
         post_pr_guideline(
             pull_request=pull_request, library=args.library,
-            page_url=page_url, github_repository=github_repository
+            page_url=page_url, github_repository=args.github_repository
         )
     if args.correct_html_flag is True:
         MESSAGE = (
