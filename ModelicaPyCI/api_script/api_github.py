@@ -130,6 +130,62 @@ class PullRequestGithub(object):
         requests.request("POST", url, headers=headers, data=payload)
 
 
+def post_pr_guideline(args):
+    pull_request = PullRequestGithub(
+        github_repo=args.github_repository,
+        working_branch=args.working_branch,
+        github_token=args.github_token
+    )
+    base_url_gl = f'{args.gitlab_page}/{args.working_branch}'
+    base_url_gh = f'{args.github_page}/{args.working_branch}'
+
+    template = f"""
+Thank you for making a Pull Request to $library!
+
+Our CI pipeline will help you finalizing you contribution. 
+What is typically checked?
+- html-syntax of your models, primarily of your documentation.
+- If you follow the naming convention in all changed files
+- If all models check
+- If all models can be simulated, if they are an Example
+- If your contribution changed existing reference results
+
+If html-errors occur, I will fix the issues using a separate pull-request.
+For the other checks, I will post the results of the checks here: $url
+
+If all CI-stages pass and you fixed possible naming violations, please further:
+
+- Use "group" and "tab" annotations in order to achieve a good visualization window?
+- Use units
+- Instantiate the replaceable medium package as `replaceable package Medium = Modelica.Media.Interfaces.PartialMedium 
+  "Medium model";` instead of using directly a full media model like `AixLib.Media.Water`
+- Never use absolute paths to files! E.g. search for `C:` or `D:`. Replace with modelica://AixLib/...
+- Is your documentation helpful and concise?
+- Are icons clear? Please avoid images!
+- Stick to 80 characters per line, as long it makes sense
+- Add / modify examples of new / revised models
+- Add simulate-and-plot script as regression test for new models
+
+Then, you can assign a reviewer.
+Even though this sounds tedious, ensuring CI passes enables the review to focus 
+their time on the actual modelling and not syntax and if your changes break unwanted things.
+
+If you have any questions or issues, please tag a library developer.
+Again, thanks for your valuable contribution! 
+"""
+
+    page_url = f'{base_url_gh}/{CI_CONFIG.result.naming_violation_file}'
+    logger.info(f'Setting gitlab page url: {page_url}')
+    pr_number = pull_request.get_pr_number()
+    message = (f'Naming convention is possibly violated or documentation is missing in changed files. '
+               f'Check the output here and either correct the issues or discuss with your reviewer if '
+               f'an exception should be added to the naming-guideline. File: \\n {page_url}')
+    pull_request.post_pull_request_comment(
+        pull_request_number=pr_number,
+        post_message=message
+    )
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Set Github Environment Variables")
     check_test_group = parser.add_argument_group("Arguments to set Environment Variables")
@@ -239,7 +295,7 @@ if __name__ == '__main__':
             message = (
                 f'**Following you will find the instructions for the IBPSA merge:**\\n  '
                 f'1. Please pull this branch ibpsamerge to your local repository.\\n '
-                f'2. As an additional saftey check please open the AixLib library in '
+                f'2. As an additional safety check please open the AixLib library in '
                 f'dymola and check whether errors due to false package orders may have occurred. '
                 f'You do not need to translate the whole library or simulate any models. '
                 f'This was already done by the CI.\\n '
