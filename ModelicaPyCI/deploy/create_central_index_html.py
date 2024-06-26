@@ -7,7 +7,7 @@ from ModelicaPyCI.utils import logger
 
 def create_index_html():
     all_files = []
-    results_dir = CI_CONFIG.get_file_path("result")
+    results_dir = CI_CONFIG.get_dir_path("result")
     for subdir, dirs, files in os.walk(results_dir):
         for file in files:
             filepath = Path(subdir, file)
