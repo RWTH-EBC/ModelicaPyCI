@@ -169,9 +169,6 @@ class CheckOpenModelica:
         return error_model
 
     def close_OM(self):
-        """
-
-        """
         self.omc.sendExpression("quit()")
 
     def write_errorlog(self,
