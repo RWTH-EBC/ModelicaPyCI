@@ -285,7 +285,9 @@ if __name__ == '__main__':
 
     from ModelicaPyCI.load_global_config import CI_CONFIG
     if args.post_pr_comment_flag is True:
-        if not os.path.isdir(CI_CONFIG.get_file_path("result", "plot_dir")):
+        if not os.path.isfile(
+                CI_CONFIG.get_file_path("result", "plot_dir").joinpath("index.html")
+        ):
             logger.info("No results to report, won't post PR comment")
         else:
             plots_url = f'{page_url}/{CI_CONFIG.result.plot_dir}'

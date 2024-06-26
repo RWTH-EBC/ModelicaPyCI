@@ -251,7 +251,6 @@ class PlotCharts:
                     model_variable_list.append(f'{model}:{var}')
         return model_variable_list
 
-
     def get_ref_file(self, model):
         """
         Args:
@@ -433,24 +432,29 @@ class PlotCharts:
             shutil.rmtree(CI_CONFIG.plots.chart_dir)
 
 
-def create_layout(temp_dir: Path, layout_html_file: Path):
+def create_central_index_html(chart_dir: Path, layout_html_file: Path):
     """
     Creates a layout index that has all links to the subordinate index files.
     """
     package_list = list()
-    for folders in os.listdir(temp_dir):
+    for folders in os.listdir(chart_dir):
         if folders == "style.css" or folders == "index.html":
             continue
         else:
             package_list.append(folders)
     if len(package_list) == 0:
-        logger.info('No html files')
+        logger.info("No html files, won't create central html file")
     else:
-        logger.info("Found files %s", package_list)
+        logger.info("Found files %s, writing index.html", package_list)
         my_template = Template(filename=CI_CONFIG.plots.templates_layout_file)
         html_chart = my_template.render(packages=package_list)
         with open(layout_html_file, "w") as file_tmp:
             file_tmp.write(html_chart)
+        config_structure.prepare_data(
+            source_target_dict={
+                chart_dir: CI_CONFIG.get_file_path("result", "plot_dir")
+            }
+        )
 
 
 def parse_args():
@@ -567,10 +571,7 @@ if __name__ == '__main__':
                     charts.mako_line_html_chart(model=ref[:ref.find(".mat")],
                                                 var=ref[ref.rfind(".mat") + 5:])
         charts.create_index_layout()
-    create_layout(temp_dir=Path(CI_CONFIG.plots.chart_dir),
-                  layout_html_file=Path(CI_CONFIG.plots.chart_dir).joinpath("index.html"))
-    config_structure.prepare_data(
-        source_target_dict={
-            CI_CONFIG.plots.chart_dir: CI_CONFIG.get_file_path("result", "plot_dir")
-        }
+    create_central_index_html(
+        chart_dir=Path(CI_CONFIG.plots.chart_dir),
+        layout_html_file=Path(CI_CONFIG.plots.chart_dir).joinpath("index.html")
     )
