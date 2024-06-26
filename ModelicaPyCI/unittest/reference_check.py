@@ -24,10 +24,9 @@ def write_exit_file(message: str = None):
 
 class BuildingspyRegressionCheck:
 
-    def __init__(self, pack, n_pro, tool, batch, show_gui, path, library, startup_mos: str = None):
+    def __init__(self, n_pro, tool, batch, show_gui, path, library, startup_mos: str = None):
         """
         Args:
-            pack (): package to be checked
             n_pro (): number of processors
             tool (): dymola or Openmodelica
             batch (): boolean: - False: interactive with script (e.g. generate new regression-tests) -
@@ -36,7 +35,6 @@ class BuildingspyRegressionCheck:
             path (): Path where top-level package.mo of the library is located.
             startup_mos (): Path to possible startup mos
         """
-        self.package = pack
         self.n_pro = n_pro
         self.tool = tool
         self.batch = batch
@@ -47,7 +45,7 @@ class BuildingspyRegressionCheck:
             libraries_to_load = python_dymola_interface.add_libraries_to_load_from_mos_to_modelicapath(startup_mos)
         self.ut = regression.Tester(tool=self.tool)
 
-    def check_regression_test(self, package_list, create_results: bool, package: str):
+    def check_regression_test(self, package_list, create_results: bool):
         """
         start regression test for a package
         Args:
@@ -78,7 +76,7 @@ class BuildingspyRegressionCheck:
                              f"no valid scripts are available: {err}")
                 continue
             response = self.ut.run()
-            result_path = Path(CI_CONFIG.get_file_path("result", "regression_dir"), package)
+            result_path = Path(CI_CONFIG.get_file_path("result", "regression_dir"), package_modelica_name)
             source_target_dict = {}
             for file in self.ut.get_unit_test_log_files():
                 source_target_dict[file] = result_path
@@ -650,7 +648,6 @@ if __name__ == '__main__':
         STARTUP_MOS = None
 
     ref_check = BuildingspyRegressionCheck(
-        pack=args.packages,
         n_pro=args.number_of_processors,
         tool=args.tool,
         batch=args.batch,
@@ -660,20 +657,21 @@ if __name__ == '__main__':
         startup_mos=STARTUP_MOS
     )
     exit_var = 0
+    if args.validate_html_only:
+        var = BuildingspyValidateTest(
+            validate=validate,
+            path=args.path
+        ).validate_html()
+        exit_var = max(exit_var, var)
+    elif args.validate_experiment_setup:  # Match the mos file parameters with the mo files only, and then exit
+        var = BuildingspyValidateTest(
+            validate=validate,
+            path=args.path
+        ).validate_experiment_setup()
+        exit_var = max(exit_var, var)
+    all_packages_list = []
     for package in args.packages:
-        if args.validate_html_only:
-            var = BuildingspyValidateTest(
-                validate=validate,
-                path=args.path
-            ).validate_html()
-            exit_var = max(exit_var, var)
-        elif args.validate_experiment_setup:  # Match the mos file parameters with the mo files only, and then exit
-            var = BuildingspyValidateTest(
-                validate=validate,
-                path=args.path
-            ).validate_experiment_setup()
-            exit_var = max(exit_var, var)
-        elif args.coverage_only:
+        if args.coverage_only:
             BuildingspyValidateTest(
                 validate=validate,
                 path=args.path
@@ -682,63 +680,64 @@ if __name__ == '__main__':
                 tool=args.tool,
                 package=package
             )
-        else:
-            ref_model = ReferenceModel(library=args.library)
-            package_list = []
-            if args.ref_list:
-                ref_model.write_regression_list()
+            continue
+        ref_model = ReferenceModel(library=args.library)
+        package_list = []
+        if args.ref_list:
+            ref_model.write_regression_list()
 
-            if args.create_ref:
-                package_list, created_ref_list = ref_model.get_update_model()
-                if not package_list:
-                    logger.info("All regression tests for package %s exist", package)
-                    continue
-                logger.info(f'Start regression Test.\nTest following packages: {package_list}')
-                val = ref_check.check_regression_test(package_list=package_list, create_results=True, package=package)
-                if len(created_ref_list) > 0:
-                    for ref in created_ref_list:
-                        config_structure.prepare_data(
-                            source_target_dict={
-                                f'{CI_CONFIG.artifacts.library_ref_results_dir}{os.sep}{ref.replace(".", "_")}.txt':
-                                    CI_CONFIG.get_file_path("result", "regression_dir").joinpath("referencefiles")}
-                        )
-                    exit_var = max(exit_var, 1)
-                write_exit_file(message="GENERATED_NEW_RESULTS")
-            elif args.update_ref:
-                ref_list = get_update_ref()
-                ref_model.delete_ref_file(ref_list=ref_list)
-                package_list = get_update_package(ref_list=ref_list)
-            else:
-                config_structure.check_path_setting(ci_files=CI_CONFIG.get_dir_path("ci_files"), create_flag=True)
-                config_structure.create_files(CI_CONFIG.get_file_path("ci_files", "exit_file"))
-                if args.changed_flag is False:
-                    package_list = args.packages
-                if args.changed_flag is True:
-                    changed_files_file = create_changed_files_file(repo_root=args.library_root)
-
-                    dymola_api = python_dymola_interface.load_dymola_api(
-                        packages=[LIBRARY_PACKAGE_MO],
-                        requires_license=False,
-                        startup_mos=STARTUP_MOS
-                    )
-
-                    package_list = mo.get_changed_regression_models(
-                        dymola_api=dymola_api,
-                        root_package=Path(package.replace(".", os.sep)),
-                        library=args.library,
-                        changed_files=changed_files_file,
-                        package=package
-                    )
-            # Start regression test
-            if package_list is None or len(package_list) == 0:
-                if args.changed_flag is False:
-                    logger.info('No reference results in package %s', package)
-                    continue
-                elif args.changed_flag is True:
-                    logger.info('No changed models in package %s', package)
-                    continue
+        if args.create_ref:
+            package_list, created_ref_list = ref_model.get_update_model()
+            if not package_list:
+                logger.info("All regression tests for package %s exist", package)
+                continue
             logger.info(f'Start regression Test.\nTest following packages: {package_list}')
-            val = ref_check.check_regression_test(package_list=package_list, create_results=False, package=package)
-            exit_var = max(exit_var, val)
+            val = ref_check.check_regression_test(package_list=package_list, create_results=True)
+            if len(created_ref_list) > 0:
+                for ref in created_ref_list:
+                    config_structure.prepare_data(
+                        source_target_dict={
+                            f'{CI_CONFIG.artifacts.library_ref_results_dir}{os.sep}{ref.replace(".", "_")}.txt':
+                                CI_CONFIG.get_file_path("result", "regression_dir").joinpath("referencefiles")}
+                    )
+                exit_var = max(exit_var, 1)
+            write_exit_file(message="GENERATED_NEW_RESULTS")
+        elif args.update_ref:
+            ref_list = get_update_ref()
+            ref_model.delete_ref_file(ref_list=ref_list)
+            package_list = get_update_package(ref_list=ref_list)
+        else:
+            config_structure.check_path_setting(ci_files=CI_CONFIG.get_dir_path("ci_files"), create_flag=True)
+            config_structure.create_files(CI_CONFIG.get_file_path("ci_files", "exit_file"))
+            if args.changed_flag is False:
+                package_list = [package]
+            if args.changed_flag is True:
+                changed_files_file = create_changed_files_file(repo_root=args.library_root)
+
+                dymola_api = python_dymola_interface.load_dymola_api(
+                    packages=[LIBRARY_PACKAGE_MO],
+                    requires_license=False,
+                    startup_mos=STARTUP_MOS
+                )
+
+                package_list = mo.get_changed_regression_models(
+                    dymola_api=dymola_api,
+                    root_package=Path(package.replace(".", os.sep)),
+                    library=args.library,
+                    changed_files=changed_files_file,
+                    package=package
+                )
+        # Start regression test
+        if package_list is None or len(package_list) == 0:
+            if args.changed_flag is False:
+                logger.info('No reference results in package %s', package)
+                continue
+            elif args.changed_flag is True:
+                logger.info('No changed models in package %s', package)
+                continue
+        all_packages_list.extend(package_list)
+    logger.info(f'Start regression Test.\nTest following packages: {all_packages_list}')
+    val = ref_check.check_regression_test(package_list=all_packages_list, create_results=False)
+    exit_var = max(exit_var, val)
     write_exit_file(message="FAIL" if exit_var == 1 else "Successfull")
     exit(exit_var)
