@@ -91,103 +91,82 @@ class CheckOpenModelica:
         self.load_library(library_package_mo=self.library_package_mo,
                           library=self.library)
 
-    def simulate_models(self, model_list: list = None, exception_list: list = None):
-        """
-        Simulate examples or validations
-        Args:
-            model_list:
-            exception_list:
-        Returns:
-        """
-
-        all_sims_dir = CI_CONFIG.get_file_path("result", "OM_check_result_dir").joinpath("simulate",
-                                                                                         f'{self.library}.{package}')
+    def simulate_models(self, model_list: list, package: str, exception_list: list = None):
+        all_sims_dir = CI_CONFIG.get_file_path("result", "OM_check_result_dir").joinpath(
+            "simulate", f'{self.library}.{package}')
         API_log = Path(self.working_path, "DymolaAPI.log")
         config_structure.create_path(all_sims_dir)
         config_structure.delete_files_in_path(all_sims_dir)
-        if model_list is not None:
-            logger.info(f'Simulate examples and validations')
-            error_model = {}
-            for example in model_list:
-                err_list = []
-                logger.info(f'Simulate example {example}')
-                result = self.omc.sendExpression(f"simulate({example})")
-                if "The simulation finished successfully" in result["messages"]:
-                    logger.info(f'\n Successful: {example}\n')
-                    config_structure.prepare_data(source_target_dict={result["resultFile"]: all_sims_dir})
-                else:
-                    _err_msg = result["messages"]
-                    _err_msg += "\n" + self.omc.sendExpression("getErrorString()")
-                    for line in _err_msg.split("\n"):
-                        exception_flag = False
-                        if len(line) == 0:
-                            continue
-                        if exception_list is not None:
-                            for exception in exception_list:
-                                if exception in line:
-                                    exception_flag = True
-                            if exception_flag is False:
-                                err_list.append(line)
-                        else:
+        logger.info(f'Simulate examples and validations')
+        error_model = {}
+        for example in model_list:
+            err_list = []
+            logger.info(f'Simulate example {example}')
+            result = self.omc.sendExpression(f"simulate({example})")
+            if "The simulation finished successfully" in result["messages"]:
+                logger.info(f'\n Successful: {example}\n')
+                config_structure.prepare_data(source_target_dict={result["resultFile"]: all_sims_dir})
+            else:
+                _err_msg = result["messages"]
+                _err_msg += "\n" + self.omc.sendExpression("getErrorString()")
+                for line in _err_msg.split("\n"):
+                    exception_flag = False
+                    if len(line) == 0:
+                        continue
+                    if exception_list is not None:
+                        for exception in exception_list:
+                            if exception in line:
+                                exception_flag = True
+                        if exception_flag is False:
                             err_list.append(line)
-                    if len(err_list) > 0:
-                        logger.error(f'  Error:     {example}')
-                        logger.error(f'{_err_msg}')
                     else:
-                        logger.warning(f' Warning:     {example}')
-                        logger.warning(f'{_err_msg}')
-                    error_model[example] = _err_msg
-                config_structure.delete_spec_file(root=os.getcwd(), pattern=example)
-            config_structure.prepare_data(source_target_dict={
-                API_log: CI_CONFIG.get_file_path("result", "OM_check_result_dir").joinpath(
-                    f'{self.library}.{package}')},
-                del_flag=True)
-            return error_model
-        else:
-            logger.info(f'No examples to check. ')
+                        err_list.append(line)
+                if len(err_list) > 0:
+                    logger.error(f'  Error:     {example}')
+                    logger.error(f'{_err_msg}')
+                else:
+                    logger.warning(f' Warning:     {example}')
+                    logger.warning(f'{_err_msg}')
+                error_model[example] = _err_msg
+            config_structure.delete_spec_file(root=os.getcwd(), pattern=example)
+        config_structure.prepare_data(source_target_dict={API_log: all_sims_dir}, del_flag=True)
+        return error_model
 
-    def check_models(self,
-                     model_list: list = None,
-                     exception_list: list = None):
-        """
-        Args:
-            model_list ():
-            exception_list ():
-        Returns:
-        """
+    def check_models(
+            self,
+            package: str,
+            model_list: list,
+            exception_list: list = None):
         logger.info(f'Check models with OpenModelica')
         error_model = {}
-        if model_list is not None:
-            for m in model_list:
-                err_list = []
-                logger.info(f'Check model {m}')
-                result = self.omc.sendExpression(f"checkModel({m})")
-                if "completed successfully" in result:
-                    logger.info(f' Successful:  {m}')
-                else:
-                    _err_msg = self.omc.sendExpression("getErrorString()")
-                    for line in _err_msg.split("\n"):
-                        exception_flag = False
-                        if len(line) == 0:
-                            continue
-                        if exception_list is not None:
-                            for exception in exception_list:
-                                if exception in line:
-                                    exception_flag = True
-                            if exception_flag is False:
-                                err_list.append(line)
-                        else:
+        for m in model_list:
+            err_list = []
+            logger.info(f'Check model {m}')
+            result = self.omc.sendExpression(f"checkModel({m})")
+            if "completed successfully" in result:
+                logger.info(f' Successful:  {m}')
+            else:
+                _err_msg = self.omc.sendExpression("getErrorString()")
+                for line in _err_msg.split("\n"):
+                    exception_flag = False
+                    if len(line) == 0:
+                        continue
+                    if exception_list is not None:
+                        for exception in exception_list:
+                            if exception in line:
+                                exception_flag = True
+                        if exception_flag is False:
                             err_list.append(line)
-                    if len(err_list) > 0:
-                        logger.error(m)
-                        logger.error(_err_msg)
                     else:
-                        logger.warning(m)
-                        logger.warning(_err_msg)
-                    error_model[m] = _err_msg
-            return error_model
-        else:
-            logger.info(f'No models to check')
+                        err_list.append(line)
+                if len(err_list) > 0:
+                    logger.error(m)
+                    logger.error(_err_msg)
+                else:
+                    logger.warning(m)
+                    logger.warning(_err_msg)
+                error_model[m] = _err_msg
+        return error_model
 
     def close_OM(self):
         """
@@ -487,7 +466,8 @@ def parse_args():
     check_test_group.add_argument("--package", dest="packages", action=StoreDictKeyPairList, nargs="*",
                                   metavar="Library1=Package1,Package2 Library2=Package3,Package4")"""
     check_test_group.add_argument("--library", default="AixLib", help="Library to test (e.g. AixLib")
-    check_test_group.add_argument("--packages", default=["Airflow"], nargs="+",
+    check_test_group.add_argument("--packages",
+                                  nargs="+",
                                   help="Library to test (e.g. Airflow.Multizone)")
     check_test_group.add_argument("--whitelist-library",
                                   default="IBPSA",
@@ -554,6 +534,7 @@ if __name__ == '__main__':
                 **get_model_list_kwargs
             )
             error_model_dict = func(
+                package=package,
                 model_list=model_list,
                 exception_list=None
             )
