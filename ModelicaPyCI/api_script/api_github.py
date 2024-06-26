@@ -177,7 +177,9 @@ instead of using a full media model like `{library}.Media.Water` directly.
 - Make sure icons are clear. Please avoid using images!
 - Stick to 80 characters per line, as long as it makes sense.
 - Add or modify examples for new or revised models.
-- Include a simulate-and-plot script as a regression test for new models.
+- Include a simulate-and-plot script as a regression test for new models. 
+  How? Follow the documentation here: https://github.com/ibpsa/modelica-ibpsa/wiki/Unit-Tests#how-to-include-models-as-part-of-the-unit-tests
+  Tip: To create the initial script, you can use Dymolas script generator, explained here: https://www.claytex.com/tech-blog/how-to-use-a-plot-script/)
 
 Once you have addressed these points, you can assign a reviewer.
 Although this process may seem tedious, ensuring CI passes allows the reviewer to focus 
