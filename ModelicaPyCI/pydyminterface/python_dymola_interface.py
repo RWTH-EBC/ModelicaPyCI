@@ -69,7 +69,7 @@ def check_enough_licenses_available(
         raise ConnectionError("Can't reach license server!")
     lic_counter = 0
     n_licenses = get_number_of_unused_licenses(url=url, port=port)
-    while n_licenses > min_number_of_unused_licences:
+    while n_licenses < min_number_of_unused_licences:
         logger.error('Not enough Dymola License is available. Check Dymola license after 180.0 seconds')
         time.sleep(180.0)
         n_licenses = get_number_of_unused_licenses(url=url, port=port)
