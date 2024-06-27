@@ -41,6 +41,13 @@ def parse_args():
     check_test_group.add_argument("--dymola-version", default=None,
                                   help="Version of Dymola(Give the number e.g. 2022")
     check_test_group.add_argument(
+        "--min-number-of-unused-licences",
+        default=1,
+        help="Number of unused licences for Dymola to start. "
+             "Used to avoid license blocking of real users. "
+             "Set to 0 to disable this check."
+    )
+    check_test_group.add_argument(
         "--startup-mos",
         default=None,
         help="Possible startup-mos script to e.g. load additional libraries"
@@ -52,8 +59,11 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
     LIBRARY_PACKAGE_MO = Path(CI_CONFIG.library_root).joinpath(args.library, "package.mo")
-    dymola_api = python_dymola_interface.load_dymola_api(packages=[LIBRARY_PACKAGE_MO], requires_license=False,
-                                                         startup_mos=args.startup_mos)
+    dymola_api = python_dymola_interface.load_dymola_api(
+        packages=[LIBRARY_PACKAGE_MO],
+        min_number_of_unused_licences=args.min_number_of_unused_licences,
+        startup_mos=args.startup_mos
+    )
 
     mm = ModelManagement(dymola_api=dymola_api)
 

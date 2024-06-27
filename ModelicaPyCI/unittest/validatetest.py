@@ -383,6 +383,13 @@ def parse_args():
                                   default=None,
                                   help="Version of dymola (Give the number e.g. 2020")
     check_test_group.add_argument(
+        "--min-number-of-unused-licences",
+        default=1,
+        help="Number of unused licences for Dymola to start. "
+             "Used to avoid license blocking of real users. "
+             "Set to 0 to disable this check."
+    )
+    check_test_group.add_argument(
         "--startup-mos",
         default=None,
         help="Possible startup-mos script to e.g. load additional libraries"
@@ -418,8 +425,10 @@ if __name__ == '__main__':
         add_lib_path = Path(ARGS.additional_libraries_to_load[lib], lib, "package.mo")
         config_structure.check_file_setting(add_lib_path=add_lib_path)
     DYMOLA_API = python_dymola_interface.load_dymola_api(
-        packages=[LIBRARY_PACKAGE_MO] + ARGS.additional_libraries_to_load, requires_license=True,
-        startup_mos=ARGS.startup_mos)
+        packages=[LIBRARY_PACKAGE_MO] + ARGS.additional_libraries_to_load,
+        min_number_of_unused_licences=ARGS.min_number_of_unused_licences,
+        startup_mos=ARGS.startup_mos
+    )
 
     if ARGS.create_whitelist_flag is False:
         validate_only(

@@ -593,6 +593,13 @@ def parse_args():
         default=None,
         help="Version of Dymola(Give the number e.g. 2022")
     unit_test_group.add_argument(
+        "--min-number-of-unused-licences",
+        default=1,
+        help="Number of unused licences for Dymola to start. "
+             "Used to avoid license blocking of real users. "
+             "Set to 0 to disable this check."
+    )
+    unit_test_group.add_argument(
         "--startup-mos",
         default=None,
         help="Possible startup-mos script to e.g. load additional libraries"
@@ -717,7 +724,7 @@ if __name__ == '__main__':
 
                 dymola_api = python_dymola_interface.load_dymola_api(
                     packages=[LIBRARY_PACKAGE_MO],
-                    requires_license=False,
+                    min_number_of_unused_licences=args.min_number_of_unused_licences,
                     startup_mos=STARTUP_MOS
                 )
 

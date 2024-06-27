@@ -8,9 +8,13 @@ from ebcpy import DymolaAPI
 from ModelicaPyCI.utils import logger
 
 
-def load_dymola_api(packages: list, requires_license: bool = True, startup_mos: str = None) -> DymolaAPI:
-    if requires_license:
-        check_enough_licenses_available()
+def load_dymola_api(
+        packages: list,
+        startup_mos: str = None,
+        min_number_of_unused_licences: int = 1
+) -> DymolaAPI:
+    if min_number_of_unused_licences > 0:
+        check_enough_licenses_available(min_number_of_unused_licences=min_number_of_unused_licences)
     dymola_api = _start_dymola_api(
         packages=packages, startup_mos=startup_mos
     )
@@ -19,10 +23,7 @@ def load_dymola_api(packages: list, requires_license: bool = True, startup_mos: 
     return dymola_api
 
 
-def check_enough_licenses_available(
-        requires_license: bool = True,
-        min_number_of_unused_licences: int = 1
-) -> bool:
+def check_enough_licenses_available(min_number_of_unused_licences: int = 1) -> bool:
     lic = os.environ.get("DYMOLA_RUNTIME_LICENSE", "50064@license2.rz.rwth-aachen.de")
     if "@" in lic:
         port, url = lic.split("@")
