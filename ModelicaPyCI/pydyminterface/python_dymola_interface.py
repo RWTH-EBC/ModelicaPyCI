@@ -70,14 +70,16 @@ def check_enough_licenses_available(
     lic_counter = 0
     n_licenses = get_number_of_unused_licenses(url=url, port=port)
     while n_licenses < min_number_of_unused_licences:
-        logger.error('Not enough Dymola License is available. Check Dymola license after 180.0 seconds')
+        msg = (f'Only {n_licenses} Dymola licenses are available, '
+               f'mininum number required is set to {min_number_of_unused_licences}.')
+        logger.error('%s. Check Dymola license after 180.0 seconds', msg)
         time.sleep(180.0)
         n_licenses = get_number_of_unused_licenses(url=url, port=port)
         lic_counter += 1
         if lic_counter > 10:
-            logger.error(f'There are currently not enough Dymola licenses available. Please try again later.')
+            logger.error(f'%s. Stopping, please try again later.', msg)
             # exit(1)  # TODO: Raise once it works
-        logger.info(f'Enough Dymola licenses is available.')
+        logger.info(f'Enough Dymola licenses (%s) is available.', n_licenses)
 
 
 def get_number_of_unused_licenses(url, port):
