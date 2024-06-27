@@ -89,7 +89,8 @@ def get_number_of_unused_licenses(url, port):
             continue
         # line = "(Total of 93 licenses issued;  Total of 36 licenses in use)"
         for delete in [
-            "Total of", "licenses", "issues", "in", "use", "(", ")", " "
+            _start_line, "Total of", "licenses", "issues",
+            "in", "use", "(", ")", " "
         ]:
             line = line.replace(delete, "")
         # line = "93;36"
