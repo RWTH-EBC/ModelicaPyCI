@@ -436,7 +436,7 @@ def create_central_index_html(chart_dir: Path, layout_html_file: Path):
     """
     Creates a layout index that has all links to the subordinate index files.
     """
-    packages = list()
+    package_list = list()
     for folders in os.listdir(chart_dir):
         if folders == "style.css" or folders == "index.html":
             continue
