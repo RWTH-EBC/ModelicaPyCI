@@ -21,6 +21,9 @@ def load_dymola_api(
     )
     logger.info(f'Using Dymola port {str(dymola_api.dymola._portnumber)}.')
     dymola_api.dymola.ExecuteCommand("Advanced.TranslationInCommandLog:=true;")
+    if not dymola_api.license_is_available():
+        raise ConnectionError("License is not available, even though minimal "
+                              "number of licenses are apparently free.")
     return dymola_api
 
 
