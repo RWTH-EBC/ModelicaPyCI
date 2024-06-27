@@ -671,6 +671,7 @@ if __name__ == '__main__':
         exit_var = max(exit_var, var)
     all_packages_list = []
     for package in args.packages:
+        package = f"{args.library}.{package}"
         if args.coverage_only:
             BuildingspyValidateTest(
                 validate=validate,
