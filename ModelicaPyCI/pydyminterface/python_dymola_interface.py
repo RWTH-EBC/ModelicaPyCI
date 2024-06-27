@@ -21,9 +21,23 @@ def load_dymola_api(
     )
     logger.info(f'Using Dymola port {str(dymola_api.dymola._portnumber)}.')
     dymola_api.dymola.ExecuteCommand("Advanced.TranslationInCommandLog:=true;")
-    if not dymola_api.license_is_available():
-        raise ConnectionError("License is not available, even though minimal "
-                              "number of licenses are apparently free.")
+
+    lic_counter = 0
+    dym_sta_lic_available = dymola_api.license_is_available()
+    while not dym_sta_lic_available:
+        logger.error('No Dymola License is available. Check Dymola license after 15 seconds')
+        dymola_api.close()
+        time.sleep(15)
+        dymola_api = _start_dymola_api(
+            packages=packages, startup_mos=startup_mos
+        )
+        dym_sta_lic_available = dymola_api.license_is_available()
+        lic_counter += 1
+        if lic_counter > 60:
+            logger.error(f'There are currently no available Dymola licenses available. Please try again later.')
+            dymola_api.close()
+            raise ConnectionError("License is not available, even though minimal "
+                                  "number of licenses are apparently free.")
     return dymola_api
 
 
