@@ -11,29 +11,6 @@ from ModelicaPyCI.utils import logger
 def load_dymola_api(packages: list, requires_license: bool = True, startup_mos: str = None) -> DymolaAPI:
     if requires_license:
         check_enough_licenses_available()
-
-        # TODO: Remove once lmutil works
-        dymola_api = _start_dymola_api(
-            packages=packages, startup_mos=startup_mos
-        )
-        lic_counter = 0
-        dym_sta_lic_available = dymola_api.license_is_available()
-        while not dym_sta_lic_available:
-            logger.error('No Dymola License is available. Check Dymola license after 180.0 seconds')
-            dymola_api.close()
-            time.sleep(180.0)
-            dymola_api = _start_dymola_api(
-                packages=packages, startup_mos=startup_mos
-            )
-            dym_sta_lic_available = dymola_api.license_is_available()
-            lic_counter += 1
-            if lic_counter > 10:
-                logger.error(f'There are currently no available Dymola licenses available. Please try again later.')
-                dymola_api.close()
-                exit(1)
-        logger.info(f'2: Using Dymola port {str(dymola_api.dymola._portnumber)}. Dymola License is available.')
-        dymola_api.close()
-
     dymola_api = _start_dymola_api(
         packages=packages, startup_mos=startup_mos
     )
@@ -78,7 +55,7 @@ def check_enough_licenses_available(
         lic_counter += 1
         if lic_counter > 10:
             logger.error(f'%s. Stopping, please try again later.', msg)
-            # exit(1)  # TODO: Raise once it works
+            exit(1)
     logger.info(f'Enough Dymola licenses (%s) are available.', n_licenses)
 
 
