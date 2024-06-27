@@ -9,33 +9,13 @@ from ModelicaPyCI.utils import logger
 
 
 def load_dymola_api(packages: list, requires_license: bool = True, startup_mos: str = None) -> DymolaAPI:
-    dymola_api = _start_dymola_api(
-        packages=packages, startup_mos=startup_mos
-    )
     if requires_license:
-        lic = os.environ.get("DYMOLA_RUNTIME_LICENSE", "50064@license2.rz.rwth-aachen.de")
-        port, url = None, None
-        if "@" in lic:
-            port, url = lic.split("@")
-        else:
-            if not os.path.isfile(lic):
-                logger.error("License file not found: %s", lic)
-            else:
-                with open(lic, "r") as file:
-                    lines = file.readlines()
-                for line in lines:
-                    if line.startswith("SERVER"):
-                        url, port = line.replace("SERVER ", "").split(" ANY ")
-                        break
-                else:
-                    logger.error(
-                        "Did not find SERVER line in license file content: %s",
-                        "\n".join(lines)
-                    )
-        if url is not None and port is not None:
-            server_is_available = check_server_connection(url=url, port=int(port))
-            if not server_is_available:
-                raise ConnectionError("Can't reach license server!")
+        check_enough_licenses_available()
+
+        # TODO: Remove once lmutil works
+        dymola_api = _start_dymola_api(
+            packages=packages, startup_mos=startup_mos
+        )
         lic_counter = 0
         dym_sta_lic_available = dymola_api.license_is_available()
         while not dym_sta_lic_available:
@@ -52,52 +32,7 @@ def load_dymola_api(packages: list, requires_license: bool = True, startup_mos: 
                 dymola_api.close()
                 exit(1)
         logger.info(f'2: Using Dymola port {str(dymola_api.dymola._portnumber)}. Dymola License is available.')
-
-    dymola_api.dymola.ExecuteCommand("Advanced.TranslationInCommandLog:=true;")
-    return dymola_api
-
-
-def load_dymola_api_with_lmutil(
-        packages: list,
-        requires_license: bool = True,
-        startup_mos: str = None,
-        min_number_of_unused_licences: int = 1
-) -> DymolaAPI:
-    if requires_license:
-        lic = os.environ.get("DYMOLA_RUNTIME_LICENSE", "50064@license2.rz.rwth-aachen.de")
-        port, url = None, None
-        if "@" in lic:
-            port, url = lic.split("@")
-        else:
-            if not os.path.isfile(lic):
-                raise FileNotFoundError(f"License file not found: {lic}")
-            else:
-                with open(lic, "r") as file:
-                    lines = file.readlines()
-                for line in lines:
-                    if line.startswith("SERVER"):
-                        url, port = line.replace("SERVER ", "").split(" ANY ")
-                        break
-                else:
-                    raise ValueError(
-                        "Did not find SERVER line in license file content: %s" % "\n".join(lines)
-                    )
-        port = int(port)
-        server_is_available = check_server_connection(url=url, port=port)
-        if not server_is_available:
-            raise ConnectionError("Can't reach license server!")
-        lic_counter = 0
-        n_licenses = get_number_of_unused_licenses(url=url, port=port)
-        while n_licenses > min_number_of_unused_licences:
-            logger.error('Not enough Dymola License is available. Check Dymola license after 180.0 seconds')
-            time.sleep(180.0)
-            n_licenses = get_number_of_unused_licenses(url=url, port=port)
-            lic_counter += 1
-            if lic_counter > 10:
-                logger.error(f'There are currently not enough Dymola licenses available. Please try again later.')
-                dymola_api.close()
-                exit(1)
-            logger.info(f'Enough Dymola licenses is available.')
+        dymola_api.close()
 
     dymola_api = _start_dymola_api(
         packages=packages, startup_mos=startup_mos
@@ -106,6 +41,43 @@ def load_dymola_api_with_lmutil(
     dymola_api.dymola.ExecuteCommand("Advanced.TranslationInCommandLog:=true;")
     return dymola_api
 
+
+def check_enough_licenses_available(
+        requires_license: bool = True,
+        min_number_of_unused_licences: int = 1
+) -> bool:
+    lic = os.environ.get("DYMOLA_RUNTIME_LICENSE", "50064@license2.rz.rwth-aachen.de")
+    if "@" in lic:
+        port, url = lic.split("@")
+    else:
+        if not os.path.isfile(lic):
+            raise FileNotFoundError(f"License file not found: {lic}")
+        else:
+            with open(lic, "r") as file:
+                lines = file.readlines()
+            for line in lines:
+                if line.startswith("SERVER"):
+                    url, port = line.replace("SERVER ", "").split(" ANY ")
+                    break
+            else:
+                raise ValueError(
+                    "Did not find SERVER line in license file content: %s" % "\n".join(lines)
+                )
+    port = int(port)
+    server_is_available = check_server_connection(url=url, port=port)
+    if not server_is_available:
+        raise ConnectionError("Can't reach license server!")
+    lic_counter = 0
+    n_licenses = get_number_of_unused_licenses(url=url, port=port)
+    while n_licenses > min_number_of_unused_licences:
+        logger.error('Not enough Dymola License is available. Check Dymola license after 180.0 seconds')
+        time.sleep(180.0)
+        n_licenses = get_number_of_unused_licenses(url=url, port=port)
+        lic_counter += 1
+        if lic_counter > 10:
+            logger.error(f'There are currently not enough Dymola licenses available. Please try again later.')
+            # exit(1)  # TODO: Raise once it works
+        logger.info(f'Enough Dymola licenses is available.')
 
 
 def get_number_of_unused_licenses(url, port):
