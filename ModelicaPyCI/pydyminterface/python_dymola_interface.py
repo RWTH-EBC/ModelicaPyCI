@@ -13,6 +13,7 @@ def load_dymola_api(
         startup_mos: str = None,
         min_number_of_unused_licences: int = 1
 ) -> DymolaAPI:
+    min_number_of_unused_licences = int(min_number_of_unused_licences)
     if min_number_of_unused_licences > 0:
         check_enough_licenses_available(min_number_of_unused_licences=min_number_of_unused_licences)
     dymola_api = _start_dymola_api(
