@@ -79,7 +79,7 @@ def check_enough_licenses_available(
         if lic_counter > 10:
             logger.error(f'%s. Stopping, please try again later.', msg)
             # exit(1)  # TODO: Raise once it works
-        logger.info(f'Enough Dymola licenses (%s) is available.', n_licenses)
+    logger.info(f'Enough Dymola licenses (%s) are available.', n_licenses)
 
 
 def get_number_of_unused_licenses(url, port):
