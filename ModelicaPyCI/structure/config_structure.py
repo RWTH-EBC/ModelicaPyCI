@@ -118,7 +118,7 @@ def prepare_data(source_target_dict: dict,
         if not os.path.exists(target_path):
             logger.info(f'Create path: {target_path}')
             os.makedirs(target_path)
-        if os.path.isfile(source) is True:
+        if os.path.isfile(source):
             path, file_name = os.path.split(source)
             target = os.path.join(target_path, file_name)
             shutil.copyfile(source, target)
@@ -128,7 +128,7 @@ def prepare_data(source_target_dict: dict,
             )
             if del_flag is True:
                 os.remove(source)
-        if os.path.isdir(source) is True:
+        elif os.path.isdir(source):
             distutils.dir_util.copy_tree(source, str(target_path))
             logger.info(
                 f'Result Folder {source} '
@@ -136,3 +136,5 @@ def prepare_data(source_target_dict: dict,
             )
             if del_flag is True:
                 shutil.rmtree(source)
+        else:
+            raise FileNotFoundError(f"File to copy does not exist: {source}")

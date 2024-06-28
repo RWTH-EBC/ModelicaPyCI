@@ -64,7 +64,7 @@ class BuildingspyRegressionCheck:
         err_list = list()
         new_ref_list = list()
         for package_modelica_name in package_list:
-            if self.batch is False:
+            if create_results:
                 new_ref_list.append(package_modelica_name)
                 logger.info(f'Generate new reference results for package:  {package_modelica_name}')
             else:
@@ -98,18 +98,16 @@ class BuildingspyRegressionCheck:
                 else:
                     logger.info(f'Regression test for model {package_modelica_name} was successful ')
                     continue
-        if self.batch is True:
-            if len(err_list) > 0:
-                logger.error(f'The following packages in regression test failed:')
-                for error in err_list:
-                    logger.error(f'{error}')
-                return 1
-            else:
-                logger.info(f'Regression test was successful ')
-                return 0
+        if len(err_list) > 0:
+            logger.error(f'The following packages in regression test failed:')
+            for error in err_list:
+                logger.error(f'{error}')
+            return 1
+        elif len(new_ref_list) > 0:
+            return 1
         else:
-            if len(new_ref_list) > 0:
-                return 1
+            logger.info(f'Regression test was successful ')
+            return 0
 
 
 class ReferenceModel:
@@ -708,8 +706,8 @@ if __name__ == '__main__':
                             f'{CI_CONFIG.artifacts.library_ref_results_dir}{os.sep}{ref.replace(".", "_")}.txt':
                                 CI_CONFIG.get_file_path("result", "regression_dir").joinpath("referencefiles")}
                     )
-                exit_var = max(exit_var, 1)
-            write_exit_file(message="GENERATED_NEW_RESULTS")
+                write_exit_file(message="GENERATED_NEW_RESULTS")
+            exit_var = max(exit_var, val)
         elif args.update_ref:
             ref_list = get_update_ref()
             ref_model.delete_ref_file(ref_list=ref_list)
