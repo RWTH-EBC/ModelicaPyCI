@@ -10,7 +10,7 @@ def create_index_html():
     results_dir = CI_CONFIG.get_dir_path("result")
     for subdir, dirs, files in os.walk(results_dir):
         for file in files:
-            filepath = Path(subdir, file)
+            filepath = Path(subdir, file).relative_to(results_dir)
             all_files.append(filepath)
     if len(all_files) == 0:
         logger.info('No files to display')
