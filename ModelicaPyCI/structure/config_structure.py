@@ -128,6 +128,8 @@ def prepare_data(source_target_dict: dict,
             )
             if del_flag is True:
                 os.remove(source)
+                if os.path.isfile(source):
+                    logger.error("Removing %s did not work.", source)
         elif os.path.isdir(source):
             distutils.dir_util.copy_tree(source, str(target_path))
             logger.info(
