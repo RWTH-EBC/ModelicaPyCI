@@ -31,13 +31,16 @@ def check_path_setting(create_flag: bool = False, **kwargs):
                 f'Setting: Path variable "{var}" is set as: '
                 f'"{path}" and exists.')
         else:
-            logger.error(
+            msg = (
                 f'Path variable '
                 f'"{var}" in "{path}"'
-                f' does not exist in path {Path().absolute()} with content {os.listdir(os.getcwd())}.')
+                f' does not exist in path {Path().absolute()} with content {os.listdir(os.getcwd())}.'
+            )
             if create_flag is True:
+                logger.info("%s. Creating it.", msg)
                 create_path(path)
             else:
+                logger.error(msg)
                 exit(1)
 
 
@@ -70,7 +73,7 @@ def create_files(*args):
         if os.path.exists(file):
             logger.info(f'File: {file} does exist.')
         else:
-            logger.error(
+            logger.info(
                 f'File: {file} does not exist. '
                 f'Create a new one under {file}')
             with open(file, 'w') as write_file:
