@@ -76,7 +76,7 @@ class BuildingspyRegressionCheck:
                              f"no valid scripts are available: {err}")
                 continue
             response = self.ut.run()
-            result_path = Path(CI_CONFIG.get_file_path("result", "regression_dir"), package_modelica_name)
+            result_path = Path(CI_CONFIG.get_file_path("result", "regression_dir"), package_modelica_name.split(".")[-1])
             source_target_dict = {}
             for file in self.ut.get_unit_test_log_files():
                 source_target_dict[file] = result_path
