@@ -19,7 +19,7 @@ OMPython
 ebcpy>=0.4.1
 numpy
 #scipy
-matplotlib
+matplotlib~=3.9.0
 lib-platform
 toml
 #tomli_w
