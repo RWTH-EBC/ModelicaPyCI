@@ -1,6 +1,8 @@
 import argparse
 from pathlib import Path
 import os
+import yaml
+
 import buildingspy.development.validator as validate
 import buildingspy.development.regressiontest as regression
 from ModelicaPyCI.structure import sort_mo_model as mo
@@ -21,6 +23,7 @@ def write_exit_file(message: str = None):
         logger.info(f"Wrote content {message} {exit_file_path}.")
     with open(exit_file_path, "r") as ex_file:
         logger.info(f"Exit file contents: {ex_file.read()}")
+
 
 class BuildingspyRegressionCheck:
 
@@ -61,9 +64,11 @@ class BuildingspyRegressionCheck:
         self.ut.setNumberOfThreads(self.n_pro)
         self.ut.pedanticModelica(False)
         self.ut.showGUI(self.show_gui)
+
         err_list = list()
         new_ref_list = list()
         for package_modelica_name in package_list:
+            sinlge_package_name = package_modelica_name.split(".")[-1]
             if create_results:
                 new_ref_list.append(package_modelica_name)
                 logger.info(f'Generate new reference results for package:  {package_modelica_name}')
@@ -75,8 +80,49 @@ class BuildingspyRegressionCheck:
                 logger.error(f"Can't perform regression test for package '{package_modelica_name}', "
                              f"no valid scripts are available: {err}")
                 continue
+
+            # Add whitelist
+            yml_path = Path(CI_CONFIG.library_root).joinpath(
+                self.library, "Resources", "Scripts", "BuildingsPy", "conf.yml"
+            )
+            from ModelicaPyCI.structure.sort_mo_model import get_whitelist_models
+            ci_whitelist_ibpsa_file = CI_CONFIG.get_file_path("whitelist", "ibpsa_file")
+            if os.path.exists(ci_whitelist_ibpsa_file):
+                ibpsa_models = get_whitelist_models(
+                    whitelist_file=ci_whitelist_ibpsa_file, library=self.library, single_package=sinlge_package_name
+                )
+                if os.path.exists(yml_path):
+                    with open(yml_path, 'r') as f:
+                        old_yml_config = yaml.safe_load(f)
+                        # Convert for easier access
+                        yml_config = {e["model_name"]: e for e in old_yml_config}
+                else:
+                    old_yml_config = None
+                    yml_config = {}
+                for model_name in ibpsa_models:
+                    existing_config = yml_config.get(model_name, {})
+                    if "dymola" in existing_config:
+                        logger.info("Won't add IBPSA model %s to whitelist config, already in it", model_name)
+                        continue
+                    yml_config[model_name] = {
+                        "model_name": model_name,
+                        "dymola": {"comment": "Already tested in IBPSA", "simulate": False}
+                    }
+                    with open(yml_path, "w") as f:
+                        yaml.safe_dump(list(yml_config.values()), f)
+                    logger.info("Added %s models to whitelist config already tested in IBPSA.", len(yml_config))
+
             response = self.ut.run()
-            result_path = Path(CI_CONFIG.get_file_path("result", "regression_dir"), package_modelica_name.split(".")[-1])
+
+            # Revert changes in possibly existing yml config to avoid a push on result creation
+            if os.path.exists(ci_whitelist_ibpsa_file):
+                if old_yml_config is not None:
+                    with open(yml_path, "w") as f:
+                        yaml.safe_dump(old_yml_config, f)
+                else:
+                    os.remove(yml_path)
+
+            result_path = Path(CI_CONFIG.get_file_path("result", "regression_dir"), sinlge_package_name)
             source_target_dict = {}
             for file in self.ut.get_unit_test_log_files():
                 source_target_dict[file] = result_path
