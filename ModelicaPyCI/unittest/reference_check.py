@@ -82,46 +82,21 @@ class BuildingspyRegressionCheck:
                 continue
 
             # Add whitelist
-            yml_path = Path(CI_CONFIG.library_root).joinpath(
-                self.library, "Resources", "Scripts", "BuildingsPy", "conf.yml"
-            )
             from ModelicaPyCI.structure.sort_mo_model import get_whitelist_models
             ci_whitelist_ibpsa_file = CI_CONFIG.get_file_path("whitelist", "ibpsa_file")
             if os.path.exists(ci_whitelist_ibpsa_file):
                 ibpsa_models = get_whitelist_models(
                     whitelist_file=ci_whitelist_ibpsa_file, library=self.library, single_package=sinlge_package_name
                 )
-                if os.path.exists(yml_path):
-                    with open(yml_path, 'r') as f:
-                        old_yml_config = yaml.safe_load(f)
-                        # Convert for easier access
-                        yml_config = {e["model_name"]: e for e in old_yml_config}
-                else:
-                    os.makedirs(yml_path.parent, exist_ok=True)
-                    old_yml_config = None
-                    yml_config = {}
+                skipped_ref = 0
                 for model_name in ibpsa_models:
-                    existing_config = yml_config.get(model_name, {})
-                    if "dymola" in existing_config:
-                        logger.info("Won't add IBPSA model %s to whitelist config, already in it", model_name)
-                        continue
-                    yml_config[model_name] = {
-                        "model_name": model_name,
-                        "dymola": {"comment": "Already tested in IBPSA", "simulate": False}
-                    }
-                with open(yml_path, "w") as f:
-                    yaml.safe_dump(list(yml_config.values()), f)
-                logger.info("Added %s models to whitelist config already tested in IBPSA.", len(yml_config))
+                    for model_to_test in self.ut._data:
+                        if model_to_test["model_name"] == model_name:
+                            model_to_test["simulate"] = False
+                            skipped_ref += 1
+                logger.info("Added %s models to whitelist config already tested in IBPSA.", skipped_ref)
 
             response = self.ut.run()
-
-            # Revert changes in possibly existing yml config to avoid a push on result creation
-            if os.path.exists(ci_whitelist_ibpsa_file):
-                if old_yml_config is not None:
-                    with open(yml_path, "w") as f:
-                        yaml.safe_dump(old_yml_config, f)
-                else:
-                    os.remove(yml_path)
 
             result_path = Path(CI_CONFIG.get_file_path("result", "regression_dir"), sinlge_package_name)
             source_target_dict = {}
