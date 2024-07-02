@@ -109,9 +109,9 @@ class BuildingspyRegressionCheck:
                         "model_name": model_name,
                         "dymola": {"comment": "Already tested in IBPSA", "simulate": False}
                     }
-                    with open(yml_path, "w") as f:
-                        yaml.safe_dump(list(yml_config.values()), f)
-                    logger.info("Added %s models to whitelist config already tested in IBPSA.", len(yml_config))
+                with open(yml_path, "w") as f:
+                    yaml.safe_dump(list(yml_config.values()), f)
+                logger.info("Added %s models to whitelist config already tested in IBPSA.", len(yml_config))
 
             response = self.ut.run()
 
