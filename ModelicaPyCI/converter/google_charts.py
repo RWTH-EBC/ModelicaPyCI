@@ -240,7 +240,7 @@ class PlotCharts:
                 # Convert e.g. "*** Error: BESMod_Examples_DesignOptimization_BESNoDHW.txt: Errors during result verification."
                 # to BESMod_Examples_DesignOptimization_BESNoDHW
                 model = line.replace(error_syntax, "").split(".txt")[0].strip()
-                for next_line in lines[idx:]:
+                for next_line in lines[idx + 1:]:
                     if not next_line.strip().startswith("Absolute error"):
                         break
                     variable = next_line.strip().split(" ")[-1]
