@@ -240,6 +240,7 @@ class PlotCharts:
                 # Convert e.g. "*** Error: BESMod_Examples_DesignOptimization_BESNoDHW.txt: Errors during result verification."
                 # to BESMod_Examples_DesignOptimization_BESNoDHW
                 model = line.replace(error_syntax, "").split(".txt")[0].strip()
+                model = ".".join(model.split("_"))
                 for next_line in lines[idx + 1:]:
                     if not next_line.strip().startswith("Absolute error"):
                         break
@@ -329,40 +330,37 @@ class PlotCharts:
             var ():
         """
         if var == "":
-            path_list = os.listdir((f'{self.library}{os.sep}funnel_comp'.strip()))
-            for file in path_list:
+            raise NotImplementedError("This feature is not implemented, raise an issue please.")
+            for file in self.get_funnel_comp_files():
                 if file[:file.find(".mat")] == model:
                     path_name = f'{self.library}{os.sep}funnel_comp{os.sep}{file}'.strip()
                     var = file[file.find(".mat") + 5:]
-                    if os.path.isdir(path_name) is False:
-                        logger.error(
-                            f'Cant find folder: {model} with variable {var}')
-                    else:
-                        logger.info(
-                            f'Plot model: {model} with variable: {var}')
-                        value = self._read_csv_funnel(url=path_name)
-                        my_template = Template(filename=CI_CONFIG.plots.templates_chart_file)
-                        html_chart = my_template.render(values=value,
-                                                        var=[f'{var}_ref', var],
-                                                        model=model,
-                                                        title=f'{model}.mat_{var}')
-                        with open(f'{self.temp_chart_path}{os.sep}{model}_{var.strip()}.html', "w") as file_tmp:
-                            file_tmp.write(html_chart)
+                    if not os.path.isdir(path_name):
+                        logger.error(f'Cant find folder: {model} with variable {var}')
+                        continue
+                    logger.info(f'Plot model: {model} with variable: {var}')
+                    value = self._read_csv_funnel(url=path_name)
+                    my_template = Template(filename=CI_CONFIG.plots.templates_chart_file)
+                    html_chart = my_template.render(values=value,
+                                                    var=[f'{var}_ref', var],
+                                                    model=model,
+                                                    title=f'{model}.mat_{var}')
+                    with open(f'{self.temp_chart_path}{os.sep}{model}_{var.strip()}.html', "w") as file_tmp:
+                        file_tmp.write(html_chart)
         else:
-            path_name = (f'{self.library}{os.sep}funnel_comp{os.sep}{model}.mat_{var}'.strip())
-            if os.path.isdir(path_name) is False:
-                logger.error(
-                    f'Cant find folder: {model} with variable {var}')
-            else:
-                logger.info(f'Plot model: {model} with variable: {var}')
-                value = self._read_csv_funnel(url=path_name)
-                my_template = Template(filename=CI_CONFIG.plots.templates_chart_file)
-                html_chart = my_template.render(values=value,
-                                                var=[f'{var}_ref', var],
-                                                model=model,
-                                                title=f'{model}.mat_{var}')
-                with open(f'{self.temp_chart_path}{os.sep}{model}_{var.strip()}.html', "w") as file_tmp:
-                    file_tmp.write(html_chart)
+            path_name = self.funnel_path.joinpath(f"{model}.mat_{var}")
+            if not os.path.isdir(path_name):
+                logger.error(f'Cant find folder: {model} with variable {var}')
+                return
+            logger.info(f'Plot model: {model} with variable: {var}')
+            value = self._read_csv_funnel(url=path_name)
+            my_template = Template(filename=CI_CONFIG.plots.templates_chart_file)
+            html_chart = my_template.render(values=value,
+                                            var=[f'{var}_ref', var],
+                                            model=model,
+                                            title=f'{model}.mat_{var}')
+            with open(f'{self.temp_chart_path}{os.sep}{model}_{var.strip()}.html', "w") as file_tmp:
+                file_tmp.write(html_chart)
 
     def _mako_line_html_new_chart(self, reference_file, value_list, legend_list):
         """
@@ -428,7 +426,7 @@ class PlotCharts:
                 file_tmp.write(html_chart)
             logger.info(f'Create html file with reference results.')
 
-    def get_funnel_comp(self):
+    def get_funnel_comp_files(self):
         return os.listdir(self.funnel_path)
 
     def delete_folder(self):
@@ -546,22 +544,20 @@ if __name__ == '__main__':
         charts.check_folder_path()
         if args.error_flag is True:
             model_var_list = charts.read_unit_test_log()
-            logger.info('Plot line chart with different reference results for %s models.',
-                        len(model_var_list))
+            logger.info('Plot line chart with different reference results for %s models.', len(model_var_list))
             for model_variable in model_var_list:
-                model_variable = model_variable.split(":")
+                model, var = model_variable.split(":")
                 if args.funnel_comp_flag is True:
-                    charts.mako_line_html_chart(model=model_variable[0],
-                                                var=model_variable[1])
+                    charts.mako_line_html_chart(model=model, var=var)
                 if args.ref_txt_flag is True:
-                    ref_file = charts.get_ref_file(model=model_variable[0])
+                    ref_file = charts.get_ref_file(model=model)
                     if ref_file is None:
-                        logger.error(f'Reference file for model {model_variable[0]} does not exist.')
+                        logger.error(f'Reference file for model {model} does not exist.')
                         continue
                     else:
                         result = charts.get_values(reference_list=ref_file)
-                        charts.mako_line_ref_chart(model=model_variable[0],
-                                                   var=model_variable[1])
+                        charts.mako_line_ref_chart(model=model,
+                                                   var=var)
         if args.new_ref_flag is True:
             ref_list = charts.get_new_reference_files()
             charts.write_html_plot_templates(reference_file_list=ref_list)
@@ -572,11 +568,10 @@ if __name__ == '__main__':
             ref_list = charts.read_show_reference()
             charts.write_html_plot_templates(reference_file_list=ref_list)
         if args.show_package_flag is True:
-            folder = charts.get_funnel_comp()
-            for ref in folder:
+            for ref in charts.get_funnel_comp_files():
                 if args.funnel_comp_flag is True:
-                    charts.mako_line_html_chart(model=ref[:ref.find(".mat")],
-                                                var=ref[ref.rfind(".mat") + 5:])
+                    model, var = ref.split(":")
+                    charts.mako_line_html_chart(model=model, var=var)
         charts.create_index_layout()
     create_central_index_html(
         chart_dir=Path(CI_CONFIG.plots.chart_dir),
