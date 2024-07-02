@@ -97,6 +97,7 @@ class BuildingspyRegressionCheck:
                         # Convert for easier access
                         yml_config = {e["model_name"]: e for e in old_yml_config}
                 else:
+                    os.makedirs(yml_path.parent, exist_ok=True)
                     old_yml_config = None
                     yml_config = {}
                 for model_name in ibpsa_models:
