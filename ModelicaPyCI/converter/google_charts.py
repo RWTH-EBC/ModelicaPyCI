@@ -233,22 +233,34 @@ class PlotCharts:
         with open(self.f_log, "r") as log_file:
             lines = log_file.readlines()
         model_variable_list = list()
-        for line in lines:
-            if line.find("*** Warning:") > -1:
-                if line.find(".mat") > -1:
-                    model = line[line.find("Warning:") + 9:line.find(".mat")]
-                    var = line[line.find(".mat:") + 5:line.find("exceeds ")].lstrip()
-                    model_variable_list.append(f'{model}:{var}')
-                if line.find("*** Warning: Numerical Jacobian in 'RunScript") > -1 and line.find(".mos") > -1:
-                    model = line[line.rfind(os.sep) + 1:line.find(".mos")].lstrip()
-                    var = ""
-                    model_variable_list.append(f'{model}:{var}')
-                if line.find(
-                        "*** Warning: Failed to interpret experiment annotation in 'RunScript") > -1 and line.find(
-                    ".mos") > -1:
-                    model = line[line.rfind(os.sep) + 1:line.find(".mos")].lstrip()
-                    var = ""
-                    model_variable_list.append(f'{model}:{var}')
+        for idx, line in enumerate(lines):
+            error_indicator = "Errors during result verification"
+            error_syntax = "*** Error: "
+            if line.startswith(error_syntax) and error_indicator in line:
+                # Convert e.g. "*** Error: BESMod_Examples_DesignOptimization_BESNoDHW.txt: Errors during result verification."
+                # to BESMod_Examples_DesignOptimization_BESNoDHW
+                model = line.replace(error_syntax, "").split(".txt")[0].strip()
+                for next_line in lines[idx:]:
+                    if not next_line.strip().startswith("Absolute error"):
+                        break
+                    variable = next_line.strip().split(" ")[-1]
+                    model_variable_list.append(f"{model}:{variable}")
+
+            # if line.find("*** Warning:") > -1:
+            #     if line.find(".mat") > -1:
+            #         model = line[line.find("Warning:") + 9:line.find(".mat")]
+            #         var = line[line.find(".mat:") + 5:line.find("exceeds ")].lstrip()
+            #         model_variable_list.append(f'{model}:{var}')
+            #     if line.find("*** Warning: Numerical Jacobian in 'RunScript") > -1 and line.find(".mos") > -1:
+            #         model = line[line.rfind(os.sep) + 1:line.find(".mos")].lstrip()
+            #         var = ""
+            #         model_variable_list.append(f'{model}:{var}')
+            #     if line.find(
+            #             "*** Warning: Failed to interpret experiment annotation in 'RunScript") > -1 and line.find(
+            #         ".mos") > -1:
+            #         model = line[line.rfind(os.sep) + 1:line.find(".mos")].lstrip()
+            #         var = ""
+            #         model_variable_list.append(f'{model}:{var}')
         return model_variable_list
 
     def get_ref_file(self, model):
@@ -417,13 +429,7 @@ class PlotCharts:
             logger.info(f'Create html file with reference results.')
 
     def get_funnel_comp(self):
-        """
-
-        Returns:
-
-        """
-        folders = os.listdir(self.funnel_path)
-        return folders
+        return os.listdir(self.funnel_path)
 
     def delete_folder(self):
         if not os.path.isdir(CI_CONFIG.plots.chart_dir):
@@ -540,7 +546,8 @@ if __name__ == '__main__':
         charts.check_folder_path()
         if args.error_flag is True:
             model_var_list = charts.read_unit_test_log()
-            logger.info('Plot line chart with different reference results. ')
+            logger.info('Plot line chart with different reference results for %s models.',
+                        len(model_var_list))
             for model_variable in model_var_list:
                 model_variable = model_variable.split(":")
                 if args.funnel_comp_flag is True:
