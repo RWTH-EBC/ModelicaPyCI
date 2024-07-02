@@ -16,8 +16,6 @@ class PlotCharts:
     def __init__(self, result_path, library):
         self.library = library
         self.f_log = result_path.joinpath("unitTests-dymola.log")
-        self.csv_file = Path("reference.csv")
-        self.test_csv = Path("test.csv")
         self.temp_chart_path = Path(CI_CONFIG.plots.chart_dir).joinpath(package)
         self.funnel_path = result_path.joinpath("funnel_comp")
         self.ref_path = Path(self.library).joinpath(CI_CONFIG.artifacts.library_ref_results_dir)
@@ -276,41 +274,6 @@ class PlotCharts:
             else:
                 continue
 
-    def _read_csv_funnel(self, url):
-        """
-        Read the differenz variables from csv_file and test_file
-        Args:
-            url ():
-
-        Returns:
-
-        """
-        csv_file = Path(url.strip(), self.csv_file)
-        test_csv = Path(url.strip(), self.test_csv)
-        try:
-            var_model = pd.read_csv(csv_file)
-            var_test = pd.read_csv(test_csv)
-            temps = var_model[['x', 'y']]
-            d = temps.values.tolist()
-            test_tmp = var_test[['x', 'y']]
-            e = test_tmp.values.tolist()
-            e_list = list()
-            for i in range(0, len(e)):
-                e_list.append((e[i][1]))
-            results = zip(d, e_list)
-            result_set = list(results)
-            value_list = list()
-            for i in result_set:
-                i = str(i)
-                i = i.replace("(", "")
-                i = i.replace("[", "")
-                i = i.replace("]", "")
-                i = i.replace(")", "")
-                value_list.append("[" + i + "]")
-            return value_list
-        except pd.errors.EmptyDataError:
-            logger.error(f'{csv_file} is empty')
-
     def check_folder_path(self):
         if os.path.isdir(self.funnel_path) is False:
             logger.error(f'Funnel directory does not exist.')
@@ -339,7 +302,7 @@ class PlotCharts:
                         logger.error(f'Cant find folder: {model} with variable {var}')
                         continue
                     logger.info(f'Plot model: {model} with variable: {var}')
-                    value = self._read_csv_funnel(url=path_name)
+                    value = read_csv_funnel(path=path_name)
                     my_template = Template(filename=CI_CONFIG.plots.templates_chart_file)
                     html_chart = my_template.render(values=value,
                                                     var=[f'{var}_ref', var],
@@ -353,7 +316,7 @@ class PlotCharts:
                 logger.error(f'Cant find folder: {model} with variable {var}')
                 return
             logger.info(f'Plot model: {model} with variable: {var}')
-            value = self._read_csv_funnel(url=path_name)
+            value = read_csv_funnel(path=path_name)
             my_template = Template(filename=CI_CONFIG.plots.templates_chart_file)
             html_chart = my_template.render(values=value,
                                             var=[f'{var}_ref', var],
@@ -399,7 +362,7 @@ class PlotCharts:
             logger.error(f'Cant find folder: {model} with variable {var}')
         else:
             logger.info(f'Plot model: {model} with variable: {var}')
-            value = self._read_csv_funnel(url=path_name)
+            value = read_csv_funnel(path=path_name)
             my_template = Template(filename=CI_CONFIG.plots.templates_chart_file)
             html_chart = my_template.render(values=value,
                                             var=[f'{var}_ref', var],
@@ -434,6 +397,39 @@ class PlotCharts:
             logger.error(f'Directory {CI_CONFIG.plots.chart_dir} does not exist.')
         else:
             shutil.rmtree(CI_CONFIG.plots.chart_dir)
+
+
+def read_csv_funnel(path):
+    """
+    Read the different variables from csv_file and test_file
+    """
+    csv_file = "reference.csv"
+    test_csv = "test.csv"
+    csv_file = Path(path).joinpath(csv_file)
+    test_csv = Path(path).joinpath(test_csv)
+    try:
+        var_model = pd.read_csv(csv_file)
+        var_test = pd.read_csv(test_csv)
+        temps = var_model[['x', 'y']]
+        d = temps.values.tolist()
+        test_tmp = var_test[['x', 'y']]
+        e = test_tmp.values.tolist()
+        e_list = list()
+        for i in range(0, len(e)):
+            e_list.append((e[i][1]))
+        results = zip(d, e_list)
+        result_set = list(results)
+        value_list = list()
+        for i in result_set:
+            i = str(i)
+            i = i.replace("(", "")
+            i = i.replace("[", "")
+            i = i.replace("]", "")
+            i = i.replace(")", "")
+            value_list.append("[" + i + "]")
+        return value_list
+    except pd.errors.EmptyDataError:
+        logger.error(f'{csv_file} is empty')
 
 
 def create_central_index_html(chart_dir: Path, layout_html_file: Path):
