@@ -26,3 +26,4 @@ toml
 #tomli_w
 buildingspy>=5.1.0
 requests
+yaml
