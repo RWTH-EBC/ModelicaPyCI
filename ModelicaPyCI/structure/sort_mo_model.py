@@ -304,7 +304,7 @@ def return_type_list(
     Returns:
     """
     changed_list = []
-    logger.info(f'\n ------The last modified files ------\n')
+    logger.info(f'------The last modified files ------')
     if ref_list is not None:
         for ref in ref_list:
             model_file = _model_to_ref_exist(ref_file=ref, library=library, package=package)
@@ -333,7 +333,7 @@ def return_type_list(
             if model is not None:
                 logger.info(f'Changed used model files: {used_model}')
                 changed_list.append(used_model[:used_model.rfind(".")])
-    logger.info(f'\n -----------------------------------\n')
+    logger.info(f'-----------------------------------')
     changed_list = list(set(changed_list))
     return changed_list
 
