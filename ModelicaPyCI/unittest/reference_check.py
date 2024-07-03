@@ -188,6 +188,7 @@ class WhitelistTester(regression.Tester):
         _new_data = []
         for dat in self._data:
             if dat['model_name'] in self.whitelist_models:
+                dat['dymola']['exportFMU'] = False
                 _new_data.append(dat)
         self._data = _new_data
 
