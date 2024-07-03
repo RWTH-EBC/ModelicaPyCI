@@ -186,7 +186,6 @@ class WhitelistTester(regression.Tester):
                         f"Failed to find the original data for {tra_data[i]['ScriptFile']}")
 
         self._data = tra_data
-        logger.info("tra_data: %s, self._data: %s", len(tra_data), len(self._data))
 
         for iPro in range(self._nPro):
 
