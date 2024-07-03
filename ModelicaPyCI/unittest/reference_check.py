@@ -93,6 +93,7 @@ class BuildingspyRegressionCheck:
                     for model_to_test in self.ut._data:
                         if model_to_test["model_name"] == model_name:
                             model_to_test["simulate"] = False
+                            model_to_test["translate"] = False
                             skipped_ref += 1
                 logger.info("Added %s models to whitelist config already tested in IBPSA.", skipped_ref)
 
