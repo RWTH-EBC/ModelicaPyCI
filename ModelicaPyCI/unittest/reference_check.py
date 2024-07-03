@@ -189,11 +189,13 @@ class WhitelistTester(regression.Tester):
         for dat in self._data:
             if dat['model_name'] in self.whitelist_models:
                 _new_data.append(dat)
+        logger.info("new_data lenght: %s", len(_new_data))
         self._data = _new_data
+        logger.info("data lenght: %s", len(self._data))
         for dat in self._data:
             if "ResultDirectory" not in dat:
-                logger.error("ResultDirectory not in model dat %s", dat)
-
+                logger.error("ResultDirectory not in model dat %s", dat["model_name"])
+        logger.info("%s", self._data == _new_data)
         for iPro in range(self._nPro):
 
             tra_data_pro = []
