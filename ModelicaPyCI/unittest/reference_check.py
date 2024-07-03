@@ -137,7 +137,7 @@ class WhitelistTester(regression.Tester):
         skipped_ref = 0
         from copy import deepcopy
         _data_copy = deepcopy(self._data)
-        for model_name in self._whitelist_models:
+        for model_name in self.whitelist_models:
             for model_to_test in _data_copy:
                 if model_to_test["model_name"] == model_name:
                     model_to_test["simulate"] = False
