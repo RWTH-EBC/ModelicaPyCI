@@ -155,6 +155,12 @@ class WhitelistTester(regression.Tester):
             raise RuntimeError("Tool is not supported.")
         logger.info("Added %s models to whitelist config already tested in IBPSA.", skipped_ref)
 
+        _new_data = []
+        for dat in self._data:
+            if dat['model_name'] in self.whitelist_models:
+                _new_data.append(dat)
+        self._data = _new_data
+
         # Count how many tests need to be translated.
         nTes = len(tra_data)
         # Reduced the number of processors if there are fewer examples than processors
