@@ -46,7 +46,8 @@ class BuildingspyRegressionCheck:
         self.library = library
         if startup_mos is not None:
             libraries_to_load = python_dymola_interface.add_libraries_to_load_from_mos_to_modelicapath(startup_mos)
-        self.ut = regression.Tester(tool=self.tool)
+
+        self.ut = WhitelistTester(tool=self.tool)
 
     def check_regression_test(self, package_list, create_results: bool):
         """
@@ -85,17 +86,11 @@ class BuildingspyRegressionCheck:
             from ModelicaPyCI.structure.sort_mo_model import get_whitelist_models
             ci_whitelist_ibpsa_file = CI_CONFIG.get_file_path("whitelist", "ibpsa_file")
             if os.path.exists(ci_whitelist_ibpsa_file):
-                ibpsa_models = get_whitelist_models(
-                    whitelist_file=ci_whitelist_ibpsa_file, library=self.library, single_package=sinlge_package_name
+                self.ut.whitelist_models = get_whitelist_models(
+                    whitelist_file=ci_whitelist_ibpsa_file,
+                    library=self.library,
+                    single_package=sinlge_package_name
                 )
-                skipped_ref = 0
-                for model_name in ibpsa_models:
-                    for model_to_test in self.ut._data:
-                        if model_to_test["model_name"] == model_name:
-                            model_to_test["simulate"] = False
-                            model_to_test["translate"] = False
-                            skipped_ref += 1
-                logger.info("Added %s models to whitelist config already tested in IBPSA.", skipped_ref)
 
             response = self.ut.run()
 
@@ -131,6 +126,27 @@ class BuildingspyRegressionCheck:
         else:
             logger.info(f'Regression test was successful ')
             return 0
+
+class WhitelistTester(regression.Tester):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.whitelist_models = []
+
+    def _write_runscripts(self):
+        skipped_ref = 0
+        from copy import deepcopy
+        _data_copy = deepcopy(self._data)
+        for model_name in self._whitelist_models:
+            for model_to_test in _data_copy:
+                if model_to_test["model_name"] == model_name:
+                    model_to_test["simulate"] = False
+                    model_to_test["translate"] = False  # Used in write_runscript "or"
+                    model_to_test["exportFMU"] = False  # Used in write_runscript "or"
+                    skipped_ref += 1
+        self._data = _data_copy
+        logger.info("Added %s models to whitelist config already tested in IBPSA.", skipped_ref)
+        super()._write_runscripts()
 
 
 class ReferenceModel:
