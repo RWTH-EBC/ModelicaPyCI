@@ -135,18 +135,74 @@ class WhitelistTester(regression.Tester):
 
     def _write_runscripts(self):
         skipped_ref = 0
-        from copy import deepcopy
-        _data_copy = deepcopy(self._data)
-        for model_name in self.whitelist_models:
-            for model_to_test in _data_copy:
-                if model_to_test["model_name"] == model_name:
-                    model_to_test["simulate"] = False
-                    model_to_test["translate"] = False  # Used in write_runscript "or"
-                    model_to_test["exportFMU"] = False  # Used in write_runscript "or"
-                    skipped_ref += 1
-        self._data = _data_copy
+        nUniTes = 0
+
+        # Build array of models that need to be translated, simulated, or exported as an FMU
+        tra_data = []
+        if self._modelica_tool == 'dymola':
+            for dat in self._data:
+                if self._isPresentAndTrue('translate', dat[self._modelica_tool]) or self._isPresentAndTrue(
+                        'exportFMU', dat[self._modelica_tool]):
+                    if dat['model_name'] not in self.whitelist_models:
+                        tra_data.append(dat)
+                    else:
+                        skipped_ref += 1
+        elif self._modelica_tool != 'dymola':
+            for dat in self._data:
+                if self._isPresentAndTrue('translate', dat[self._modelica_tool]):
+                    tra_data.append(dat)
+        else:
+            raise RuntimeError("Tool is not supported.")
         logger.info("Added %s models to whitelist config already tested in IBPSA.", skipped_ref)
-        super()._write_runscripts()
+
+        # Count how many tests need to be translated.
+        nTes = len(tra_data)
+        # Reduced the number of processors if there are fewer examples than processors
+        if nTes < self._nPro:
+            self.setNumberOfThreads(nTes)
+
+        # Print number of processors
+        print(
+            f"Using {self._nPro} of {multiprocessing.cpu_count()} processors to run unit tests for {self._modelica_tool}.")
+
+        # Create temporary directories. This must be called after setNumberOfThreads.
+        if not self._useExistingResults:
+            self._setTemporaryDirectories()
+
+        for iPro in range(self._nPro):
+            for i in range(iPro, nTes, self._nPro):
+                # Store ResultDirectory into data dict.
+                tra_data[i]['ResultDirectory'] = self._temDir[iPro]
+                # This directory must also be copied into the original data structure.
+                found = False
+                for k in range(len(self._data)):
+                    if self._data[k]['ScriptFile'] == tra_data[i]['ScriptFile']:
+                        self._data[k]['ResultDirectory'] = tra_data[i]['ResultDirectory']
+                        found = True
+                        break
+                if not found:
+                    raise RuntimeError(
+                        f"Failed to find the original data for {tra_data[i]['ScriptFile']}")
+
+        for iPro in range(self._nPro):
+
+            tra_data_pro = []
+            for i in range(iPro, nTes, self._nPro):
+                # Copy data used for this process only.
+                tra_data_pro.append(tra_data[i])
+
+            if self._modelica_tool == 'dymola':
+                # Case for dymola
+                self._write_runscript_dymola(iPro, tra_data_pro)
+
+            nUniTes = nUniTes + self._write_python_runscripts(iPro, tra_data_pro)
+            self._write_run_all_script(iPro, tra_data_pro)
+
+        if nUniTes == 0:
+            raise RuntimeError(
+                f"Wrong invocation, generated {nUniTes} unit tests. There seem to be no model to translate.")
+
+        print("Generated {} regression tests.\n".format(nUniTes))
 
 
 class ReferenceModel:
