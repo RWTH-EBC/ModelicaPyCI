@@ -162,6 +162,7 @@ class WhitelistTester(regression.Tester):
             self.setNumberOfThreads(nTes)
 
         # Print number of processors
+        import multiprocessing
         print(
             f"Using {self._nPro} of {multiprocessing.cpu_count()} processors to run unit tests for {self._modelica_tool}.")
 
