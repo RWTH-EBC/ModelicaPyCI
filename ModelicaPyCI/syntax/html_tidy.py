@@ -583,10 +583,11 @@ def call_read_log(html_error_log, html_correct_log):
     err_list = read_log_file(html_error_log)
     var = _write_exit(err_list=err_list)
     config_structure.create_path(CI_CONFIG.get_dir_path("result"), CI_CONFIG.get_file_path("result", "syntax_dir"))
-    config_structure.prepare_data(del_flag=True,
-                                  source_target_dict={html_error_log: CI_CONFIG.get_file_path("result", "syntax_dir"),
-                                                      html_correct_log: CI_CONFIG.get_file_path("result",
-                                                                                                "syntax_dir")})
+    config_structure.prepare_data(
+        del_flag=True,
+        source_target_dict={html_error_log: CI_CONFIG.get_file_path("result", "syntax_dir"),
+                            html_correct_log: CI_CONFIG.get_file_path("result",
+                                                                      "syntax_dir")})
     return var
 
 
@@ -709,4 +710,7 @@ if __name__ == '__main__':
                 html_error_log=html_tidy_check.html_error_log,
                 html_correct_log=html_tidy_check.html_correct_log
             )
-            exit(variable)
+            if args.correct_overwrite_flag:
+                exit(0)
+            else:
+                exit(variable)
