@@ -154,6 +154,13 @@ class WhitelistTester(regression.Tester):
         else:
             raise RuntimeError("Tool is not supported.")
         logger.info("Added %s models to whitelist config already tested in IBPSA.", skipped_ref)
+        # Consider at least one case to avoid RuntimeError
+        if len(tra_data) == 0:
+            for dat in self._data:
+                if self._isPresentAndTrue('translate', dat[self._modelica_tool]) or self._isPresentAndTrue(
+                        'exportFMU', dat[self._modelica_tool]):
+                    tra_data.append(dat)
+                    break
 
         # Count how many tests need to be translated.
         nTes = len(tra_data)
