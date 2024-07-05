@@ -11,7 +11,6 @@ from ModelicaPyCI.utils import logger
 
 from pathlib import Path
 
-
 # ! /usr/bin/env python3.6
 # -*- coding: utf-8 -*-
 """View errors in the HTML code of a Modelica .mo file
@@ -55,7 +54,6 @@ class HtmlTidy:
     def __init__(self,
                  package: str,
                  correct_overwrite: bool,
-                 correct_backup: bool,
                  log: bool,
                  correct_view: bool,
                  library: str,
@@ -65,7 +63,6 @@ class HtmlTidy:
         Args:
             package (): package to test
             correct_overwrite (): argument (default:false) overwrite models that failed html test
-            correct_backup ():  argument(default:false) write a backup of a library
             log (): argument(default:false): write a html log of the html check
             correct_view (): argument(default:false): print models that failed html test
             library ():  library to test
@@ -74,7 +71,6 @@ class HtmlTidy:
         """
         self.package = package
         self.correct_overwrite = correct_overwrite
-        self.correct_backup = correct_backup
         self.log = log
         self.correct_view = correct_view
         self.library = library
@@ -88,94 +84,43 @@ class HtmlTidy:
             create_flag=True
         )
 
-    def _get_html_model(self):
-        """
-        Returns: return models to check
-        """
-        library_list = _get_library_model(library=self.library, package=self.package)
-        if self.filter_whitelist is True:
-            whitelist_library_list = _get_whitelist_library_model()
-        else:
-            whitelist_library_list = []
-        html_model_list = _remove_whitelist_model(library_list=library_list,
-                                                  whitelist_library_list=whitelist_library_list)
-        return html_model_list
-
-    def run_files(self):
-        """
-        Make sure that the parameter rootDir points to a Modelica package.
-        Write errors to error message.
-        """
-        file_counter = 0
-        html_model_list = self._get_html_model()
-        for model in html_model_list:
-            model_file = f'{model[:model.rfind(".mo")].replace(".", os.sep)}.mo'
-            correct_code, error_list, html_correct_code, html_code = _getInfoRevisionsHTML(model_file=model_file)
-            if self.correct_backup:
-                self._call_backup_old_files(model_file=model_file,
-                                            document_corr=correct_code,
-                                            file_counter=file_counter)
-            if len(error_list) > 0 and error_list is not None:
-                if self.correct_overwrite:
-                    logger.error(f'Error in file {model_file} with error:')
-                    for error in error_list:
-                        logger.error(f'\n{error}\n')
-                    logger.info(f'Overwrite model: {model_file}\n')
-                    _call_correct_overwrite(model_name=model_file, document_corr=correct_code)
-                    if self.log:
-                        correct_code, error_list, html_correct_code, html_code = _getInfoRevisionsHTML(
-                            model_file=model_file)
-                        self._call_write_log(model_file=model_file,
-                                             error_list=error_list,
-                                             html_correct_code=html_correct_code,
-                                             html_code=html_code)
-                if self.correct_view:
-                    _call_correct_view(model_file=model_file,
-                                       error_list=error_list,
-                                       html_correct_code=html_correct_code,
-                                       html_code=html_code)
-                    if self.log:
-                        self._call_write_log(model_file=model_file,
-                                             error_list=error_list,
-                                             html_correct_code=html_correct_code,
-                                             html_code=html_code)
-
     def check_html_files(self, model_list: list = None):
         file_counter = 0
-        if model_list is not None and len(model_list) > 0:
-            for model in model_list:
-                model_file = Path(
-                    model.replace(".", os.sep) + ".mo")  # todo: das kann weg, wenn ich sort angepasst haben
-                correct_code, error_list, html_correct_code, html_code = _getInfoRevisionsHTML(
-                    model_file=model_file)
-                if self.correct_backup:
-                    self._call_backup_old_files(model_file=model_file,
-                                                document_corr=correct_code,
-                                                file_counter=file_counter)
-                if len(error_list) > 0:
-                    if self.correct_overwrite:
-                        logger.error(f'Error in file {model_file} with error:')
-                        for error in error_list:
-                            logger.error(f'\n{error}\n')
-                        logger.info(f'Overwrite model: {model_file}\n')
-                        _call_correct_overwrite(model_name=model_file, document_corr=correct_code)
-                        if self.log:
-                            correct_code, error_list, html_correct_code, html_code = _getInfoRevisionsHTML(
-                                model_file=model_file)
-                            self._call_write_log(model_file=model_file,
-                                                 error_list=error_list,
-                                                 html_correct_code=html_correct_code,
-                                                 html_code=html_code)
-                    if self.correct_view:
-                        _call_correct_view(model_file=model_file,
-                                           error_list=error_list,
-                                           html_correct_code=html_correct_code,
-                                           html_code=html_code)
-                        if self.log:
-                            self._call_write_log(model_file=model_file,
-                                                 error_list=error_list,
-                                                 html_correct_code=html_correct_code,
-                                                 html_code=html_code)
+        if model_list is None or len(model_list) == 0:
+            return
+        for model in model_list:
+            model_file = Path(model.replace(".", os.sep) + ".mo")
+            correct_code, error_list, html_correct_code, html_code = _getInfoRevisionsHTML(
+                model_file=model_file)
+            if len(error_list) == 0:
+                continue
+            if self.correct_overwrite:
+                # Filter errors which are ignored:
+                filter_error_list = []
+                for error in error_list:
+                    if error_is_not_on_whitelist(error):
+                        logger.error(f'Error in file {model_file} with error: {error}')
+                        filter_error_list.append(error)
+                if filter_error_list:
+                    logger.info(f'Overwrite model: {model_file}')
+                    _call_correct_overwrite(model_name=model_file, document_corr=correct_code)
+                if self.log:
+                    correct_code, error_list, html_correct_code, html_code = _getInfoRevisionsHTML(
+                        model_file=model_file)
+                    self._call_write_log(model_file=model_file,
+                                         error_list=error_list,
+                                         html_correct_code=html_correct_code,
+                                         html_code=html_code)
+            if self.correct_view:
+                _call_correct_view(model_file=model_file,
+                                   error_list=error_list,
+                                   html_correct_code=html_correct_code,
+                                   html_code=html_code)
+                if self.log:
+                    self._call_write_log(model_file=model_file,
+                                         error_list=error_list,
+                                         html_correct_code=html_correct_code,
+                                         html_code=html_code)
 
     def _call_write_log(self, model_file, error_list, html_correct_code, html_code):
         """
@@ -190,8 +135,8 @@ class HtmlTidy:
         if len(error_list) > 0 and error_list is not None:
             with open(f'{self.html_error_log}', "a", encoding="utf-8") as error_log_file, open(
                     f'{self.html_correct_log}', "a", encoding="utf-8") as correct_log_file:
-                logger.error(f'Error-log-file is saved in {self.html_error_log}')
-                logger.error(f'Correct-log-file is saved in {self.html_correct_log}')
+                # logger.error(f'Error-log-file is saved in {self.html_error_log}')
+                # logger.error(f'Correct-log-file is saved in {self.html_correct_log}')
                 error_log_file.write(f'\n---- {model_file} ----')
                 correct_log_file.write(
                     f'\n---- {model_file} ----'
@@ -203,57 +148,6 @@ class HtmlTidy:
                 for error in error_list:
                     error_log_file.write(f'\n{error}\n')
                     correct_log_file.write(f'\n{error}\n')
-
-    def _call_backup_old_files(self, model_file, document_corr, file_counter):
-        """
-        This function backups the root folder and creates the corrected files
-        Args:
-            model_file:
-            document_corr:
-            file_counter:
-        """
-        root_dir = self.package.replace(".", os.sep)
-        if os.path.exists(root_dir + "_backup") is False and file_counter == 1:
-            shutil.copytree(root_dir, root_dir + "_backup")
-            logger.info(f'You can find your backup under {root_dir}_backup')
-        os.remove(model_file)
-        newfile = open(model_file, "w+b")
-        newfile.write(document_corr.encode("utf-8"))
-
-
-def _get_whitelist_library_model():
-    """
-    Returns: models from html whitelist, if whitelist not found return an empty list
-    """
-    whitelist_library_list = []
-    try:
-        file = open(CI_CONFIG.get_file_path("whitelist", "ibpsa_file"), "r")
-        lines = file.readlines()
-        file.close()
-        for line in lines:
-            if line.find(".mo") > -1:
-                line = line.replace("\n", "")
-                whitelist_library_list.append(line)
-        return whitelist_library_list
-    except IOError:
-        logger.error(f'Error: File {CI_CONFIG.get_file_path("whitelist", "ibpsa_file")} '
-                     f'does not exist. Check without a whitelist.')
-        return whitelist_library_list
-
-
-def _get_library_model(package, library):
-    """
-    Returns: library models to check
-    """
-    library_list = []
-    for subdir, dirs, files in os.walk(package.replace(".", os.sep)):
-        for file in files:
-            filepath = subdir + os.sep + file
-            if filepath.endswith(".mo"):
-                model = filepath.replace(os.sep, ".")
-                model = model[model.rfind(library):]
-                library_list.append(model)
-    return library_list
 
 
 def _getInfoRevisionsHTML(model_file):
@@ -458,14 +352,11 @@ def correct_th_align(line):
 def _call_correct_overwrite(model_name, document_corr):
     """
     This function overwrites the old modelica files with the corrected files
-    Args:
-        model_name ():
-        document_corr ():
     """
     os.remove(model_name)
     newfile = open(model_name, "w+b")
     newfile.write(document_corr.encode("utf-8"))
-
+    newfile.close()
 
 def correct_font(line):
     """
@@ -629,6 +520,18 @@ def _remove_whitelist_model(library_list, whitelist_library_list):
     return library_list
 
 
+def error_is_not_on_whitelist(error: str):
+    warning_table = f'Warning: The summary attribute on the <table> element is obsolete in HTML5'
+    warning_align = f'Warning: <p> attribute "align" not allowed for HTML5'
+    warning_img = f'Warning: <img> lacks "alt" attribute'
+    warning_th_align = f' Warning: <th> attribute "align" not allowed for HTML5'
+    except_warning_list = [warning_img, warning_align, warning_table, warning_th_align]
+    for warning in except_warning_list:
+        if error.find(warning) > -1:
+            return True
+    return False
+
+
 def read_log_file(html_error_log):
     """
     read logfile for possible errors
@@ -638,12 +541,8 @@ def read_log_file(html_error_log):
         lines = log_file.readlines()
 
     err_list = []
-    warning_table = f'Warning: The summary attribute on the <table> element is obsolete in HTML5'
+    # Todo: What for?
     warning_font = f'Warning: <font> element removed from HTML5'
-    warning_align = f'Warning: <p> attribute "align" not allowed for HTML5'
-    warning_img = f'Warning: <img> lacks "alt" attribute'
-    warning_th_align = f' Warning: <th> attribute "align" not allowed for HTML5'
-    except_warning_list = [warning_img, warning_align, warning_table, warning_th_align]
     warning_list = [warning_font]
 
     for line in lines:
@@ -655,11 +554,8 @@ def read_log_file(html_error_log):
         if line.find("--") > -1 and line.find(".mo") > -1:
             continue
         elif line.find("Warning") > -1:
-            err_list.append(line)
-            for warning in except_warning_list:
-                if line.find(warning) > -1:
-                    err_list.remove(line)
-                    continue
+            if not error_is_not_on_whitelist(line):
+                err_list.append(line)
     return err_list
 
 
@@ -674,8 +570,6 @@ def parse_args():
     # [ bool - flag]
     parser.add_argument("--correct-overwrite-flag", action="store_true", default=False,
                         help="correct html code in modelica files and overwrite old files")
-    parser.add_argument("--correct-backup-flag", action="store_true", default=False,
-                        help="backup old files")
     parser.add_argument("--log-flag", action="store_true",
                         default=True, help="create logfile of model with errors")
     parser.add_argument("--correct-view-flag", action="store_true", default=False,
@@ -685,32 +579,40 @@ def parse_args():
 
 
 if __name__ == '__main__':
+    import sys
+
+    os.chdir(r"D:\04_git\AixLib")
+    os.environ["CI_PYTHON_CONFIG_FILE"] = r"ci/config/modelica_py_ci_config.toml"
+    sys.argv = "ModelicaPyCI.syntax.html_tidy --filter-whitelist-flag --correct-overwrite-flag --log-flag --whitelist-library IBPSA --library AixLib --packages Airflow BoundaryConditions Controls DataBase Electrical Fluid Media Systems ThermalZones Types Utilities".split(
+        " ")
     args = parse_args()
 
     config_structure.create_path(CI_CONFIG.get_dir_path("ci_files"))
     config_structure.create_files(CI_CONFIG.get_file_path("ci_files", "exit_file"))
+    max_exit = 0
     for PACKAGE in args.packages:
-        html_tidy_check = HtmlTidy(package=PACKAGE,
-                                   correct_overwrite=args.correct_overwrite_flag,
-                                   correct_backup=args.correct_backup_flag,
-                                   log=args.log_flag,
-                                   correct_view=args.correct_view_flag,
-                                   library=args.library,
-                                   whitelist_library=args.whitelist_library,
-                                   filter_whitelist=args.filter_whitelist_flag)
+        html_tidy_check = HtmlTidy(
+            package=PACKAGE,
+            correct_overwrite=args.correct_overwrite_flag,
+            log=args.log_flag,
+            correct_view=args.correct_view_flag,
+            library=args.library,
+            whitelist_library=args.whitelist_library,
+            filter_whitelist=args.filter_whitelist_flag)
 
-        html_model = mo.get_model_list(library=args.library,
-                                       package=PACKAGE,
-                                       filter_whitelist_flag=args.filter_whitelist_flag,
-                                       root_package=Path(args.library))
-        html_tidy_check.run_files()
+        html_model = mo.get_model_list(
+            library=args.library,
+            package=PACKAGE,
+            filter_whitelist_flag=args.filter_whitelist_flag
+        )
         html_tidy_check.check_html_files(model_list=html_model)
         if args.log_flag is True:
             variable = call_read_log(
                 html_error_log=html_tidy_check.html_error_log,
                 html_correct_log=html_tidy_check.html_correct_log
             )
-            if args.correct_overwrite_flag:
-                exit(0)
-            else:
-                exit(variable)
+            max_exit = max(variable, max_exit)
+    if args.correct_overwrite_flag:
+        exit(0)
+    else:
+        exit(max_exit)
