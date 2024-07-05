@@ -579,12 +579,6 @@ def parse_args():
 
 
 if __name__ == '__main__':
-    import sys
-
-    os.chdir(r"D:\04_git\AixLib")
-    os.environ["CI_PYTHON_CONFIG_FILE"] = r"ci/config/modelica_py_ci_config.toml"
-    sys.argv = "ModelicaPyCI.syntax.html_tidy --filter-whitelist-flag --correct-overwrite-flag --log-flag --whitelist-library IBPSA --library AixLib --packages Airflow BoundaryConditions Controls DataBase Electrical Fluid Media Systems ThermalZones Types Utilities".split(
-        " ")
     args = parse_args()
 
     config_structure.create_path(CI_CONFIG.get_dir_path("ci_files"))
