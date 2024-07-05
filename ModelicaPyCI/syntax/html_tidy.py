@@ -493,11 +493,11 @@ def _write_exit(err_list):
         exit_file = open(CI_CONFIG.get_file_path("ci_files", "exit_file"), "w")
         if len(err_list) > 0:
             logger.error(f'Syntax Error: Check HTML-logfile')
-            exit_file.write("exit 1")
+            exit_file.write("Syntax Error")
             var = 1
         else:
             logger.info(f'HTML Check was successful!')
-            exit_file.write("exit 0")
+            exit_file.write("successful")
             var = 0
         exit_file.close()
         return var
