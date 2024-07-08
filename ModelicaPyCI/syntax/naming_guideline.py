@@ -96,6 +96,7 @@ class NamingGuidelineConfig(BaseModel):
         "C": "capacity",
         "lambda": "conductivity",
         "height": "height",
+        "Height": "height",
         "U": "energy",
         "nu": "viscosity",
         "lat": "latitude",
@@ -118,7 +119,8 @@ class NamingGuidelineConfig(BaseModel):
         "tau": "transmittance",
         "vel": "velocity",
         "V": ["volume", "voltage"],
-        "width": "width"
+        "width": "width",
+        "Width": "width"
     }
 
     two_character_words: List[str] = [
@@ -163,7 +165,7 @@ class NamingGuidelineConfig(BaseModel):
         "_const"
     ]
 
-    SPECIAL_STARTS: List[str] = [
+    special_starts: List[str] = [
         "use_",
         "port_",
         "have_",
@@ -275,6 +277,12 @@ def get_expressions(filepath_model: str, naming_config: NamingGuidelineConfig):
     with open(filepath_model, "r", encoding="utf-8") as file:
         file.seek(0)
         script = file.read()
+
+    # Remove multi-line comments
+    # Define the regular expression pattern to match content between /* and */
+    pattern = r'/\*.*?\*/'
+    script = re.sub(pattern, '', script, flags=re.DOTALL).strip()
+
     # Get position of "equation" or "initial equation"
     equation_start = re.search(
         r'\nequation\n|\ninitial equation\n|\ninitial algorithm\n|\nalgorithm\n',
@@ -373,8 +381,8 @@ def check_if_name_is_ok(name: str, naming_config: NamingGuidelineConfig):
                 name_parts = [s.replace(part, part[:-len(special_end)]) for s in name_parts]
                 part = part[:-len(special_end)]
                 break
-        # separates SPECIAL_STARTS from parts
-        for special_start in naming_config.SPECIAL_STARTS:
+        # separates special_starts from parts
+        for special_start in naming_config.special_starts:
             if part.startswith(special_start):
                 part = part[len(special_start):]
                 break
