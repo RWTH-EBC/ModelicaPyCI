@@ -133,11 +133,15 @@ class PullRequestGithub(object):
 
         if response.status_code != 200:
             logger.error("Error retrieving comments (%s): %s", response.status_code, response.text)
+            return []
         return response.json()
 
 
 def post_pr_guideline(pull_request: PullRequestGithub, library: str, page_url: str, github_repository: str):
     comments = pull_request.get_pull_request_comments()
+    if not comments:
+        logger.info("No PR associated to branch, won't post comment")
+        return
     for comment in comments:
         if "Our CI pipeline will help you finalize your contribution" in comment['body']:
             logger.info(
