@@ -52,7 +52,8 @@ class CheckPythonDymola:
             logger.error(f'Found no models.')
             return error_model_message_dic
         results = python_dymola_interface.parallel_model_check(
-            dymola_api=self.dymola_api, dym_models=check_model_list, sim_ex_flag=sim_ex_flag
+            dymola_api=self.dymola_api, dym_models=check_model_list, sim_ex_flag=sim_ex_flag,
+            use_mp=False
         )
         for dym_model, result in zip(check_model_list, results):
             if result is True:
@@ -420,7 +421,7 @@ if __name__ == '__main__':
     DYMOLA_API = python_dymola_interface.load_dymola_api(
         packages=[LIBRARY_PACKAGE_MO] + ARGS.additional_libraries_to_load,
         min_number_of_unused_licences=ARGS.min_number_of_unused_licences,
-        startup_mos=ARGS.startup_mos, use_mp=True
+        startup_mos=ARGS.startup_mos, use_mp=False
     )
 
     if ARGS.create_whitelist_flag is False:

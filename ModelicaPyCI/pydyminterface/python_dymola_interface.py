@@ -152,12 +152,13 @@ def add_libraries_to_load_from_mos_to_modelicapath(startup_mos_path):
     return libraries_to_load
 
 
-def parallel_model_check(dymola_api: DymolaAPI, sim_ex_flag: bool, dym_models: list):
-    results = dymola_api.pool.map(
-        check_or_simulate,
-        [dict(dymola_api=dymola_api, dym_model=dym_model, sim_ex_flag=sim_ex_flag)
-         for dym_model in dym_models]
-    )
+def parallel_model_check(dymola_api: DymolaAPI, sim_ex_flag: bool, dym_models: list, use_mp: bool):
+    kwargs = [dict(dymola_api=dymola_api, dym_model=dym_model, sim_ex_flag=sim_ex_flag)
+             for dym_model in dym_models]
+    if use_mp:
+        results = dymola_api.pool.map(check_or_simulate, kwargs)
+    else:
+        results = [check_or_simulate(kwarg) for kwarg in kwargs]
     return results
 
 
