@@ -118,7 +118,7 @@ def _start_dymola_api(packages: list, startup_mos: str = None, use_mp: bool = Fa
     else:
         dymola_exe_path = "/usr/local/bin/dymola"
     if use_mp:
-        n_cpu = min(multiprocessing.cpu_count(), 8)  # No more than 8 cores for stability
+        n_cpu = min(multiprocessing.cpu_count(), 4)  # No more than 8 cores for stability
     else:
         n_cpu = 1
     return DymolaAPI(
@@ -128,7 +128,8 @@ def _start_dymola_api(packages: list, startup_mos: str = None, use_mp: bool = Fa
         model_name=None,
         show_window=False,
         mos_script_pre=startup_mos,
-        n_cpu=n_cpu
+        n_cpu=n_cpu,
+        time_delay_between_starts=1
     )
 
 
