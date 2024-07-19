@@ -2,6 +2,7 @@ import os
 import sys
 import time
 from pathlib import Path
+import multiprocessing
 
 from ebcpy import DymolaAPI
 
@@ -11,13 +12,14 @@ from ModelicaPyCI.utils import logger
 def load_dymola_api(
         packages: list,
         startup_mos: str = None,
-        min_number_of_unused_licences: int = 1
+        min_number_of_unused_licences: int = 1,
+        use_mp: bool = False
 ) -> DymolaAPI:
     min_number_of_unused_licences = int(min_number_of_unused_licences)
     if min_number_of_unused_licences > 0:
         check_enough_licenses_available(min_number_of_unused_licences=min_number_of_unused_licences)
     dymola_api = _start_dymola_api(
-        packages=packages, startup_mos=startup_mos
+        packages=packages, startup_mos=startup_mos, use_mp=use_mp
     )
     logger.info(f'Using Dymola port {str(dymola_api.dymola._portnumber)}.')
     dymola_api.dymola.ExecuteCommand("Advanced.TranslationInCommandLog:=true;")
@@ -110,18 +112,23 @@ def check_server_connection(url, port, timeout=5):
         return False
 
 
-def _start_dymola_api(packages: list, startup_mos: str = None) -> DymolaAPI:
+def _start_dymola_api(packages: list, startup_mos: str = None, use_mp: bool = False) -> DymolaAPI:
     if "win" in sys.platform:
         dymola_exe_path = None
     else:
         dymola_exe_path = "/usr/local/bin/dymola"
+    if use_mp:
+        n_cpu = min(multiprocessing.cpu_count(), 8)  # No more than 8 cores for stability
+    else:
+        n_cpu = 1
     return DymolaAPI(
         working_directory=os.getcwd(),
         packages=packages,
         dymola_exe_path=dymola_exe_path,
         model_name=None,
         show_window=False,
-        mos_script_pre=startup_mos
+        mos_script_pre=startup_mos,
+        n_cpu=n_cpu
     )
 
 
@@ -142,3 +149,30 @@ def add_libraries_to_load_from_mos_to_modelicapath(startup_mos_path):
     os.environ["MODELICAPATH"] = ":".join(libraries_to_load)
     logger.info("Changed MODELICAPATH to: %s", os.environ["MODELICAPATH"])
     return libraries_to_load
+
+
+def parallel_model_check(dymola_api: DymolaAPI, sim_ex_flag: bool, dym_models: list):
+    results = dymola_api.pool.map(
+        check_or_simulate,
+        [dict(dymola_api=dymola_api, dym_model=dym_model, sim_ex_flag=sim_ex_flag)
+         for dym_model in dym_models]
+    )
+    return results
+
+
+def check_or_simulate(kwargs: dict):
+    dymola_api = kwargs["dymola_api"]
+    dym_model = kwargs["dym_model"]
+    sim_ex_flag = kwargs["sim_ex_flag"]
+    try:
+        res = dymola_api.dymola.checkModel(dym_model, simulate=sim_ex_flag)
+        if res is True:
+            return True
+        # Second test for model
+        sec_result = dymola_api.dymola.checkModel(dym_model, simulate=sim_ex_flag)
+        if sec_result is True:
+            return True
+        log = dymola_api.dymola.getLastError()
+        return log
+    except Exception as ex:
+        logger.error("Simulation failed: " + str(ex))

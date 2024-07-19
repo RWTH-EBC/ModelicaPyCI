@@ -51,28 +51,21 @@ class CheckPythonDymola:
         if len(check_model_list) == 0 or check_model_list is None:
             logger.error(f'Found no models.')
             return error_model_message_dic
+        results = python_dymola_interface.parallel_model_check(
+            dymola_api=self.dymola_api, dym_models=check_model_list, sim_ex_flag=sim_ex_flag
+        )
+        for dym_model, result in zip(check_model_list, results):
+            if result is True:
+                logger.info(f'Successful:  {dym_model}')
+            else:
+                log = result
+                err_list, warning_list = sort_warnings_from_log(log=log, exception_list=exception_list)
+                if len(err_list) > 0:
+                    logger.error(f' {dym_model} \n{err_list}')
+                if len(warning_list) > 0:
+                    logger.warning(f'Warning:  {dym_model} \n{warning_list}')
+                error_model_message_dic[dym_model] = log
 
-        for dym_model in check_model_list:
-            try:
-                res = self.dymola_api.dymola.checkModel(dym_model, simulate=sim_ex_flag)
-                if res is True:
-                    logger.info(f'Successful:  {dym_model}')
-                if res is False:
-                    # Second test for model
-                    sec_result = self.dymola_api.dymola.checkModel(dym_model, simulate=sim_ex_flag)
-                    if sec_result is True:
-                        logger.info(f'Successful:  {dym_model}')
-                    if sec_result is False:
-                        log = self.dymola_api.dymola.getLastError()
-                        err_list, warning_list = sort_warnings_from_log(log=log, exception_list=exception_list)
-                        if len(err_list) > 0:
-                            logger.error(f' {dym_model} \n{err_list}')
-                        if len(warning_list) > 0:
-                            logger.warning(f'Warning:  {dym_model} \n{warning_list}')
-                        error_model_message_dic[dym_model] = log
-            except Exception as ex:
-                logger.error("Simulation failed: " + str(ex))
-                continue
         self.dymola_api.dymola.savelog(f'{self.dymola_log}')
         return error_model_message_dic
 
@@ -427,7 +420,7 @@ if __name__ == '__main__':
     DYMOLA_API = python_dymola_interface.load_dymola_api(
         packages=[LIBRARY_PACKAGE_MO] + ARGS.additional_libraries_to_load,
         min_number_of_unused_licences=ARGS.min_number_of_unused_licences,
-        startup_mos=ARGS.startup_mos
+        startup_mos=ARGS.startup_mos, use_mp=True
     )
 
     if ARGS.create_whitelist_flag is False:
