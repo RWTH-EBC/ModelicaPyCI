@@ -1,4 +1,6 @@
 import argparse
+import os
+
 from ModelicaPyCI.structure import config_structure
 from ModelicaPyCI.api_script.api_github import clone_repository
 from ModelicaPyCI.structure import sort_mo_model as mo
@@ -6,7 +8,7 @@ from ModelicaPyCI.load_global_config import CI_CONFIG
 
 
 def write_whitelist(model_list, library: str, whitelist_library: str):
-    model_list = [model.replace(whitelist_library, library) for model in model_list]
+    model_list = [model.replace(whitelist_library, library) + "\n" for model in model_list]
     with open(CI_CONFIG.get_file_path("whitelist", "ibpsa_file"), "w") as file:
         file.writelines(model_list)
 

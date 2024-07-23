@@ -334,23 +334,11 @@ if __name__ == '__main__':
     if args.ibpsa_merge_flag is True:
         MESSAGE = (
             f'**Following you will find the instructions for the IBPSA merge:**\\n  '
-            f'1. Please pull this branch ibpsamerge to your local repository.\\n '
-            f'2. As an additional safety check please open the {args.library} library in '
-            f'dymola and check whether errors due to false package orders may have occurred. '
-            f'You do not need to translate the whole library or simulate any models. '
-            f'This was already done by the CI.\\n '
-            f'3. If you need to fix bugs or perform changes to the models of the {args.library}, '
-            f'push these changes using this commit message to prevent to run the automatic '
-            f'IBPSA merge again: **`fix errors manually`**. \\n '
-            f'4. You can also output the different reference files between the IBPSA and '
-            f'the {args.library} using the CI or perform an automatic update of the referent files '
-            f'which lead to problems. To do this, use one of the following commit messages '
-            f'\\n **`ci_dif_ref`** \\n  **`ci_update_ref`** \\n '
-            f'The CI outputs the reference files as artifacts in GitLab. '
-            f'To find them go to the triggered pipeline git GitLab and find the '
-            f'artifacts as download on the right site. \\n '
-            f'5. If the tests in the CI have passed successfully, merge the branch ibpsamerge '
-            f'to development branch. **Delete** the Branch {args.working_branch}'
+            f'1. Please pull this branch to your local repository.\\n '
+            f'2. If you need to fix bugs or perform changes to the models of the {args.library}, '
+            f'push these changes using any commit message but the configured merge trigger '
+            f'(default is `ci_trigger_ibpsa`) to prevent to run the automatic IBPSA merge again.\\n '
+            f'3. If the tests in the CI have passed successfully, merge this pull request'
         )
         post_pr(
             pull_request=pull_request,

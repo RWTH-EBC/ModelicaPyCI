@@ -4,6 +4,8 @@ from pathlib import Path
 from ModelicaPyCI.load_global_config import CI_CONFIG
 from ModelicaPyCI.utils import logger
 
+FLAG = '__Dymola_LockedEditing="Model from IBPSA");'
+
 
 def _sort_whitelist_model():
     """
@@ -17,13 +19,11 @@ def _sort_whitelist_model():
         whitelist_lines = file.readlines()
     model_list = []
     for line in whitelist_lines:
-        if len(line) == 1 or line.find("package.mo") > -1 or line.find("package.order") > -1 or line.find(
-                "UsersGuide") > -1:
+        line = line.replace("\n", "")
+        if line.endswith("package") or line.find("UsersGuide") > -1:
             continue
-        else:
-            mo = line.replace(".", os.sep, line.count(".") - 1).lstrip()
-            mo = mo.strip()
-            model_list.append(mo)
+        mo = line.replace(".", os.sep).strip()
+        model_list.append(Path(mo + ".mo"))
     return model_list
 
 
@@ -31,21 +31,20 @@ def call_lock_model():
     """
     lock models
     """
-    mo_li = _sort_whitelist_model()
-    for model in mo_li:
-        if Path(model).is_file():
-            result = get_last_line(model_file=model)
-            if len(result[0]) == 0:
-                continue
-            if result[1] is False:
-                new_content = lock_model(model, result[0])
+    model_list = _sort_whitelist_model()
+    for model in model_list:
+        if model.is_file():
+            model_contents, flag_exists = get_last_line(model_file=model)
+            if not flag_exists:
+                new_content = lock_model(model, model_contents)
                 write_lock_model(model, new_content)
             else:
                 logger.info(f'Already locked: {model}')
                 continue
         else:
-            logger.error(f'\n{model} File does not exist.')
+            logger.error(f'\n{model} file does not exist.')
             continue
+
 
 def get_last_line(model_file):
     """
@@ -54,32 +53,24 @@ def get_last_line(model_file):
         model_file (): file of a model
     Returns:
     """
-    model_part = []
-    flag = '__Dymola_LockedEditing="Model from IBPSA");'
     flag_tag = False
-    try:
-        if Path(model_file).is_file():
-            infile = open(model_file, "r")
-            for lines in infile:
-                model_part.append(lines)
-                if lines.find(flag) > -1:
-                    flag_tag = True
-            infile.close()
-            return model_part, flag_tag
-        else:
-            logger.error(f'\n{model_file}\nFile does not exist.')
-    except IOError:
-        logger.error(f'Error: File {model_file} does not exist.')
+    with open(model_file, "r") as file:
+        model_parts = file.readlines()
+    for line in model_parts:
+        if line.find(FLAG) > -1:
+            flag_tag = True
+    return model_parts, flag_tag
+
 
 def lock_model(model, content):
-    mo = model[model.rfind(os.sep) + 1:model.rfind(".mo")]
+    model_name = model.stem
     last_entry = content[len(content) - 1]
-    flag = '   __Dymola_LockedEditing="Model from IBPSA");'
+    flag = f'   {FLAG}'
     old_html_flag = '</html>"));'
     new_html_flag = '</html>"),  \n' + flag
     old = ');'
     new = ', \n' + flag
-    if last_entry.find(mo) > -1 and last_entry.find("end") > -1:
+    if last_entry.find(model_name) > -1 and last_entry.find("end") > -1:
         flag_lines = content[len(content) - 2]
         if flag_lines.isspace():
             flag_lines = content[len(content) - 3]
@@ -103,23 +94,20 @@ def lock_model(model, content):
 
 
 def write_lock_model(model, new_content):
-    try:
-        logger.info("lock object: " + model)
-        outfile = open(model, 'w')
-        new_content = (' '.join(new_content))
-        outfile.write(new_content)
-        outfile.close()
-    except IOError:
-        logger.error(f'Error: File {model} does not exist.')
-        exit(1)
+    logger.info("lock object: %s", model)
+    with open(model, "w") as file:
+        file.writelines(new_content)
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Lock models.')
-    unit_test_group = parser.add_argument_group("arguments to run class LockModel")
     return parser.parse_args()
 
 
 if __name__ == '__main__':
+    import os
+    os.chdir(r"D:\04_git\AixLib")
+    os.environ["CI_PYTHON_CONFIG_FILE"] = r"D:\04_git\AixLib\ci\config\modelica_py_ci_config.toml"
+
     args = parse_args()
     call_lock_model()

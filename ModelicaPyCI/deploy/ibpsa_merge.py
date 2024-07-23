@@ -263,6 +263,37 @@ def parse_args():
     return parser.parse_args()
 
 
+def compare_old_and_new_whitelist():
+    def find_difference(file1_path, file2_path):
+        """
+        Reads two text files and finds the lines present in the first file but not in the second.
+
+        :param file1_path: Path to the first text file.
+        :param file2_path: Path to the second text file.
+        :return: A set of lines present in the first file but not in the second.
+        """
+        with open(file1_path, 'r') as file1:
+            lines1 = set(file1.readlines())
+
+        with open(file2_path, 'r') as file2:
+            lines2 = set(file2.readlines())
+
+        difference = lines1.difference(lines2)
+
+        return difference
+
+    # Example usage
+    file_path_new = r'D:\04_git\AixLib\ci\whitelist\ibpsa_whitelist.txt'
+    file_path_old = r'D:\04_git\temp_AixLib\ci\whitelist\ibpsa_whitelist.txt'
+    diff_lines = find_difference(file_path_old, file_path_new)
+    return [f.replace("\n", "") for f in diff_lines if not f.endswith(".package\n")]
+
+
+# TODO: List files which are removed from IBPSA
+# TODO: Remove reference results and scripts for these files if present
+# TODO: Move models to obsolete, add obsolete clause, and write conversion script
+
+
 if __name__ == '__main__':
     ARGS = parse_args()
 
