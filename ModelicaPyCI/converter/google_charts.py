@@ -313,7 +313,7 @@ class PlotCharts:
         else:
             path_name = self.funnel_path.joinpath(f"{model}.mat_{var}")
             if not os.path.isdir(path_name):
-                logger.error(f'Cant find folder: {model} with variable {var}')
+                logger.error(f'Cant find folder: {path_name} with variable {var}')
                 return
             logger.info(f'Plot model: {model} with variable: {var}')
             value = read_csv_funnel(path=path_name)

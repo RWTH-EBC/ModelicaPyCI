@@ -472,37 +472,31 @@ def call_read_log(html_error_log, html_correct_log):
     Returns: variable with 0 or 1
     """
     err_list = read_log_file(html_error_log)
-    var = _write_exit(err_list=err_list)
-    config_structure.create_path(CI_CONFIG.get_dir_path("result"), CI_CONFIG.get_file_path("result", "syntax_dir"))
-    config_structure.prepare_data(
-        del_flag=True,
-        source_target_dict={html_error_log: CI_CONFIG.get_file_path("result", "syntax_dir"),
-                            html_correct_log: CI_CONFIG.get_file_path("result",
-                                                                      "syntax_dir")})
-    return var
+    if len(err_list) > 0:
+        config_structure.create_path(CI_CONFIG.get_dir_path("result"), CI_CONFIG.get_file_path("result", "syntax_dir"))
+        config_structure.prepare_data(
+            del_flag=True,
+            source_target_dict={html_error_log: CI_CONFIG.get_file_path("result", "syntax_dir"),
+                                html_correct_log: CI_CONFIG.get_file_path("result", "syntax_dir")})
+        return 1
+    return 0
 
 
-def _write_exit(err_list):
+def _write_exit(var):
     """
     If an entry in the error list exist, the check failed
     Args:
         err_list (): list with error of html check
     Returns: return a variable (if 0: check was successful, 1: check failed)
     """
-    try:
-        exit_file = open(CI_CONFIG.get_file_path("ci_files", "exit_file"), "w")
-        if len(err_list) > 0:
+    with open(CI_CONFIG.get_file_path("ci_files", "exit_file"), "w") as file:
+        if var != 0:
             logger.error(f'Syntax Error: Check HTML-logfile')
-            exit_file.write("Syntax Error")
-            var = 1
+            file.write("Syntax Error")
         else:
             logger.info(f'HTML Check was successful!')
-            exit_file.write("successful")
-            var = 0
-        exit_file.close()
-        return var
-    except IOError:
-        logger.error(f'Error: File {CI_CONFIG.get_file_path("ci_files", "exit_file")} does not exist.')
+            file.write("successful")
+    exit(var)
 
 
 def _remove_whitelist_model(library_list, whitelist_library_list):
@@ -607,6 +601,6 @@ if __name__ == '__main__':
             )
             max_exit = max(variable, max_exit)
     if args.correct_overwrite_flag:
-        exit(0)
+        _write_exit(0)
     else:
-        exit(max_exit)
+        _write_exit(max_exit)
