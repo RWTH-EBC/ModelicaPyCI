@@ -537,4 +537,6 @@ if __name__ == '__main__':
         naming_config=NAMING_CONFIG
     )
     # move_output_to_artifacts
-    shutil.copy(FILENAME, CI_CONFIG.get_file_path("result", "naming_violation_file"))
+    TARGET = CI_CONFIG.get_file_path("result", "naming_violation_file")
+    os.makedirs(TARGET.parent, exist_ok=True)
+    shutil.copy(FILENAME, TARGET)
