@@ -98,7 +98,7 @@ class HtmlTidy:
                 # Filter errors which are ignored:
                 filter_error_list = []
                 for error in error_list:
-                    if error_is_not_on_whitelist(error):
+                    if not error_is_on_whitelist(error):
                         logger.error(f'Error in file {model_file} with error: {error}')
                         filter_error_list.append(error)
                 if filter_error_list:
@@ -514,15 +514,14 @@ def _remove_whitelist_model(library_list, whitelist_library_list):
     return library_list
 
 
-def error_is_not_on_whitelist(error: str):
+def error_is_on_whitelist(error: str):
     warning_table = f'Warning: The summary attribute on the <table> element is obsolete in HTML5'
     warning_align = f'Warning: <p> attribute "align" not allowed for HTML5'
     warning_img = f'Warning: <img> lacks "alt" attribute'
     warning_th_align = f' Warning: <th> attribute "align" not allowed for HTML5'
     except_warning_list = [warning_img, warning_align, warning_table, warning_th_align]
-    for warning in except_warning_list:
-        if error.find(warning) > -1:
-            return True
+    if any(error.find(warning) > -1 for warning in except_warning_list):
+        return True
     return False
 
 
@@ -548,7 +547,7 @@ def read_log_file(html_error_log):
         if line.find("--") > -1 and line.find(".mo") > -1:
             continue
         elif line.find("Warning") > -1:
-            if not error_is_not_on_whitelist(line):
+            if not error_is_on_whitelist(line):
                 err_list.append(line)
     return err_list
 
