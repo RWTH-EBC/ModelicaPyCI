@@ -27,3 +27,4 @@ toml
 buildingspy>=5.1.0
 requests
 PyYAML>=6.0.1
+plotly
