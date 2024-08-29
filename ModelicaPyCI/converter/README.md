@@ -19,7 +19,6 @@ The script visualizes the deviation of failing models that failed the regression
 |--line-matplot|          plot a matlab chart                             |  
 |--new-ref|        Plot new models with new created reference files                               |   
 |--error|      Plot only model with errors                                 |   
-|--show-ref| Plot only model on the interact ci list | 
 |--update-ref| Plot only updated models |  
 |--single-package| Test only the Modelica package Modelica.Package |  
 |--library| Library to test|  
@@ -27,5 +26,4 @@ The script visualizes the deviation of failing models that failed the regression
 |--ref-txt| Take the datas from reference datas |  
 
 #### Example: Execution on gitlab runner (linux)
-    python modelicapyci_tests/CITests/Converter/google_charts.py --line-html --show-ref --single-package AixLib --library AixLib
     python modelicapyci_tests/CITests/Converter/google_charts.py  --create-layout --library AixLib --single-package AixLib
