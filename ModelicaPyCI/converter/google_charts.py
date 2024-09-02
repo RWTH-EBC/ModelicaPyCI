@@ -25,37 +25,15 @@ class PlotCharts:
         self.index_html_file = self.temp_chart_path.joinpath("index.html")
 
     def plot_new_regression_results(self):
-        reference_file_list = charts.get_new_reference_files()
+        reference_file_list = get_new_reference_files()
         new_ref_list = _check_ref_file(reference_file_list=reference_file_list)
         for reference_file in new_ref_list:
-            df = load_txt_to_dataframe(reference_file=reference_file)
+            df = load_txt_to_dataframe(file_path=reference_file)
             reference_file_name = Path(reference_file).stem
             fig = create_new_reference_plot(df=df, reference_file_name=reference_file_name)
             output_file = self.temp_chart_path.joinpath(f"{reference_file_name}.html")
             fig.write_html(output_file)
             logger.info(f"Plot saved under {output_file}")
-
-    def get_new_reference_files(self):
-        """
-        Returns:
-        """
-        new_ref_file = CI_CONFIG.get_file_path("ci_files", "new_create_ref_file")
-        if os.path.isfile(new_ref_file) is False:
-            logger.error(f'File {new_ref_file} does not exist.')
-            return []
-        logger.info(f'Plot results from file {new_ref_file}')
-        with open(new_ref_file, "r") as file:
-            lines = file.read()
-        logger.info("File contents: %s", lines)
-        lines = lines.replace("\n", "").split(" ")
-        reference_list = list()
-        for line in lines:
-            line = line.strip()
-            if line.find(".txt") > -1 and line.find("_"):
-                reference_list.append(line)
-        logger.info("Plotting reference files: %s", reference_list)
-        return reference_list
-
 
     def check_folder_path(self):
         if os.path.isdir(self.funnel_path) is False:
@@ -99,6 +77,25 @@ class PlotCharts:
             with open(self.index_html_file, "w") as file_tmp:
                 file_tmp.write(html_chart)
             logger.info(f'Create html file with reference results.')
+
+
+def get_new_reference_files():
+    new_ref_file = CI_CONFIG.get_file_path("ci_files", "new_create_ref_file")
+    if os.path.isfile(new_ref_file) is False:
+        logger.error(f'File {new_ref_file} does not exist.')
+        return []
+    logger.info(f'Plot results from file {new_ref_file}')
+    with open(new_ref_file, "r") as file:
+        lines = file.read()
+    logger.info("File contents: %s", lines)
+    lines = lines.replace("\n", "").split(" ")
+    reference_list = list()
+    for line in lines:
+        line = line.strip()
+        if line.find(".txt") > -1 and line.find("_"):
+            reference_list.append(line)
+    logger.info("Plotting reference files: %s", reference_list)
+    return reference_list
 
 
 def read_unit_test_log(f_log):
