@@ -255,8 +255,8 @@ class ReferenceModel:
         model_list = list(set(model_list))
         package_list = []
         for model in model_list:
-            logger.info(f'Generate new reference results for model:  {model}')
-            package_list.append(model[:model.rfind(".")])
+            logger.info(f'Generate new reference results for model: {model}')
+            package_list.append(".".join(model.split(".")[:2]))
         package_list = list(set(package_list))
         return package_list, model_list
 
@@ -793,17 +793,17 @@ if __name__ == '__main__':
             )
             continue
         ref_model = ReferenceModel(library=args.library)
-        package_list = []
+        PACKAGE_LIST = []
         if args.ref_list:
             ref_model.write_regression_list()
 
         if args.create_ref:
-            package_list, created_ref_list = ref_model.get_update_model()
-            if not package_list:
+            PACKAGE_LIST, created_ref_list = ref_model.get_update_model()
+            if not PACKAGE_LIST:
                 logger.info("All regression tests for package %s exist", package)
                 continue
-            logger.info(f'Start regression Test.\nTest following packages: {package_list}')
-            val = ref_check.check_regression_test(package_list=package_list, create_results=True)
+            logger.info(f'Start regression Test.\nTest following packages: {PACKAGE_LIST}')
+            val = ref_check.check_regression_test(package_list=PACKAGE_LIST, create_results=True)
             if len(created_ref_list) > 0:
                 for ref in created_ref_list:
                     config_structure.prepare_data(
@@ -816,12 +816,12 @@ if __name__ == '__main__':
         elif args.update_ref:
             ref_list = get_update_ref()
             ref_model.delete_ref_file(ref_list=ref_list)
-            package_list = get_update_package(ref_list=ref_list)
+            PACKAGE_LIST = get_update_package(ref_list=ref_list)
         else:
             config_structure.check_path_setting(ci_files=CI_CONFIG.get_dir_path("ci_files"), create_flag=True)
             config_structure.create_files(CI_CONFIG.get_file_path("ci_files", "exit_file"))
             if args.changed_flag is False:
-                package_list = [package]
+                PACKAGE_LIST = [package]
             if args.changed_flag is True:
                 changed_files_file = create_changed_files_file(repo_root=args.library_root)
 
@@ -831,7 +831,7 @@ if __name__ == '__main__':
                     startup_mos=STARTUP_MOS
                 )
 
-                package_list = mo.get_changed_regression_models(
+                PACKAGE_LIST = mo.get_changed_regression_models(
                     dymola_api=dymola_api,
                     root_package=Path(package.replace(".", os.sep)),
                     library=args.library,
@@ -839,14 +839,14 @@ if __name__ == '__main__':
                     package=package
                 )
         # Start regression test
-        if package_list is None or len(package_list) == 0:
+        if PACKAGE_LIST is None or len(PACKAGE_LIST) == 0:
             if args.changed_flag is False:
                 logger.info('No reference results in package %s', package)
                 continue
             elif args.changed_flag is True:
                 logger.info('No changed models in package %s', package)
                 continue
-        all_packages_list.extend(package_list)
+        all_packages_list.extend(PACKAGE_LIST)
     logger.info(f'Start regression Test.\nTest following packages: {all_packages_list}')
     val = ref_check.check_regression_test(package_list=all_packages_list, create_results=False)
     exit_var = max(exit_var, val)
