@@ -119,8 +119,7 @@ def read_unit_test_log(f_log, library: str):
             # Convert e.g. "*** Error: BESMod_Examples_DesignOptimization_BESNoDHW.txt: Errors during result verification."
             # to BESMod_Examples_DesignOptimization_BESNoDHW
             model = line.replace(error_syntax, "").split(".txt")[0].strip()
-            model = ".".join(model.split("_"))
-            get_model_name_based_on_underscores(name=model, model_names=all_models)
+            model = get_model_name_based_on_underscores(name=model, model_names=all_models)
             for next_line in lines[idx + 1:]:
                 if not next_line.strip().startswith("Absolute error"):
                     break
