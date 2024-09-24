@@ -10,6 +10,7 @@ import plotly.graph_objects as go
 from ModelicaPyCI.load_global_config import CI_CONFIG
 from ModelicaPyCI.structure import config_structure
 from ModelicaPyCI.utils import logger
+from ModelicaPyCI.structure.sort_mo_model import get_models
 from mako.template import Template
 from plotly.subplots import make_subplots
 
@@ -47,7 +48,7 @@ class PlotCharts:
             logger.info(f'Save plot in {self.temp_chart_path}')
 
     def plot_regression_errors(self):
-        model_var_list = read_unit_test_log(self.f_log)
+        model_var_list = read_unit_test_log(self.f_log, library=self.library)
         models = group_models_and_variables(model_var_list)
 
         logger.info('Plot line chart with different reference results for %s models.', len(models))
@@ -98,7 +99,7 @@ def get_new_reference_files():
     return reference_list
 
 
-def read_unit_test_log(f_log):
+def read_unit_test_log(f_log, library: str):
     """
     Read unitTest_log from regressionTest, write variable and model name with difference
     Returns:
@@ -106,6 +107,11 @@ def read_unit_test_log(f_log):
     with open(f_log, "r") as log_file:
         lines = log_file.readlines()
     model_variable_list = list()
+    all_models = get_models(
+        path=Path().joinpath(library),
+        library=library,
+        simulate_flag=False
+    )
     for idx, line in enumerate(lines):
         error_indicator = "Errors during result verification"
         error_syntax = "*** Error: "
@@ -114,6 +120,7 @@ def read_unit_test_log(f_log):
             # to BESMod_Examples_DesignOptimization_BESNoDHW
             model = line.replace(error_syntax, "").split(".txt")[0].strip()
             model = ".".join(model.split("_"))
+            get_model_name_based_on_underscores(name=model, model_names=all_models)
             for next_line in lines[idx + 1:]:
                 if not next_line.strip().startswith("Absolute error"):
                     break
@@ -121,6 +128,18 @@ def read_unit_test_log(f_log):
                 model_variable_list.append((model, variable))
 
     return model_variable_list
+
+
+def get_model_name_based_on_underscores(name: str, model_names: list):
+    parts = name.split("_")
+    joined_model_name = ".".join(parts)
+    if ".".join(parts) in model_names:
+        return joined_model_name
+    model_names_with_underscore = {model.replace("_", "."): model for model in model_names if "_" in model}
+    if joined_model_name not in model_names_with_underscore:
+        raise KeyError("Model not found in all models")
+    return model_names_with_underscore[joined_model_name]
+
 
 def _check_ref_file(reference_file_list):
     """
