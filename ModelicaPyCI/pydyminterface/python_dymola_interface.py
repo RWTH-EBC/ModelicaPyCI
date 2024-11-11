@@ -22,7 +22,6 @@ def load_dymola_api(
         packages=packages, startup_mos=startup_mos, use_mp=use_mp
     )
     logger.info(f'Using Dymola port {str(dymola_api.dymola._portnumber)}.')
-    dymola_api.dymola.ExecuteCommand("Advanced.TranslationInCommandLog:=true;")
 
     lic_counter = 0
     dym_sta_lic_available = dymola_api.license_is_available()
@@ -40,6 +39,13 @@ def load_dymola_api(
             dymola_api.close()
             raise ConnectionError("License is not available, even though minimal "
                                   "number of licenses are apparently free.")
+    dymola_api.dymola.ExecuteCommand("Advanced.TranslationInCommandLog:=true;")
+    success = dymola_api.dymola.ExecuteCommand("Advanced.CompileWith64 = true;")
+    if not success:
+        logger.error(
+            "Could not set Advanced.CompileWith64=true, SPAWN might fail! Current setting is: %s",
+            dymola_api.dymola.ExecuteCommand("Advanced.CompileWith64")
+        )
     return dymola_api
 
 
@@ -154,7 +160,7 @@ def add_libraries_to_load_from_mos_to_modelicapath(startup_mos_path):
 
 def parallel_model_check(dymola_api: DymolaAPI, sim_ex_flag: bool, dym_models: list, use_mp: bool):
     kwargs = [dict(dymola_api=dymola_api, dym_model=dym_model, sim_ex_flag=sim_ex_flag)
-             for dym_model in dym_models]
+              for dym_model in dym_models]
     if use_mp:
         results = dymola_api.pool.map(check_or_simulate, kwargs)
     else:
