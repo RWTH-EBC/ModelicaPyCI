@@ -40,10 +40,10 @@ def load_dymola_api(
             raise ConnectionError("License is not available, even though minimal "
                                   "number of licenses are apparently free.")
     dymola_api.dymola.ExecuteCommand("Advanced.TranslationInCommandLog:=true;")
-    success = dymola_api.dymola.ExecuteCommand("Advanced.CompileWith64 = true;")
+    success = dymola_api.dymola.ExecuteCommand("Advanced.CompileWith64 = 2;")
     if not success:
         logger.error(
-            "Could not set Advanced.CompileWith64=true, SPAWN might fail! Current setting is: %s",
+            "Could not set Advanced.CompileWith64=2, SPAWN might fail! Current setting is: %s",
             dymola_api.dymola.ExecuteCommand("Advanced.CompileWith64")
         )
     return dymola_api
