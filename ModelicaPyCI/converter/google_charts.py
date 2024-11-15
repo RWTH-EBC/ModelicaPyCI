@@ -413,7 +413,7 @@ def load_txt_to_dataframe(file_path):
         content = file.read()
 
     # Extract time and variable data
-    pattern = r'(\w+(?:\.\w+)?)=\[(.*?)\]'
+    pattern = r'(\w+(?:\.\w+)*(?:\[[^\]]+\])?)=\[(.*?)\]'
     matches = re.findall(pattern, content, re.DOTALL)
 
     max_lenghts = 0
@@ -438,6 +438,7 @@ def load_txt_to_dataframe(file_path):
         df.loc[df.index[-1], col] = points[1]
     df = df.interpolate()
     df = df.set_index("time")
+    logger.info("Found the following columns in .txt files with regex: %s", df.columns)
     return df
 
 
