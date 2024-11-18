@@ -253,8 +253,7 @@ class ReferenceModel:
         model_list = list(set(model_list))
         package_list = []
         for model in model_list:
-            logger.info("%s %s", package, model)
-            if not model.startswith(package):
+            if model.startswith(package):
                 logger.info(f'Generate new reference results for model: {model}')
                 package_list.append(".".join(model.split(".")[:2]))
         package_list = list(set(package_list))
