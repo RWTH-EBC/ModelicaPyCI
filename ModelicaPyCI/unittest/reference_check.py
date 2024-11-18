@@ -238,11 +238,9 @@ class ReferenceModel:
             else:
                 logger.error(f'File {Path(ref_dir, ref)} does not exist\n')
 
-    def get_update_model(self):
+    def get_update_model(self, package: str):
         """
-
         Returns: return a package_list to check for regression test
-
         """
         # todo: Kennzeichnen, wenn reference vorhanden aber kein mos
         mos_script_list = self._get_mos_scripts()  # Mos Scripts
@@ -255,8 +253,9 @@ class ReferenceModel:
         model_list = list(set(model_list))
         package_list = []
         for model in model_list:
-            logger.info(f'Generate new reference results for model: {model}')
-            package_list.append(".".join(model.split(".")[:2]))
+            if not model.startswith(package):
+                logger.info(f'Generate new reference results for model: {model}')
+                package_list.append(".".join(model.split(".")[:2]))
         package_list = list(set(package_list))
         return package_list, model_list
 
@@ -798,7 +797,7 @@ if __name__ == '__main__':
             ref_model.write_regression_list()
 
         if args.create_ref:
-            PACKAGE_LIST, created_ref_list = ref_model.get_update_model()
+            PACKAGE_LIST, created_ref_list = ref_model.get_update_model(package=package)
             if not PACKAGE_LIST:
                 logger.info("All regression tests for package %s exist", package)
                 continue
