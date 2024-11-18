@@ -255,7 +255,7 @@ class ReferenceModel:
         for model in model_list:
             if model.startswith(package):
                 logger.info(f'Generate new reference results for model: {model}')
-                package_list.append(".".join(model.split(".")[:2]))
+                package_list.append(package)
         package_list = list(set(package_list))
         return package_list, model_list
 
