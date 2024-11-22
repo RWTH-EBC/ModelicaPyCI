@@ -37,7 +37,6 @@ Return a log file.
 |-------------------| ------------------------- | 
 | --single-package  | Name of the package to test.|
 | --library         | Name of the library to test.|
-| --dymola-version  | Number of dymola-version (e.g. 2022, depends on dymola image). |
 | --changed-models  | Check only changed models with last commit push (in CI: ci_changed_model_list.txt)|
 
 #### Example: Execution on gitlab runner (linux)

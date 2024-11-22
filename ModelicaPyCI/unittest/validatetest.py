@@ -372,10 +372,6 @@ def parse_args():
         help="Libraries to load aside from maim library"
     )
 
-    # [Dymola - settings]
-    check_test_group.add_argument("--dymola-version",
-                                  default=None,
-                                  help="Version of dymola (Give the number e.g. 2020")
     check_test_group.add_argument(
         "--min-number-of-unused-licences",
         default=1,

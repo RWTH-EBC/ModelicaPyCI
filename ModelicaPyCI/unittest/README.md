@@ -9,7 +9,6 @@ Check and simulate dymola models with dymola-python-interface.
 | --single-package | Test the Modelica package.                                                         |
 | --whitelist  | Create a whitelist of a library with failed models.                                |
 | --simulate-examples | Check and simulate examples in the package.                                        |
-| --dymola-version | Version of dymola (Give the number e.g. 2022")                                     |
 | --changed-model  | Check only changed models with last commit push (in CI: ci_changed_model_list.txt) |
 | --filter-whitelist | Argument that models on the whitelist are not tested (default: True).              |
 | --library  | Library to test.                                                                   |

@@ -691,10 +691,6 @@ def parse_args():
         metavar="dymola", default="dymola",
         help="Tool for the regression tests. Set to dymola or jmodelica")
     unit_test_group.add_argument(
-        "--dymola-version",
-        default=None,
-        help="Version of Dymola(Give the number e.g. 2022")
-    unit_test_group.add_argument(
         "--min-number-of-unused-licences",
         default=1,
         help="Number of unused licences for Dymola to start. "

@@ -38,8 +38,6 @@ def parse_args():
     check_test_group = parser.add_argument_group("Arguments to start style tests")
     check_test_group.add_argument("--library", default="AixLib",
                                   help="Path where top-level package.mo of the library is located")
-    check_test_group.add_argument("--dymola-version", default=None,
-                                  help="Version of Dymola(Give the number e.g. 2022")
     check_test_group.add_argument(
         "--min-number-of-unused-licences",
         default=1,
