@@ -134,10 +134,9 @@ def prepare_data(source_target_dict: dict,
                 if os.path.isfile(source):
                     logger.error("Removing %s did not work.", source)
         elif os.path.isdir(source):
+            distutils.dir_util.copy_tree(source, str(target_path))
             if del_flag is True:
-                shutil.move(source, str(target_path))
-            else:
-                distutils.dir_util.copy_tree(source, str(target_path))
+                shutil.rmtree(source)
             logger.info(
                 f'Result Folder {source} '
                 f'was copied to {target_path}'

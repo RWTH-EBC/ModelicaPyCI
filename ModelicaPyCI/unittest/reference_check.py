@@ -1,4 +1,5 @@
 import argparse
+import shutil
 from pathlib import Path
 import os
 import yaml
@@ -98,8 +99,9 @@ class BuildingspyRegressionCheck:
             source_target_dict = {}
             for file in self.ut.get_unit_test_log_files():
                 source_target_dict[file] = result_path
-            source_target_dict["funnel_comp"] = result_path.joinpath("funnel_comp")
             config_structure.prepare_data(source_target_dict=source_target_dict, del_flag=True)
+            # Copy funnel_comp folder (leads to long logs with copy_tree
+            shutil.move("funnel_comp", result_path.joinpath("funnel_comp"))
 
             if response != 0:
                 err_list.append(package_modelica_name)
