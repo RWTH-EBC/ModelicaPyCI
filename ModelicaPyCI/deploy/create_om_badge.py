@@ -7,11 +7,11 @@ from ModelicaPyCI.load_global_config import CI_CONFIG
 from ModelicaPyCI.structure import config_structure
 
 
-def create_badge(badge_name: str, library: str, main_branch: str):
+def create_badge(badge_name: str, library: str):
     import anybadge
 
     website = urllib.request.urlopen(
-        f'https://libraries.openmodelica.org/branches/{main_branch}/{library}/{library}.html'
+        f'https://libraries.openmodelica.org/branches/master/{library}/{library}.html'
     )
     text = str(website.read())
 
@@ -65,7 +65,7 @@ def parse_args():
                                   help="Version of Dymola(Give the number e.g. 2022")
     check_test_group.add_argument(
         "--main-branch",
-        help="your base branch (main)"
+        help="your base branch (main) - has no impact anymore"
     )
     return parser.parse_args()
 
@@ -74,8 +74,7 @@ if __name__ == '__main__':
     args = parse_args()
     om_badge_file = create_badge(
         badge_name=args.om_badge_name,
-        library=args.library,
-        main_branch=args.main_branch
+        library=args.library
     )
     config_structure.create_path(CI_CONFIG.get_dir_path("result"))
     shutil.copy(om_badge_file, CI_CONFIG.get_dir_path("result").joinpath(args.om_badge_name))
