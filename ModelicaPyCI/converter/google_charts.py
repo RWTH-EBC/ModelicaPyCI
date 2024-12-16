@@ -136,7 +136,7 @@ def get_model_name_based_on_underscores(name: str, model_names: list):
         return joined_model_name
     model_names_with_underscore = {model.replace("_", "."): model for model in model_names if "_" in model}
     if joined_model_name not in model_names_with_underscore:
-        raise KeyError("Model not found in all models")
+        raise KeyError(f"Model {name} not found in all models")
     return model_names_with_underscore[joined_model_name]
 
 
