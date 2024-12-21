@@ -431,11 +431,14 @@ def load_txt_to_dataframe(file_path):
             raise ValueError("Reference results are not equally sampled")
         data[variable] = values
     # Create DataFrame
-    df = pd.DataFrame(data)
-    for col, points in data_two_points.items():
-        df.loc[:, col] = np.NAN
-        df.loc[df.index[0], col] = points[0]
-        df.loc[df.index[-1], col] = points[1]
+    if data:
+        df = pd.DataFrame(data)
+        for col, points in data_two_points.items():
+            df.loc[:, col] = np.NAN
+            df.loc[df.index[0], col] = points[0]
+            df.loc[df.index[-1], col] = points[1]
+    else:
+        df = pd.DataFrame(data_two_points)  # Only two points in all results
     df = df.interpolate()
     df = df.set_index("time")
     logger.info("Found the following columns in .txt files with regex: %s", df.columns)
