@@ -129,6 +129,7 @@ class BuildingspyRegressionCheck:
             logger.info(f'Regression test was successful ')
             return 0
 
+
 class WhitelistTester(regression.Tester):
 
     def __init__(self, **kwargs):
@@ -802,10 +803,12 @@ if __name__ == '__main__':
             logger.info(f'Start regression Test.\nTest following packages: {PACKAGE_LIST}')
             val = ref_check.check_regression_test(package_list=PACKAGE_LIST, create_results=True)
             if len(created_ref_list) > 0:
-                for ref in created_ref_list:
+                for _model in created_ref_list:
+                    if not _model.startswith(package):
+                        continue
                     config_structure.prepare_data(
                         source_target_dict={
-                            f'{CI_CONFIG.artifacts.library_ref_results_dir}{os.sep}{ref.replace(".", "_")}.txt':
+                            f'{CI_CONFIG.artifacts.library_ref_results_dir}{os.sep}{_model.replace(".", "_")}.txt':
                                 CI_CONFIG.get_file_path("result", "regression_dir").joinpath("referencefiles")}
                     )
                 write_exit_file(message="GENERATED_NEW_RESULTS")
