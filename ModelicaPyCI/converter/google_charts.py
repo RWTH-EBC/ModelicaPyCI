@@ -315,7 +315,7 @@ def create_regression_error_plot(model, variables, funnel_path: Path):
     n_subplots = len(variables)
 
     # Create subplots
-    fig = make_subplots(rows=n_subplots, cols=1, shared_xaxes=True, vertical_spacing=0.05)
+    fig = make_subplots(rows=n_subplots, cols=1, shared_xaxes=True)  #, vertical_spacing=0.05)
 
     for i, variable in enumerate(variables, 1):
         folder = funnel_path.joinpath(f"{model}.mat_{variable}")
@@ -375,7 +375,7 @@ def create_new_reference_plot(df: pd.DataFrame, reference_file_name: str):
     n_subplots = len(df.columns)
 
     # Create subplots
-    fig = make_subplots(rows=n_subplots, cols=1, shared_xaxes=True, vertical_spacing=0.05)
+    fig = make_subplots(rows=n_subplots, cols=1, shared_xaxes=True)  #, vertical_spacing=0.05)
 
     for i, variable in enumerate(df.columns, 1):
         # Read reference and test data
