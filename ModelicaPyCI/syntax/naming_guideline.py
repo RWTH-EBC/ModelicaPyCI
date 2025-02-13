@@ -387,6 +387,8 @@ def check_if_name_is_ok(name: str, naming_config: NamingGuidelineConfig):
                 part = part[len(special_start):]
                 break
 
+        part = remove_last_digit(part)  # trailing digits are ok, e.g. vol1, vol2, etc.
+
         part_is_ok = (
                 (part in naming_config.special_parts) or
                 (len(part) == 3) or
@@ -403,6 +405,10 @@ def check_if_name_is_ok(name: str, naming_config: NamingGuidelineConfig):
                       f"Affected parts: {', '.join(parts_not_ok)}", parts_not_ok
     else:
         return True, f"Name '{name_clean}' is correct", []
+
+
+def remove_last_digit(string):
+    return re.sub(r'\d(?=\D*$)', '', string)
 
 
 def split_camel_case(string):
@@ -518,13 +524,17 @@ def convert_csv_to_excel(csv_file, excel_file):
 
 if __name__ == '__main__':
     ARGS = parse_args()
-
+    os.chdir(r"D:\04_git\modelica-ibpsa")
+    ARGS.config = "ci/naming_guideline.toml"
+    ARGS.library = "IBPSA"
+    ARGS.main_branch = "master"
+    ARGS.changed_flag = True
     with open(ARGS.config, "r") as FILE:
         NAMING_CONFIG = NamingGuidelineConfig(**toml.load(FILE))
 
     FILES_TO_CHECK = mo.get_model_list(
         library=ARGS.library,
-        package=".",
+        package="",
         filter_whitelist_flag=False,
         simulate_flag=False,
         changed_flag=ARGS.changed_flag,
