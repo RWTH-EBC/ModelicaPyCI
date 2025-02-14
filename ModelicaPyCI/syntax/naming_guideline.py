@@ -524,17 +524,12 @@ def convert_csv_to_excel(csv_file, excel_file):
 
 if __name__ == '__main__':
     ARGS = parse_args()
-    os.chdir(r"D:\04_git\modelica-ibpsa")
-    ARGS.config = "ci/naming_guideline.toml"
-    ARGS.library = "IBPSA"
-    ARGS.main_branch = "master"
-    ARGS.changed_flag = True
     with open(ARGS.config, "r") as FILE:
         NAMING_CONFIG = NamingGuidelineConfig(**toml.load(FILE))
 
     FILES_TO_CHECK = mo.get_model_list(
         library=ARGS.library,
-        package="",
+        package=".",
         filter_whitelist_flag=False,
         simulate_flag=False,
         changed_flag=ARGS.changed_flag,
