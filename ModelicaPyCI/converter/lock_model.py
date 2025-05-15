@@ -106,8 +106,8 @@ def parse_args():
 
 if __name__ == '__main__':
     import os
-    os.chdir(r"D:\04_git\AixLib")
-    os.environ["CI_PYTHON_CONFIG_FILE"] = r"D:\04_git\AixLib\ci\config\modelica_py_ci_config.toml"
+    #os.chdir(r"D:\04_git\AixLib")
+    #os.environ["CI_PYTHON_CONFIG_FILE"] = r"D:\04_git\AixLib\ci\config\modelica_py_ci_config.toml"
 
     args = parse_args()
     call_lock_model()
