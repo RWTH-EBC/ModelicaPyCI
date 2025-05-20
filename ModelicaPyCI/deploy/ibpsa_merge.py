@@ -19,9 +19,10 @@ def merge_workflow(
         merge_library_mos_scripts: str,
         temporary_mos_path: str,
 ):
+    library_dir = Path(library_dir)
     mer = merger.IBPSA(
         ibpsa_dir=str(Path(merge_library_dir).joinpath(merge_library)),
-        dest_dir=str(Path(library_dir).joinpath(library))
+        dest_dir=str(library_dir.joinpath(library))
     )
     mer.set_excluded_directories(["Experimental", "Obsolete"])
     mer.merge()
@@ -32,7 +33,7 @@ def merge_workflow(
     last_mlibrary_conversion = _copy_merge_mos_script(
         merge_library_scripts_dir=merge_library_scripts_dir, temporary_mos_path=temporary_mos_path
     )
-    library_scripts_dir = Path(library_dir).joinpath(library, library_mos_scripts)
+    library_scripts_dir = library_dir.joinpath(library, library_mos_scripts)
     library_conversions = _read_library_conversions(library_scripts_dir=library_scripts_dir)
 
     result, last_library_conversion = _compare_conversion(library=library,
@@ -67,6 +68,9 @@ def merge_workflow(
         )
         logger.info(f'New {library} Conversion scrip was created: {new_conversion_script}')
     correct_user_guide(library_dir)
+    copied_files_path = library_dir.joinpath(library, ".copiedFiles.txt")
+    if os.path.exists(copied_files_path):
+        os.remove(copied_files_path)
 
 
 def _read_library_conversions(library_scripts_dir: Path):
