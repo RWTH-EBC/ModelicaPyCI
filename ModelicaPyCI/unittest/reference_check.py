@@ -339,8 +339,6 @@ def _compare_whitelist_mos(package_list, whitelist_list):
                     f'Don´t Create reference results for model {package} This package is '
                     f'on the whitelist')
                 err_list.append(package)
-            else:
-                continue
     for err in err_list:
         package_list.remove(err)
     return package_list
@@ -353,23 +351,25 @@ def _get_whitelist_package():
     """
     whitelist_list = []
     filepath = CI_CONFIG.get_file_path("whitelist", "dymola_reference_file")
-    try:
-        with open(filepath, "r") as ref_wh:
-            lines = ref_wh.readlines()
+    ci_whitelist_ibpsa_file = CI_CONFIG.get_file_path("whitelist", "ibpsa_file")
+    for _filepath in [filepath, ci_whitelist_ibpsa_file]:
+        try:
+            with open(_filepath, "r") as ref_wh:
+                lines = ref_wh.readlines()
             for line in lines:
                 if len(line.strip()) == 0:
                     continue
                 else:
                     whitelist_list.append(line.strip())
-        for whitelist_package in whitelist_list:
-            logger.error(
-                f' Don´t create reference results for package {whitelist_package}: '
-                f'This Package is '
-                f'on the whitelist')
-        return whitelist_list
-    except FileNotFoundError:
-        logger.info(f'File {filepath} does not exist, not using any whitelist.')
-        return whitelist_list
+        except FileNotFoundError:
+            logger.info(f'File {_filepath} does not exist, not using any whitelist.')
+
+    for whitelist_package in whitelist_list:
+        logger.error(
+            f' Don´t create reference results for package {whitelist_package}: '
+            f'This Package is on the whitelist'
+        )
+    return whitelist_list
 
 
 def get_update_package(ref_list):
