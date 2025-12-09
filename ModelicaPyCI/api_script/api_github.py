@@ -300,7 +300,7 @@ if __name__ == '__main__':
             pr_number = pull_request.get_pr_number()
             if args.prepare_plot_flag is True:
                 message = (f'Errors in regression test. '
-                           f'Compare the results on the following page\\n {plots_url}')
+                           f'Compare the results on the following page \n {plots_url}')
             elif args.show_plot_flag is True:
                 message = (f'Reference results have been displayed graphically '
                            f'and are created under the following page {plots_url}')
