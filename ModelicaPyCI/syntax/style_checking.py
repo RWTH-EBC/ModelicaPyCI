@@ -52,6 +52,12 @@ def parse_args():
         help="Possible startup-mos script to e.g. load additional libraries"
     )
     check_test_group.add_argument("--changed-flag", action="store_true")
+    check_test_group.add_argument(
+        "--main-branch",
+        default=None,
+        help="Branch to compare with if --changed-flag is set, e.g. main. "
+             "Default: compare with the last two commits."
+    )
     return parser.parse_args()
 
 
@@ -68,7 +74,8 @@ if __name__ == '__main__':
 
     model_list = mo.get_model_list(library=args.library,
                                    package="",
-                                   changed_flag=args.changed_flag)
+                                   changed_flag=args.changed_flag,
+                                   changed_to_branch=args.main_branch)
     logfile = mm.mm_style_check(models_list=model_list,
                                 library=args.library,
                                 changed_flag=args.changed_flag)
