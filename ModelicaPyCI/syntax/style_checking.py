@@ -6,6 +6,7 @@ from ModelicaPyCI.pydyminterface.model_management import ModelManagement
 from ModelicaPyCI.pydyminterface import python_dymola_interface
 from ModelicaPyCI.structure import sort_mo_model as mo
 from ModelicaPyCI.structure import config_structure
+from ModelicaPyCI.utils import logger
 from pathlib import Path
 
 
