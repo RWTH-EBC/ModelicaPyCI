@@ -29,23 +29,28 @@ Return a log file.
 For more information look at following [Repository](https://github.com/RWTH-EBC/HTML-Tidy-Modelica).
 
 For the implementation in gitlab-yaml go to the following [link](https://git.rwth-aachen.de/EBC/EBC_all/gitlab_ci/templates/-/tree/AixLib/dymola-ci-tests/ci_templates)
-## StyleChecking.py
-StyleChecking use the *ModelManagement* library in dymola. The script tests the syntax of models or library. 
-Return a log file. 
+## style_checking.py
+`style_checking.py` uses the *ModelManagement* library of Dymola to check the style of the models of a library
+(documentation, description strings, naming, ...).
+The result is written to `<library>_StyleCheckLog.html` and copied to the syntax result folder
+(`ci-tests/result/syntax`, see `CI_PYTHON_CONFIG_FILE`).
+The script exits with 1 if the log contains style violations, otherwise with 0.
 #### Parser Arguments
 | Parser Arguments  | Description      | 
 |-------------------| ------------------------- | 
-| --single-package  | Name of the package to test.|
-| --library         | Name of the library to test.|
-| --changed-models  | Check only changed models with last commit push (in CI: ci_changed_model_list.txt)|
+| --library         | Name of the library to test (top-level `package.mo` in `<library>/package.mo`).|
+| --min-number-of-unused-licences | Number of unused Dymola licences required to start. Used to avoid blocking licences of real users. 0 disables the check (default: 1).|
+| --startup-mos     | Optional startup mos script, e.g. to load additional libraries.|
+| --changed-flag    | Check only changed models instead of the whole library. If more than 100 models changed, the whole library is checked.|
+| --main-branch     | Only with `--changed-flag`: branch to compare with, e.g. `main` (models changed compared to `origin/<main-branch>`, i.e. all changes of a branch or pull request). Default: compare with the last two commits (`HEAD^^`).|
 
-#### Example: Execution on gitlab runner (linux)
-    xvfb-run -n 77 python modelicapyci_tests/CITests/SyntaxTests/StyleChecking.py -s AixLib -p AixLib/package.mo -DS 2022
-    xvfb-run -n 77 python modelicapyci_tests/CITests/SyntaxTests/StyleChecking.py -s AixLib -p AixLib/package.mo -CM -DS 2022
+#### Example: Execution in a CI job (linux)
+    # whole library
+    xvfb-run -n 77 python -m ModelicaPyCI.syntax.style_checking --library AixLib --startup-mos startup.mos --min-number-of-unused-licences 5
+    # only models changed in the current branch compared to main (needs origin/main, e.g. checkout with fetch-depth 0)
+    xvfb-run -n 77 python -m ModelicaPyCI.syntax.style_checking --library AixLib --startup-mos startup.mos --min-number-of-unused-licences 5 --changed-flag --main-branch main
 
 ![ModelManagement_StyleChecking.PNG](../../Documentation/Images/ModelManagement_StyleChecking.PNG)
-
-For the implementation in gitlab-yaml go to the following [link](https://git.rwth-aachen.de/EBC/EBC_all/gitlab_ci/templates/-/tree/AixLib/dymola-ci-tests/ci_templates)
 
 
 
