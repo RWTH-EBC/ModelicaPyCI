@@ -1,5 +1,6 @@
 import logging
 import os
+import subprocess
 import uuid
 from pathlib import Path
 from typing import Union
@@ -68,7 +69,7 @@ def create_changed_files_file(repo_root: Union[str, Path] = None, to_branch: str
     if to_branch is None:
         compare_to = "HEAD^^"
     else:
-        compare_to = os_system_with_return(f"git rev-parse origin/{to_branch}")
+        compare_to = _get_commit_of_remote_branch(to_branch)
 
     return_value = os_system_with_return(f"git diff --raw --diff-filter=AMT --name-only {compare_to}")
 
@@ -79,6 +80,31 @@ def create_changed_files_file(repo_root: Union[str, Path] = None, to_branch: str
     config_structure.check_file_setting(changed_files_file=changed_files_file)
 
     return changed_files_file
+
+
+def _get_commit_of_remote_branch(branch: str) -> str:
+    """
+    Return the commit of origin/<branch>. Exit with an error if it does not exist,
+    as comparing with an empty reference would silently find no changed files.
+    """
+    result = subprocess.run(
+        ["git", "rev-parse", "--verify", "--quiet", f"origin/{branch}^{{commit}}"],
+        capture_output=True, text=True
+    )
+    if result.returncode != 0 or not result.stdout.strip():
+        remote_branches = subprocess.run(
+            ["git", "branch", "-r", "--format=%(refname:short)"],
+            capture_output=True, text=True
+        ).stdout.split()
+        remote_branches = [name for name in remote_branches if "/" in name]  # skip origin/HEAD ("origin")
+        logger.error(
+            f"Can't compare changed models with branch '{branch}': origin/{branch} does not exist. "
+            f"Check the given main branch (e.g. 'main' or 'master') and fetch it "
+            f"(in GitHub Actions: actions/checkout with fetch-depth: 0). "
+            f"Available remote branches: {remote_branches}"
+        )
+        exit(1)
+    return result.stdout.strip()
 
 
 def os_system_with_return(command):
