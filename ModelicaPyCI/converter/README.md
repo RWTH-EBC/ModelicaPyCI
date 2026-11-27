@@ -34,9 +34,12 @@ Summarises reference results for reviewers of a pull request:
 * `--reference-changes-flag`: compares the reference result files that the current branch changes
   (`<library>/Resources/ReferenceResults/Dymola`, compared to the merge base with `origin/<main-branch>`)
   with the version of the main branch. For every modified file, a plot main vs. branch is written to
-  `<result dir>/reference_changes/`; added and deleted files are listed.
-* `--regression-errors-flag`: summarises failed regression tests from the `funnel_comp` folders in
-  `<result dir>/regression/<package>/` (maximum absolute and relative deviation per variable).
+  `<result dir>/reference_changes/`; added and deleted files are listed. Per file, the summary shows
+  whether the regression test would detect the change (funnel comparison with the default tolerance of
+  BuildingsPy, `tol=1E-3`), the maximum deviation relative to the range (max - min) of the old values and
+  the most affected variable; all changed variables are listed in a collapsed table.
+* `--regression-errors-flag`: lists the models with failed regression tests (variables reported in
+  `<result dir>/regression/<package>/unitTests-dymola.log`) with links to their plots.
 
 The result is a Markdown summary (default `<result dir>/ci_summary.md`) with tables of the deviations and links
 to the plots, e.g. to post it in the pull request. The numbers stay readable in the pull request even when the
