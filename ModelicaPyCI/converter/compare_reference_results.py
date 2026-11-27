@@ -3,8 +3,8 @@ Summarise reference results for reviewers.
 
 * Reference changes: compares the reference result files a branch changes with the
   reference results of the main branch and plots old against new values.
-* Regression errors: summarises the deviations of failed regression tests from the
-  funnel_comp folders written by BuildingsPy.
+* Regression errors: summarises the deviations of the variables that failed in the regression
+  tests (unitTests-dymola.log), using the funnel_comp folders written by BuildingsPy.
 
 Writes HTML plots to <result dir>/reference_changes and a Markdown summary that a CI
 can post in the pull request. The summary also contains the numbers, so it stays
@@ -197,29 +197,76 @@ def summarize_reference_changes(library: str, ref_dir: str, main_branch: str, re
     return "\n".join(lines)
 
 
+def read_failed_variables(log_file) -> dict:
+    """
+    Failed variables from the BuildingsPy log of a regression test (unitTests-dymola.log):
+
+        *** Error: <reference file>.txt: Errors during result verification.
+        Absolute error = 1.871e+00 at t = 36.0 for genControlBus.TBoiOut
+
+    Returns:
+        dict: reference file name (model with underscores) -> set of failed variables
+    """
+    failed = {}
+    with open(log_file, "r", errors="replace") as file:
+        lines = file.readlines()
+    for idx, line in enumerate(lines):
+        if line.startswith("*** Error: ") and "Errors during result verification" in line:
+            name = line.replace("*** Error: ", "").split(".txt")[0].strip()
+            variables = failed.setdefault(name, set())
+            for next_line in lines[idx + 1:]:
+                if not next_line.strip().startswith("Absolute error"):
+                    break
+                variables.add(next_line.strip().split(" ")[-1])
+    return failed
+
+
+def _is_failed(model: str, variable: str, failed: dict, folder: Path) -> bool:
+    if failed is not None:
+        return variable in failed.get(model.replace(".", "_"), set())
+    # No log: fall back to the funnel errors (values outside the tolerance tube)
+    errors_csv = folder / "errors.csv"
+    if not errors_csv.exists():
+        return True
+    errors = pd.read_csv(errors_csv)
+    return "y" in errors and bool((errors["y"].abs() > 0).any())
+
+
 def summarize_regression_errors(regression_dir: Path, page_url: str = None) -> str:
-    """Summarise failed regression tests from <regression_dir>/<package>/funnel_comp/<model>.mat_<variable>."""
+    """
+    Summarise failed regression tests.
+
+    BuildingsPy writes <regression_dir>/<package>/funnel_comp/<model>.mat_<variable> for every compared
+    variable, also for variables within the tolerance. Only variables reported as failed in
+    <regression_dir>/<package>/unitTests-dymola.log are summarised.
+    """
     rows = []
-    for folder in sorted(Path(regression_dir).glob("*/funnel_comp/*")):
-        if not folder.is_dir() or ".mat_" not in folder.name:
+    for package_dir in sorted(p for p in Path(regression_dir).glob("*") if p.is_dir()):
+        log_file = package_dir / "unitTests-dymola.log"
+        failed = read_failed_variables(log_file) if log_file.exists() else None
+        if failed is not None and not failed:
             continue
-        reference_csv, test_csv = folder / "reference.csv", folder / "test.csv"
-        if not reference_csv.exists() or not test_csv.exists():
-            continue
-        model, variable = folder.name.rsplit(".mat_", 1)
-        package = folder.parent.parent.name
-        try:
-            ref = pd.read_csv(reference_csv)
-            test = pd.read_csv(test_csv)
-            deviation = compare_series(pd.Series(ref["y"].values, index=ref["x"].values),
-                                       pd.Series(test["y"].values, index=test["x"].values))
-        except (KeyError, ValueError) as err:
-            logger.warning("Could not read funnel results in %s: %s", folder, err)
-            continue
-        link = ""
-        if page_url:
-            link = f"[plot]({page_url}/charts/{package}/{model.replace('.', '_')}.html)"
-        rows.append((model, variable, _fmt(deviation["max_abs"]), _fmt(deviation["max_rel"]), link))
+        for folder in sorted((package_dir / "funnel_comp").glob("*")):
+            if not folder.is_dir() or ".mat_" not in folder.name:
+                continue
+            reference_csv, test_csv = folder / "reference.csv", folder / "test.csv"
+            if not reference_csv.exists() or not test_csv.exists():
+                continue
+            model, variable = folder.name.rsplit(".mat_", 1)
+            try:
+                if not _is_failed(model, variable, failed, folder):
+                    continue
+                ref = pd.read_csv(reference_csv)
+                test = pd.read_csv(test_csv)
+                deviation = compare_series(pd.Series(ref["y"].values, index=ref["x"].values),
+                                           pd.Series(test["y"].values, index=test["x"].values))
+            except (KeyError, ValueError) as err:
+                logger.warning("Could not read funnel results in %s: %s", folder, err)
+                continue
+            link = ""
+            if page_url:
+                link = f"[plot]({page_url}/charts/{package_dir.name}/{model.replace('.', '_')}.html)"
+            rows.append((model, variable, _fmt(deviation["max_abs"]), _fmt(deviation["max_rel"]), link))
     if not rows:
         return ""
     lines = ["### Failed regression tests", ""]
