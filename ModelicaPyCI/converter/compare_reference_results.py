@@ -66,14 +66,48 @@ def read_reference_file(path) -> dict:
         return parse_reference_text(file.read())
 
 
+# Default tolerance of buildingspy.development.regressiontest.Tester (tol=1E-3), as used by
+# ModelicaPyCI.unittest.reference_check: absolute in x and y, relative to the local value in y.
+BUILDINGSPY_TOLERANCE = dict(atolx=1e-3, atoly=1e-3, ltolx=0, ltoly=1e-3, rtolx=0, rtoly=0)
+
+
 def compare_series(old: pd.Series, new: pd.Series) -> dict:
-    """Maximum absolute and relative deviation of new from old (new interpolated to old times)."""
+    """
+    Deviation of new from old (new interpolated to the times of old).
+
+    Returns:
+        dict with max_abs (maximum absolute deviation) and max_range (maximum absolute deviation
+        relative to the range max - min of old; relative to max |old| for constant values)
+    """
     new_on_old = np.interp(old.index.values, new.index.values, new.values)
     abs_diff = np.abs(new_on_old - old.values)
     max_abs = float(np.max(abs_diff)) if len(abs_diff) else 0.0
-    scale = float(np.max(np.abs(old.values))) if len(old) else 0.0
-    max_rel = max_abs / scale if scale > 0 else (0.0 if max_abs == 0 else float("inf"))
-    return {"max_abs": max_abs, "max_rel": max_rel}
+    scale = float(np.max(old.values) - np.min(old.values)) if len(old) else 0.0
+    if scale == 0:
+        scale = float(np.max(np.abs(old.values))) if len(old) else 0.0
+    max_range = max_abs / scale if scale > 0 else (0.0 if max_abs == 0 else float("inf"))
+    return {"max_abs": max_abs, "max_range": max_range}
+
+
+def detected_by_regression_test(old: pd.Series, new: pd.Series):
+    """
+    Whether the regression test (funnel comparison with the BuildingsPy default tolerance) would
+    report the deviation. None if pyfunnel is not available.
+    """
+    try:
+        import pyfunnel
+    except ImportError:
+        return None
+    import tempfile
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        exitcode = pyfunnel.compareAndReport(
+            xReference=list(old.index.values), yReference=list(old.values),
+            xTest=list(new.index.values), yTest=list(new.values),
+            outputDirectory=tmp_dir, **BUILDINGSPY_TOLERANCE)
+        if exitcode != 0:
+            return True
+        errors = pd.read_csv(Path(tmp_dir) / "errors.csv")
+    return bool((errors["y"].abs() > 0).any())
 
 
 # ---------------------------------------------------------------------------
@@ -146,6 +180,16 @@ def _fmt(value: float) -> str:
     return f"{value:.3g}"
 
 
+def _pct(value: float) -> str:
+    if value == float("inf"):
+        return "inf"
+    return f"{value * 100:.2g} %"
+
+
+def _yes_no(value) -> str:
+    return "?" if value is None else ("yes" if value else "no")
+
+
 def summarize_reference_changes(library: str, ref_dir: str, main_branch: str, result_dir: Path,
                                 page_url: str = None) -> str:
     changed, merge_base = get_changed_reference_files(ref_dir=ref_dir, main_branch=main_branch)
@@ -153,8 +197,7 @@ def summarize_reference_changes(library: str, ref_dir: str, main_branch: str, re
         logger.info("No reference results changed compared to %s", main_branch)
         return ""
     output_dir = result_dir / REFERENCE_CHANGES_DIR
-    plot_files = []
-    rows = []
+    plot_files, files, details = [], [], []
     added, deleted = [], []
     for status, path in changed:
         name = Path(path).stem
@@ -167,33 +210,44 @@ def summarize_reference_changes(library: str, ref_dir: str, main_branch: str, re
         old = read_reference_file_at(merge_base, path)
         new = read_reference_file(path)
         variables = sorted(set(old) | set(new))
+        file_detected, worst = False, None
         for variable in variables:
             if variable not in old or variable not in new:
-                rows.append((name, variable, "only in " + ("branch" if variable in new else main_branch), "", ""))
+                file_detected = True
+                details.append((name, variable, "yes", "only in " + ("branch" if variable in new else main_branch), ""))
                 continue
             deviation = compare_series(old[variable], new[variable])
-            if deviation["max_abs"] > 0:
-                rows.append((name, variable, "changed", _fmt(deviation["max_abs"]), _fmt(deviation["max_rel"])))
+            if deviation["max_abs"] == 0:
+                continue
+            detected = detected_by_regression_test(old[variable], new[variable])
+            file_detected = file_detected or bool(detected)
+            details.append((name, variable, _yes_no(detected), _fmt(deviation["max_abs"]), _pct(deviation["max_range"])))
+            if worst is None or deviation["max_range"] > worst[1]:
+                worst = (variable, deviation["max_range"])
+        files.append((name, "yes" if file_detected else "no",
+                      _pct(worst[1]) if worst else "0 %", f"`{worst[0]}`" if worst else "-"))
         plot_file = f"{name}.html"
         plot_reference_change(name, old, new, variables, output_dir / plot_file)
         plot_files.append(plot_file)
     if plot_files:
         write_index(output_dir, plot_files)
 
-    lines = [f"### Changed reference results (compared to `{main_branch}`)", ""]
+    lines = [f"### Changed reference results ({len(files)})", ""]
     if page_url and plot_files:
-        lines += [f"Plots main vs. branch: {page_url}/{REFERENCE_CHANGES_DIR}/index.html", ""]
-    if rows:
-        lines += ["| Reference | Variable | Change | Max. abs. deviation | Max. rel. deviation |",
-                  "|---|---|---|---|---|"]
-        lines += [f"| `{r[0]}` | `{r[1]}` | {r[2]} | {r[3]} | {r[4]} |" for r in rows]
+        lines += [f"Plots `{main_branch}` vs. branch: {page_url}/{REFERENCE_CHANGES_DIR}/index.html", ""]
+    if files:
+        lines += ["| Reference | Detected by regression test | Max. deviation (of range) | Most affected variable |",
+                  "|---|---|---|---|"]
+        lines += [f"| `{f[0]}` | {f[1]} | {f[2]} | {f[3]} |" for f in files]
         lines.append("")
-    elif plot_files:
-        lines += ["Reference files changed, but all values are identical.", ""]
-    if added:
-        lines += ["New reference results: " + ", ".join(f"`{n}`" for n in added), ""]
-    if deleted:
-        lines += ["Deleted reference results: " + ", ".join(f"`{n}`" for n in deleted), ""]
+    if details:
+        lines += ["<details><summary>All changed variables</summary>", "",
+                  "| Reference | Variable | Detected by regression test | Max. abs. deviation | Max. deviation (of range) |",
+                  "|---|---|---|---|---|"]
+        lines += [f"| `{d[0]}` | `{d[1]}` | {d[2]} | {d[3]} | {d[4]} |" for d in details]
+        lines += ["", "</details>", ""]
+    lines += ["New reference results: " + (", ".join(f"`{n}`" for n in added) or "-")
+              + " · Deleted: " + (", ".join(f"`{n}`" for n in deleted) or "-"), ""]
     return "\n".join(lines)
 
 
@@ -234,13 +288,13 @@ def _is_failed(model: str, variable: str, failed: dict, folder: Path) -> bool:
 
 def summarize_regression_errors(regression_dir: Path, page_url: str = None) -> str:
     """
-    Summarise failed regression tests.
+    List the models with failed regression tests.
 
     BuildingsPy writes <regression_dir>/<package>/funnel_comp/<model>.mat_<variable> for every compared
     variable, also for variables within the tolerance. Only variables reported as failed in
-    <regression_dir>/<package>/unitTests-dymola.log are summarised.
+    <regression_dir>/<package>/unitTests-dymola.log are considered.
     """
-    rows = []
+    models = {}
     for package_dir in sorted(p for p in Path(regression_dir).glob("*") if p.is_dir()):
         log_file = package_dir / "unitTests-dymola.log"
         failed = read_failed_variables(log_file) if log_file.exists() else None
@@ -249,32 +303,21 @@ def summarize_regression_errors(regression_dir: Path, page_url: str = None) -> s
         for folder in sorted((package_dir / "funnel_comp").glob("*")):
             if not folder.is_dir() or ".mat_" not in folder.name:
                 continue
-            reference_csv, test_csv = folder / "reference.csv", folder / "test.csv"
-            if not reference_csv.exists() or not test_csv.exists():
-                continue
             model, variable = folder.name.rsplit(".mat_", 1)
             try:
-                if not _is_failed(model, variable, failed, folder):
-                    continue
-                ref = pd.read_csv(reference_csv)
-                test = pd.read_csv(test_csv)
-                deviation = compare_series(pd.Series(ref["y"].values, index=ref["x"].values),
-                                           pd.Series(test["y"].values, index=test["x"].values))
+                if _is_failed(model, variable, failed, folder):
+                    models.setdefault(model, (package_dir.name, set()))[1].add(variable)
             except (KeyError, ValueError) as err:
                 logger.warning("Could not read funnel results in %s: %s", folder, err)
-                continue
-            link = ""
-            if page_url:
-                link = f"[plot]({page_url}/charts/{package_dir.name}/{model.replace('.', '_')}.html)"
-            rows.append((model, variable, _fmt(deviation["max_abs"]), _fmt(deviation["max_rel"]), link))
-    if not rows:
+    if not models:
         return ""
-    lines = ["### Failed regression tests", ""]
+    lines = [f"### Failed regression tests ({len(models)})", ""]
+    for model, (package, variables) in sorted(models.items()):
+        link = f" – [plot]({page_url}/charts/{package}/{model.replace('.', '_')}.html)" if page_url else ""
+        lines.append(f"- `{model}` ({len(variables)} variable{'s' if len(variables) != 1 else ''}){link}")
+    lines.append("")
     if page_url:
         lines += [f"All plots: {page_url}/charts/index.html", ""]
-    lines += ["| Model | Variable | Max. abs. deviation | Max. rel. deviation | |", "|---|---|---|---|---|"]
-    lines += [f"| `{r[0]}` | `{r[1]}` | {r[2]} | {r[3]} | {r[4]} |" for r in rows]
-    lines.append("")
     return "\n".join(lines)
 
 
